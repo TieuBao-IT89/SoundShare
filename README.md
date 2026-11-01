@@ -62,3 +62,91 @@ Vui lòng báo cáo lỗ hổng riêng tư theo hướng dẫn trong [SECURITY.m
 ## Giấy phép
 
 SoundShare được phát hành theo giấy phép MIT. Xem [LICENSE](LICENSE).
+
+## Backend SoundShare
+
+Phần backend của SoundShare được xây dựng bằng Node.js và Express.
+
+### Yêu cầu
+
+- Node.js
+- npm
+- Neon PostgreSQL
+
+### Cài đặt
+
+Từ thư mục gốc của kho mã nguồn, chuyển vào thư mục `backend/` và cài các gói phụ thuộc:
+
+```bash
+cd backend
+npm install
+```
+
+### Biến môi trường
+
+Tạo `backend/.env` từ `backend/.env.example`, sau đó điền các giá trị phù hợp với môi trường chạy. Ví dụ:
+
+```env
+PORT=3000
+NODE_ENV=development
+DATABASE_URL=your_neon_connection_string
+```
+
+Không commit `.env` lên Git. Khi kiểm tra trên máy cá nhân, hãy dùng cơ sở dữ liệu phát triển hoặc kiểm thử; không dùng cơ sở dữ liệu production.
+
+### Chạy máy chủ phát triển
+
+Chạy lệnh sau từ thư mục `backend/`:
+
+```bash
+npm run dev
+```
+
+### Cơ sở dữ liệu
+
+SoundShare sử dụng Neon PostgreSQL thông qua nhóm kết nối của package `pg`.
+
+#### Kiểm tra kết nối cơ sở dữ liệu
+
+Chạy từ thư mục `backend/`:
+
+```bash
+node test-database.js
+```
+
+#### Chạy migration
+
+Lệnh sau áp dụng migration lên cơ sở dữ liệu được chỉ định bởi `DATABASE_URL`. Hãy kiểm tra đúng môi trường trước khi chạy:
+
+```bash
+npm run migrate
+```
+
+Các file migration nằm trong `src/database/migrations/`. Những migration đã chạy được ghi nhận trong bảng `schema_migrations`.
+
+#### Kiểm tra thao tác CRUD
+
+Chạy từ thư mục `backend/` và dùng cơ sở dữ liệu phát triển hoặc kiểm thử riêng:
+
+```bash
+node test-crud.js
+```
+
+Tập lệnh CRUD thực hiện các thao tác ghi trong một transaction rồi hoàn tác dữ liệu thử nghiệm. Không chạy tập lệnh này trên môi trường production.
+
+### Kiểm tra tình trạng dịch vụ
+
+```http
+GET /api/v1/health
+```
+
+### Các bảng dữ liệu
+
+- users
+- artists
+- albums
+- songs
+- playlists
+- playlist_songs
+- favorites
+- listening_history
