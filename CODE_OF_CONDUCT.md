@@ -1,17 +1,17 @@
-# Contributor Covenant Code of Conduct
+# Quy tắc ứng xử Contributor Covenant
 
-## Our pledge
+## Cam kết của chúng ta
 
-We are committed to making participation in SoundShare a welcoming and respectful experience for everyone, regardless of background or identity.
+Chúng tôi cam kết xây dựng một môi trường tham gia SoundShare thân thiện và tôn trọng mọi người, không phân biệt xuất thân hay bản dạng.
 
-## Our standards
+## Tiêu chuẩn cộng đồng
 
-Examples of behavior that contributes to a positive environment include being considerate, offering constructive feedback, accepting differing viewpoints, and focusing on what is best for the community.
+Những hành vi góp phần tạo nên môi trường tích cực gồm có: cư xử chu đáo, đưa ra góp ý mang tính xây dựng, tôn trọng các quan điểm khác nhau và hướng đến lợi ích chung của cộng đồng.
 
-Unacceptable behavior includes harassment, insults, personal attacks, publishing private information, and other conduct that would be inappropriate in a professional setting.
+Các hành vi không được chấp nhận gồm có: quấy rối, xúc phạm, công kích cá nhân, công khai thông tin riêng tư và những cách ứng xử không phù hợp trong môi trường chuyên nghiệp.
 
-## Enforcement
+## Thực thi
 
-Project maintainers are responsible for clarifying and enforcing these standards. Report concerns privately to the maintainers. They will review each report and respond appropriately and fairly.
+Những người duy trì dự án chịu trách nhiệm giải thích và thực thi các tiêu chuẩn này. Hãy gửi riêng các phản ánh đến nhóm duy trì dự án. Nhóm sẽ xem xét từng báo cáo và phản hồi phù hợp, công bằng.
 
-This code of conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.1.
+Quy tắc ứng xử này được biên soạn dựa trên [Contributor Covenant](https://www.contributor-covenant.org/), phiên bản 2.1.

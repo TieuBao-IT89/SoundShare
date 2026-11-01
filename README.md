@@ -1,47 +1,47 @@
 # SoundShare
 
-**Share your music. Enjoy every moment.**
+**Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
-SoundShare is an open source Flutter app concept for discovering, playing, and sharing independent music. This repository is the first UI focused MVP and uses sample content while backend services are prepared.
+SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá, phát và chia sẻ âm nhạc độc lập. Phiên bản hiện tại tập trung vào giao diện MVP và sử dụng dữ liệu mẫu trong khi các dịch vụ backend đang được chuẩn bị.
 
-## Features
+## Tính năng
 
-- Dark, responsive music experience with splash and bottom navigation
-- Home feed, mock recommendations, and searchable sample songs
-- Player screen with streaming playback, seek, favorite, shuffle, repeat, and track controls
-- MP3 file selection and 20 MB validation on the upload screen
-- Library and profile views backed by sample data
+- Giao diện nghe nhạc nền tối, thích ứng với màn hình, có màn hình khởi động và thanh điều hướng dưới.
+- Trang chủ với gợi ý mẫu và danh sách bài hát có thể tìm kiếm.
+- Trình phát nhạc hỗ trợ phát trực tuyến, tua bài, yêu thích, phát ngẫu nhiên, lặp lại và chuyển bài.
+- Chọn tệp MP3 và kiểm tra giới hạn dung lượng 20 MB trên màn hình tải nhạc lên.
+- Thư viện và hồ sơ cá nhân sử dụng dữ liệu mẫu.
 
-## Technology
+## Công nghệ
 
-Flutter and Dart · Riverpod · GoRouter · just_audio · Supabase-ready repositories · PostgreSQL · Supabase Auth and Storage planned
+Flutter và Dart · Riverpod · GoRouter · just_audio · Repository sẵn sàng tích hợp Supabase · PostgreSQL · Dự kiến dùng Supabase Auth và Storage
 
-## Screenshots
+## Ảnh chụp màn hình
 
-Screenshots will be added after the first device previews are captured.
+Ảnh chụp sẽ được bổ sung sau khi hoàn tất các bản xem trước trên thiết bị.
 
-## Requirements
+## Yêu cầu
 
-- Flutter SDK compatible with Dart `^3.13.3`
-- Android Studio with an Android SDK and emulator, or a physical Android device
-- Visual Studio Code with the Flutter and Dart extensions
+- Flutter SDK tương thích với Dart `^3.13.3`.
+- Android Studio cùng Android SDK và trình giả lập, hoặc thiết bị Android thật.
+- Visual Studio Code cùng các tiện ích mở rộng Flutter và Dart.
 
-## Run on Windows
+## Chạy trên Windows
 
-1. Install Flutter and Android Studio, then create and start an Android Emulator in Android Studio's Device Manager.
-2. Open this folder in VS Code and select the running emulator from the device picker.
-3. In the integrated terminal, run:
+1. Cài Flutter và Android Studio, sau đó tạo và khởi động Android Emulator trong Device Manager của Android Studio.
+2. Mở thư mục dự án bằng VS Code và chọn trình giả lập đang chạy trong danh sách thiết bị.
+3. Mở terminal tích hợp và chạy:
 
    ```powershell
    flutter pub get
    flutter run
    ```
 
-Alternatively, run `flutter run -d <device-id>` after checking available targets with `flutter devices`.
+Bạn cũng có thể chạy `flutter run -d <device-id>` sau khi xem các thiết bị khả dụng bằng `flutter devices`.
 
-## Development
+## Phát triển
 
-The app is organized by feature under `lib/features`; shared theme, services, and widgets live under `lib/app` and `lib/core`. Run these checks before opening a pull request:
+Ứng dụng được tổ chức theo từng tính năng trong `lib/features`; theme, dịch vụ và widget dùng chung nằm trong `lib/app` và `lib/core`. Hãy chạy các lệnh sau trước khi mở pull request:
 
 ```powershell
 dart format .
@@ -49,16 +49,16 @@ flutter analyze
 flutter test
 ```
 
-To connect Supabase later, add environment based configuration and implement the repository interfaces. Never commit project keys or service secrets.
+Khi tích hợp Supabase, hãy bổ sung cấu hình thông qua biến môi trường và triển khai các repository tương ứng. Không commit khóa dự án hoặc thông tin bí mật.
 
-## Contributing
+## Đóng góp
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the local workflow and pull request guidance. All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Xem [CONTRIBUTING.md](CONTRIBUTING.md) để biết quy trình làm việc và hướng dẫn tạo pull request. Tất cả người đóng góp cần tuân thủ [Quy tắc ứng xử](CODE_OF_CONDUCT.md).
 
-## Security
+## Bảo mật
 
-Please report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+Vui lòng báo cáo lỗ hổng riêng tư theo hướng dẫn trong [SECURITY.md](SECURITY.md).
 
-## License
+## Giấy phép
 
-SoundShare is released under the MIT License. See [LICENSE](LICENSE).
+SoundShare được phát hành theo giấy phép MIT. Xem [LICENSE](LICENSE).

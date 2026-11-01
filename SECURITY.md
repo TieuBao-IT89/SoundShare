@@ -1,7 +1,7 @@
-# Security Policy
+# Chính sách bảo mật
 
-## Reporting a vulnerability
+## Báo cáo lỗ hổng bảo mật
 
-Please do not report security vulnerabilities in public issues. Contact the repository maintainers privately with a description, impact, and steps to reproduce. The maintainers will acknowledge the report and coordinate a fix before public disclosure.
+Vui lòng không báo cáo lỗ hổng bảo mật trong issue công khai. Hãy liên hệ riêng với những người duy trì repository, kèm mô tả, mức độ ảnh hưởng và các bước tái hiện. Nhóm duy trì sẽ xác nhận đã nhận báo cáo và phối hợp xử lý trước khi công bố rộng rãi.
 
-SoundShare is an early MVP and currently has no production backend. Never add Supabase keys, credentials, or other secrets to source control.
+SoundShare hiện là MVP giai đoạn đầu và chưa có backend dùng trong môi trường production. Không bao giờ thêm khóa Supabase, thông tin đăng nhập hoặc bí mật khác vào hệ thống quản lý mã nguồn.
