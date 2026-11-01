@@ -14,7 +14,7 @@ SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá, phát và
 
 ## Công nghệ
 
-Flutter và Dart · Riverpod · GoRouter · just_audio · Repository sẵn sàng tích hợp Supabase · PostgreSQL · Dự kiến dùng Supabase Auth và Storage
+Ứng dụng hiện tại: Flutter và Dart · Riverpod · GoRouter · just_audio. Backend mục tiêu: Node.js + Express REST API · Neon PostgreSQL. Authentication và Cloud Storage sẽ dùng các provider độc lập, hiện chưa được chọn hoặc tích hợp.
 
 ## Ảnh chụp màn hình
 
@@ -49,7 +49,7 @@ flutter analyze
 flutter test
 ```
 
-Khi tích hợp Supabase, hãy bổ sung cấu hình thông qua biến môi trường và triển khai các repository tương ứng. Không commit khóa dự án hoặc thông tin bí mật.
+Backend mục tiêu giao tiếp với Neon qua Express REST API; ứng dụng Flutter không kết nối trực tiếp Neon. Khi triển khai, giữ connection string và secret ở backend thông qua biến môi trường/secret manager. Không commit thông tin bí mật.
 
 ## Đóng góp
 
