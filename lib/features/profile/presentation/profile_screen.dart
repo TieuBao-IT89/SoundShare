@@ -11,11 +11,16 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppScaffold(
     child: ListView(
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       children: [
         const Text(
-          'Your profile',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+          'Profile preview',
+          style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Example profile content while account features are in progress.',
+          style: TextStyle(color: AppColors.muted, height: 1.4),
         ),
         const SizedBox(height: 34),
         const Center(
@@ -46,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 14),
         const Center(
           child: Text(
-            'Collecting little moments and turning them into songs.',
+            'A place to follow independent artists and keep the songs you love.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.muted),
           ),
@@ -54,11 +59,22 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 20),
         OutlinedButton(
           onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile editing is coming soon.')),
+            const SnackBar(
+              content: Text(
+                'Profile editing is not available in this preview.',
+              ),
+            ),
           ),
-          child: const Text('Edit profile'),
+          child: const Text('Edit sample profile'),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 12),
+        const Center(
+          child: Text(
+            'Sample profile statistics',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+        ),
+        const SizedBox(height: 20),
         const Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -74,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         const Text(
-          'A place for independent artists and curious listeners.',
+          'SoundShare brings music discovery and listening together in one place.',
           style: TextStyle(color: AppColors.muted),
         ),
         if (ClerkConfig.isConfigured) ...[
