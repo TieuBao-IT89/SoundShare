@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
+import '../../../core/widgets/section_heading.dart';
 import '../../home/domain/song.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -15,62 +16,81 @@ class ExploreScreen extends ConsumerStatefulWidget {
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String query = '';
+  final searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final results = sampleSongs
         .where(
-          (song) => '${song.title} ${song.artist}'.toLowerCase().contains(
-            query.toLowerCase(),
-          ),
+          (song) => '${song.title} ${song.artist} ${song.genre}'
+              .toLowerCase()
+              .contains(query.toLowerCase()),
         )
         .toList();
     return AppScaffold(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Explore',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+              'Explore the catalog',
+              style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 8),
+            const Text(
+              'Search tracks shared by independent artists.',
+              style: TextStyle(color: AppColors.muted, height: 1.4),
+            ),
+            const SizedBox(height: 20),
             TextField(
+              controller: searchController,
+              textInputAction: TextInputAction.search,
               onChanged: (value) => setState(() => query = value),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search_rounded),
-                hintText: 'Songs, artists, and more',
+                hintText: 'Search tracks, artists, or genres',
+                labelText: 'Search music',
+                suffixIcon: query.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        onPressed: () {
+                          searchController.clear();
+                          setState(() => query = '');
+                        },
+                        icon: const Icon(Icons.close_rounded),
+                      ),
               ),
             ),
             const SizedBox(height: 22),
-            Text(
-              query.isEmpty ? 'Recently shared' : '${results.length} results',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            SectionHeading(
+              query.isEmpty ? 'Sample tracks' : _resultLabel(results.length),
             ),
             const SizedBox(height: 8),
             Expanded(
               child: results.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.music_off_rounded,
-                            size: 42,
-                            color: AppColors.muted,
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'No tracks found',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Try another title or artist',
-                            style: TextStyle(color: AppColors.muted),
-                          ),
-                        ],
-                      ),
+                  ? EmptyState(
+                      icon: Icons.music_off_rounded,
+                      title: query.isEmpty
+                          ? 'No sample tracks yet'
+                          : 'No tracks found',
+                      message: query.isEmpty
+                          ? 'Tracks will appear here when the sample catalog is ready.'
+                          : 'Try another title, artist, or genre.',
+                      actionLabel: query.isEmpty ? null : 'Clear search',
+                      onAction: query.isEmpty
+                          ? null
+                          : () {
+                              searchController.clear();
+                              setState(() => query = '');
+                            },
                     )
                   : ListView.builder(
                       itemCount: results.length,
@@ -79,17 +99,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         return ListTile(
                           onTap: () => context.push('/player'),
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 4,
+                            vertical: 6,
                           ),
-                          leading: Artwork(url: song.artwork),
-                          title: Text(song.title),
+                          leading: Artwork(
+                            url: song.artwork,
+                            semanticLabel: 'Artwork for ${song.title}',
+                          ),
+                          title: Text(
+                            song.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           subtitle: Text(
-                            song.artist,
+                            '${song.artist} · ${song.genre}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(color: AppColors.muted),
                           ),
-                          trailing: const Icon(
-                            Icons.play_circle_outline,
-                            color: AppColors.violet,
+                          trailing: IconButton(
+                            tooltip: 'Play ${song.title}',
+                            onPressed: () => context.push('/player'),
+                            icon: const Icon(
+                              Icons.play_circle_outline,
+                              color: AppColors.violet,
+                            ),
                           ),
                         );
                       },
@@ -100,4 +133,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       ),
     );
   }
+
+  String _resultLabel(int count) =>
+      '$count ${count == 1 ? 'track' : 'tracks'} found';
 }
