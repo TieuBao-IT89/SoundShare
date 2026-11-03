@@ -17,7 +17,7 @@ class _UploadScreenState extends State<UploadScreen> {
   PlatformFile? file;
   PlatformFile? artwork;
   String? message;
-  bool uploading = false;
+  bool previewReady = false;
   final titleController = TextEditingController();
   final artistController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -39,6 +39,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final selected = result.files.first;
     setState(() {
       file = selected;
+      previewReady = false;
       message = selected.size > 20 * 1024 * 1024
           ? 'Files must be smaller than 20 MB.'
           : null;
@@ -72,7 +73,10 @@ class _UploadScreenState extends State<UploadScreen> {
       withData: true,
     );
     if (result == null || result.files.isEmpty) return;
-    setState(() => artwork = result.files.first);
+    setState(() {
+      artwork = result.files.first;
+      previewReady = false;
+    });
   }
 
   @override
@@ -85,15 +89,15 @@ class _UploadScreenState extends State<UploadScreen> {
       ),
     ),
     body: ListView(
-      padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         const Text(
-          'Put your sound out there.',
+          'Share a track with the community.',
           style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 6),
         const Text(
-          'Share a song with listeners everywhere.',
+          'Choose an MP3 and add the details listeners need.',
           style: TextStyle(color: AppColors.muted),
         ),
         const SizedBox(height: 22),
@@ -105,16 +109,17 @@ class _UploadScreenState extends State<UploadScreen> {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.surfaceLight),
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.graphic_eq_rounded,
+                Icon(
+                  file == null
+                      ? Icons.graphic_eq_rounded
+                      : Icons.audio_file_rounded,
                   size: 38,
                   color: AppColors.violet,
                 ),
-                const SizedBox(height: 9),
+                const SizedBox(height: 12),
                 Text(
                   file?.name ?? 'Choose an MP3 file',
                   style: const TextStyle(fontWeight: FontWeight.w600),
@@ -122,7 +127,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 const SizedBox(height: 4),
                 Text(
                   file == null
-                      ? 'MP3 · Up to 20 MB'
+                      ? 'MP3 · Maximum file size 20 MB'
                       : '${(file!.size / 1024 / 1024).toStringAsFixed(1)} MB',
                   style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
@@ -131,11 +136,14 @@ class _UploadScreenState extends State<UploadScreen> {
           ),
         ),
         if (message != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              message!,
-              style: const TextStyle(color: Colors.orangeAccent),
+          Semantics(
+            liveRegion: true,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                message!,
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ),
         const SizedBox(height: 20),
@@ -143,12 +151,14 @@ class _UploadScreenState extends State<UploadScreen> {
           controller: titleController,
           label: 'Song title',
           hint: 'Give your track a name',
+          onChanged: () => setState(() => previewReady = false),
         ),
         const SizedBox(height: 14),
         _Field(
           controller: artistController,
           label: 'Artist name',
           hint: 'Who made this track?',
+          onChanged: () => setState(() => previewReady = false),
         ),
         const SizedBox(height: 14),
         _Field(
@@ -156,12 +166,13 @@ class _UploadScreenState extends State<UploadScreen> {
           label: 'Description',
           hint: 'Tell listeners a little about it',
           maxLines: 3,
+          onChanged: () => setState(() => previewReady = false),
         ),
         const SizedBox(height: 14),
-        const Text('Genre', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: 'Indie',
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Genre'),
           items:
               const ['Indie', 'Electronic', 'Hip-hop', 'Jazz', 'Pop', 'Other']
                   .map(
@@ -205,40 +216,62 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
         ),
         const SizedBox(height: 20),
-        if (uploading) const LinearProgressIndicator(color: AppColors.violet),
+        if (previewReady)
+          Semantics(
+            liveRegion: true,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline_rounded, color: AppColors.violet),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Your track details are ready. Publishing is not connected in this preview.',
+                      style: TextStyle(height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         FilledButton(
-          onPressed: uploading
-              ? null
-              : () {
-                  if (file == null ||
-                      file!.size > 20 * 1024 * 1024 ||
-                      titleController.text.trim().isEmpty ||
-                      artistController.text.trim().isEmpty) {
-                    setState(
-                      () =>
-                          message = file == null ? 'Choose an MP3 file first.' : 'Add a title and artist, and keep the file under 20 MB.',
-                    );
-                    return;
-                  }
-                  setState(() => uploading = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  Future<void>.delayed(const Duration(milliseconds: 700), () {
-                    if (!mounted) return;
-                    setState(() => uploading = false);
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Upload preview complete. Connect Supabase to publish this track.',
-                        ),
-                      ),
-                    );
-                  });
-                },
+          onPressed: () {
+            if (file == null ||
+                file!.size > 20 * 1024 * 1024 ||
+                titleController.text.trim().isEmpty ||
+                artistController.text.trim().isEmpty) {
+              setState(() {
+                previewReady = false;
+                message = switch ((
+                  file,
+                  titleController.text.trim(),
+                  artistController.text.trim(),
+                )) {
+                  (null, _, _) => 'Choose an MP3 file first.',
+                  (_, '', _) => 'Add a title for this track.',
+                  (_, _, '') => 'Add the artist name.',
+                  _ => 'Choose an MP3 file smaller than 20 MB.',
+                };
+              });
+              return;
+            }
+            setState(() {
+              message = null;
+              previewReady = true;
+            });
+          },
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.violet,
             padding: const EdgeInsets.all(16),
           ),
-          child: Text(uploading ? 'Preparing…' : 'Share track'),
+          child: const Text('Preview track details'),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).maybePop(),
@@ -255,21 +288,21 @@ class _Field extends StatelessWidget {
     required this.label,
     required this.hint,
     this.maxLines = 1,
+    this.onChanged,
   });
   final TextEditingController controller;
   final String label;
   final String hint;
   final int maxLines;
+  final VoidCallback? onChanged;
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-      const SizedBox(height: 8),
       TextField(
         controller: controller,
         maxLines: maxLines,
-        decoration: InputDecoration(hintText: hint),
+        onChanged: (_) => onChanged?.call(),
+        decoration: InputDecoration(labelText: label, hintText: hint),
       ),
     ],
   );

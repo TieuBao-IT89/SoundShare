@@ -9,30 +9,44 @@ class Artwork extends StatelessWidget {
     required this.url,
     this.size = 56,
     this.radius = 14,
+    this.semanticLabel,
   });
   final String url;
   final double size;
   final double radius;
+  final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(radius),
-    child: CachedNetworkImage(
-      imageUrl: url,
-      width: size,
-      height: size,
-      fit: BoxFit.cover,
-      placeholder: (context, error) => Container(
-        width: size,
-        height: size,
-        color: AppColors.surfaceLight,
-        child: const Icon(Icons.graphic_eq_rounded, color: AppColors.violet),
-      ),
-      errorWidget: (context, error, stackTrace) => Container(
-        width: size,
-        height: size,
-        color: AppColors.surfaceLight,
-        child: const Icon(Icons.music_note_rounded, color: AppColors.violet),
+  Widget build(BuildContext context) => Semantics(
+    image: true,
+    label: semanticLabel ?? 'Album artwork',
+    child: ExcludeSemantics(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (context, error) => Container(
+            width: size,
+            height: size,
+            color: AppColors.surfaceLight,
+            child: const Icon(
+              Icons.graphic_eq_rounded,
+              color: AppColors.violet,
+            ),
+          ),
+          errorWidget: (context, error, stackTrace) => Container(
+            width: size,
+            height: size,
+            color: AppColors.surfaceLight,
+            child: const Icon(
+              Icons.music_note_rounded,
+              color: AppColors.violet,
+            ),
+          ),
+        ),
       ),
     ),
   );
