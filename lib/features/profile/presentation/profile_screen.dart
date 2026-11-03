@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/config/clerk_config.dart';
 import '../../../core/widgets/app_scaffold.dart';
+import '../../auth/presentation/backend_auth_debug.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) => AppScaffold(
     child: ListView(
@@ -74,6 +77,10 @@ class ProfileScreen extends StatelessWidget {
           'A place for independent artists and curious listeners.',
           style: TextStyle(color: AppColors.muted),
         ),
+        if (ClerkConfig.isConfigured) ...[
+          const SizedBox(height: 24),
+          const BackendAuthDebug(),
+        ],
       ],
     ),
   );

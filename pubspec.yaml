@@ -37,6 +37,9 @@ dependencies:
   file_picker: ^8.3.7
   audio_metadata_reader: ^1.4.2
   cached_network_image: ^3.4.1
+  clerk_flutter: ^0.0.18-beta
+  clerk_auth: ^0.0.18-beta
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

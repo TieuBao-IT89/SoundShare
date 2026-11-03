@@ -1,9 +1,20 @@
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
+import 'core/config/clerk_config.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: SoundShareApp()));
+
+  const app = ProviderScope(child: SoundShareApp());
+  runApp(
+    ClerkConfig.isConfigured
+        ? ClerkAuth(
+            config: ClerkAuthConfig(publishableKey: ClerkConfig.publishableKey),
+            child: app,
+          )
+        : app,
+  );
 }
