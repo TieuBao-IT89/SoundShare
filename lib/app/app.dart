@@ -1,8 +1,11 @@
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/home/presentation/home_screen.dart';
+import '../core/config/clerk_config.dart';
+import '../features/auth/presentation/backend_auth_bootstrap.dart';
 import '../features/explore/presentation/explore_screen.dart';
+import '../features/home/presentation/home_screen.dart';
 import '../features/library/presentation/library_screen.dart';
 import '../features/player/presentation/player_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
@@ -41,5 +44,24 @@ class SoundShareApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     theme: AppTheme.dark,
     routerConfig: _router,
+    builder: (context, child) {
+      final appContent = child ?? const SizedBox.shrink();
+      if (!ClerkConfig.isConfigured) return appContent;
+
+      return ClerkAuthBuilder(
+        signedInBuilder: (context, authState) =>
+            BackendAuthBootstrap(authState: authState, child: appContent),
+        signedOutBuilder: (context, _) => Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: ClerkErrorListener(child: ClerkAuthentication()),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
   );
 }

@@ -360,6 +360,8 @@ MVP nên ưu tiên các luồng cốt lõi:
 
 Base URL: `/api/v1`. Tất cả endpoint dùng HTTPS và JSON, trừ thao tác truyền file trực tiếp tới URL ký của Cloud Storage. API trả lỗi theo cấu trúc ổn định:
 
+The current Clerk integration also exposes `GET /api/v1/auth/me`. It requires a verified Clerk session token in the `Authorization: Bearer <session-token>` header and returns the authenticated Clerk user ID; it does not query or synchronize a user profile in Neon.
+
 ```json
 {
   "error": {
