@@ -23,7 +23,11 @@ Web dùng `@clerk/clerk-js@6.42.2` cùng `@clerk/ui@1.42.3`, tải từ CDN. C�
 
 ## Luồng dữ liệu
 
-Sau đăng nhập, `/api/v1/auth/me` xác minh Bearer session token rồi tạo hồ sơ tối thiểu trong Neon theo subject. Ứng dụng chỉ mở thư viện khi backend chấp nhận phiên. Token được xin từ SDK cho từng request; gặp 401 sẽ refresh bỏ cache và retry một lần.
+Client chờ Clerk có session `active` trước khi gọi `/api/v1/auth/me`. Endpoint này xác minh Bearer session token rồi tạo hồ sơ tối thiểu trong Neon theo subject. Ứng dụng chỉ mở thư viện khi backend chấp nhận phiên. Token được xin từ SDK cho từng request; gặp 401 sẽ refresh bỏ cache và retry một lần. Sự kiện thay session của cùng một tài khoản cũng tạo lại vùng dữ liệu phiên để xác minh lại.
+
+Bước mở thư viện chờ tối đa 25 giây, tính cả lấy token và retry. Khi quá hạn, UI hiển thị lỗi cùng Try again/Sign out; Sign out cũng có trong lúc chờ. Phản hồi đến muộn không tự mở thư viện sau khi UI đã báo timeout.
+
+Hồ sơ Neon chỉ gồm `id` và `clerk_user_id` ở bước này; email, username và display name chưa được đồng bộ từ Clerk. Đăng ký thành công ở Clerk chưa tạo hồ sơ Neon cho tới khi `/auth/me` trả `200`. Không có webhook đồng bộ nền. Upload tạo metadata ở `media_assets`, lưu bài tạo bản ghi ở `private_tracks`; bảng `songs` cũ không được dùng cho thư viện riêng.
 
 Upload gửi MP3 và artwork tùy chọn tới API multipart hiện có. Backend kiểm tra dung lượng, MIME, magic bytes và object Cloudinary; file dùng `type: authenticated`. Sau đó client gửi asset ID cùng title/artist/genre/description tới `POST /api/v1/songs`. UI chỉ báo Saved sau khi track commit. Các bước lỗi có thể retry; backend nhận lại cùng nội dung/metadata mà không tạo bài trùng. File đã upload nhưng chưa tạo track vẫn private; chưa có worker dọn tự động.
 
@@ -37,6 +41,8 @@ Contract đầy đủ và error code nằm trong [PRD mục 8.5](../PRD.md). D�
 
 - **Action blocked / suspicious trong form Clerk:** kiểm tra Application Logs → `protect.sign_up.blocked`, tham chiếu hiển thị trên form và phiên bản `window.Clerk.version`. Clerk Protect yêu cầu ClerkJS từ 6.39. CSP phải cho phép `*.protect.clerk.com` cho script/frame và `https://*.protect.clerk.com:*` cho connect (gồm các port khác 443). Code hiện đáp ứng các yêu cầu này; proxy bên ngoài phải giữ policy tương ứng. Không dùng testing token hoặc tắt protection trong luồng thật để che lỗi. Xem [yêu cầu Protect](https://clerk.com/docs/guides/protect/getting-started) và [CSP chính thức](https://clerk.com/docs/guides/secure/best-practices/csp-headers).
 - **Your session could not be verified ngoài form:** xem mã `AUTH_REJECTED` trong server log. `token-audience-missing`/`token-audience-mismatch` yêu cầu sửa claim session trong đúng instance. Kiểm tra `CLERK_AUDIENCE` và đăng nhập lại. Không giảm kiểm tra chữ ký/issuer/audience. Log chỉ chứa reason code và request ID, không chứa token hoặc claim người dùng.
+- **Không thấy cập nhật trên Neon:** nếu `/api/v1/auth/me` trả `401`, backend chưa thực hiện lệnh tạo hồ sơ. Kiểm tra claim trước; chạy lại migration không sửa được lỗi này. Nếu trả `503 DATABASE_UNAVAILABLE`, kiểm tra kết nối và quyền ghi của backend. Sau khi `/auth/me` trả `200`, kiểm tra `users`; sau upload kiểm tra `media_assets` và `private_tracks`. Không kỳ vọng email/mật khẩu xuất hiện trong Neon.
+- **Opening your library took too long:** kiểm tra Express đang chạy tại đúng API URL rồi Try again. Client chờ session active và tự cập nhật nếu session sẵn sàng sau sự kiện user; không cần refresh liên tục để vượt bước khởi tạo.
 - **Không tải được form:** kiểm tra CDN/Clerk bị chặn, cấu hình publishable key và kết nối mạng. Nhấn Try again. Thiếu key không tự mở demo.
 - **Library trống sau đăng nhập:** đây là trạng thái tài khoản mới; tải MP3 của bạn tại Upload.
 - **TRACK_ALREADY_EXISTS:** cùng MP3 đã lưu với metadata khác; phiên bản này chưa hỗ trợ sửa bài đã lưu.
@@ -53,12 +59,18 @@ npm test
 npm run test:smoke
 ```
 
-Backend tests dùng RSA fixture cho middleware Clerk, fake Neon/Cloudinary cho service và route; bao phủ token sai/hết hạn/khác owner, query injection, giới hạn trang/cursor, idempotency, khóa media và lỗi an toàn. Web regression kiểm tra bundle UI/Core 3, token refresh và CSP cho Protect. Flutter tests kiểm tra refresh một lần, phân trang, multipart, backend session gate, đổi tài khoản, lỗi upload và retry.
+Backend tests dùng RSA fixture cho middleware Clerk, fake Neon/Cloudinary cho service và route; bao phủ token sai/hết hạn/khác owner, query injection, giới hạn trang/cursor, idempotency, khóa media và lỗi an toàn. Test đăng nhập kiểm tra token thiếu audience không gọi ghi hồ sơ, token hợp lệ tạo hồ sơ và retry giữ cùng ID. Web regression kiểm tra bundle UI/Core 3, session active/thay session, sự kiện trước lúc subscribe, token refresh và CSP cho Protect. Flutter tests kiểm tra refresh một lần, phân trang, multipart, backend session gate, timeout/đăng xuất/thử lại và phản hồi muộn, đổi tài khoản, lỗi upload và retry.
 
 Integration migration/constraint test chỉ chạy nếu `TEST_DATABASE_URL` trỏ tới database test riêng, khác `DATABASE_URL`; nếu chưa có sẽ skip. Không chạy fixture/destructive test trên Neon ứng dụng hoặc production.
 
-Trong môi trường development đã áp dụng migration 003 và kiểm tra schema bằng truy vấn chỉ đọc; smoke check kết nối Neon, Clerk JWKS và Cloudinary đã đạt. Chrome đã tải form sign-up/sign-in với ClerkJS 6.42.2, script Device Intelligence và không ghi nhận CSP violation trong lượt rà soát form. Đây chưa chứng minh đăng ký, upload, range playback hoặc expiry URL bằng tài khoản thật đã đạt. Cần hoàn tất checklist thủ công:
+Trong môi trường development đã áp dụng migration 003 và kiểm tra schema bằng truy vấn chỉ đọc; smoke check kết nối Neon, Clerk JWKS và Cloudinary đã đạt. Chrome đã tải form sign-up/sign-in với ClerkJS 6.42.2, script Device Intelligence và không ghi nhận CSP violation trong lượt rà soát form.
 
+Chẩn đoán ngày 05/11/2026: `/auth/me` ban đầu trả `401 token-audience-missing` vì ô Claims trên Clerk vẫn là `{}`. Sau khi người dùng lưu `{"aud":"soundshare-api"}` và thử lại, endpoint trả `200` và người dùng xác nhận vào trang chính. Upload audio/artwork và tạo bài trả `201`; truy vấn chỉ đọc Neon xác nhận `users=1`, `media_assets=2`, `private_tracks=1`. Đây là dữ liệu do người dùng tự tải, không phải fixture test. Chưa nghiệm thu playback, range/expiry, favorite, xóa hoặc tài khoản thứ hai.
+
+Checklist thủ công:
+
+- [x] Đăng nhập bằng tài khoản thật và vào trang chính sau khi cấu hình đúng audience.
+- [x] Backend tạo hồ sơ Neon và lưu MP3/artwork cùng metadata bài hát; đối chiếu bằng truy vấn chỉ đọc.
 - [ ] Đăng ký tài khoản, xác minh email và vào được Library.
 - [ ] Đăng xuất, đăng nhập lại và refresh trang giữ đúng phiên.
 - [ ] Upload MP3 và artwork có quyền sử dụng; thấy bài trong All uploads.

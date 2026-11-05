@@ -81,4 +81,6 @@ Màn hình vào ứng dụng dùng thông điệp “Your sound. Your space.” 
 
 Sau backend session gate, Home/Explore/Library hiển thị thư viện riêng; tài khoản mới có lời mời Upload thay vì bài giả. Library mặc định All uploads. Upload phân biệt đang gửi, lỗi/retry và Saved; Profile dùng tên từ Clerk và có Đăng xuất. Mỗi tài khoản có provider container riêng để dọn player, catalog và cache khi đổi phiên. Demo giữ nhãn nội dung mẫu và hành vi preview cũ.
 
-Kiểm tra tự động: 56 Flutter test đạt, analyzer sạch, Web release build thành công. Kiểm tra đăng ký và upload/playback có xác thực bằng tài khoản thật vẫn cần hoàn tất; xem [checklist và giới hạn](docs/auth-real-data.md). Chưa nghiệm thu native.
+Luồng mở thư viện chờ session Clerk active, nhận cả sự kiện thay session của cùng người dùng và giới hạn xác minh backend ở 25 giây. Trong lúc chờ có nhãn tiến trình và Sign out; khi timeout/lỗi có Try again và Sign out. Các trạng thái này cuộn được trên màn hình hẹp hoặc chữ lớn. Phản hồi muộn không tự thay trạng thái lỗi thành thư viện đã mở.
+
+Kiểm tra tự động: 57 Flutter test đạt, analyzer sạch, Web release build thành công. Widget test bao phủ loading/timeout/retry ở 320×640 và chữ 2×. Tài khoản thật đã đăng nhập, upload MP3/artwork và lưu bài vào Neon development; playback, yêu thích, đăng ký mới và native vẫn cần nghiệm thu. Xem [checklist và giới hạn](docs/auth-real-data.md).

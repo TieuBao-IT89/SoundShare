@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -211,6 +212,67 @@ void main() {
       );
       expect(requests.length, 3);
       api.close();
+    },
+  );
+
+  testWidgets(
+    'A stalled session stops loading, ignores late success and can retry on a narrow screen',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 640);
+      addTearDown(() {
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetPhysicalSize();
+      });
+      final pendingToken = Completer<String>();
+      var stalled = true;
+      var signOuts = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: SessionScope(
+              session: const AuthSession(subject: 'one', name: 'Owner'),
+              token: ({bool refresh = false}) => stalled
+                  ? pendingToken.future
+                  : fixtureToken(refresh: refresh),
+              signOut: () async {
+                signOuts++;
+              },
+              createClient: (token) => ApiClient(
+                token: token,
+                client: MockClient((_) async => ok({'id': 'account'})),
+              ),
+              child: const Text('Private library content'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      await tester.tap(find.text('Sign out'));
+      await tester.pump();
+      expect(signOuts, 1);
+      await tester.pump(const Duration(seconds: 26));
+      await tester.pumpAndSettle();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.textContaining('took too long'), findsOneWidget);
+      expect(find.text('Private library content'), findsNothing);
+      pendingToken.complete('late-fixture');
+      await tester.pumpAndSettle();
+      expect(find.text('Private library content'), findsNothing);
+      expect(find.textContaining('took too long'), findsOneWidget);
+      stalled = false;
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(find.text('Private library content'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
     },
   );
 

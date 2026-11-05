@@ -4,8 +4,13 @@
   let ready;
   const listeners = new Set();
   const snapshot = () => {
-    const user = window.Clerk?.user;
-    return JSON.stringify(user ? { id: user.id, name: user.fullName || user.username || 'Music lover' } : null);
+    const session = window.Clerk?.session;
+    const user = session?.user || window.Clerk?.user;
+    // Clerk can publish the user before activating their session. Wait for the
+    // active session, and distinguish a replacement session for the same user.
+    return JSON.stringify(session?.status === 'active' && session.id && user?.id
+      ? { id: user.id, name: user.fullName || user.username || 'Music lover', sessionId: session.id }
+      : null);
   };
   window.soundshareAuth = {
     initialize(key) {
@@ -43,10 +48,16 @@
       })().catch(() => { ready = null; throw new Error('Sign-in could not be loaded.'); });
       return ready.then(snapshot);
     },
-    watch(listener) { listeners.add(listener); },
+    watch(listener) {
+      listeners.add(listener);
+      // Replay current state so a sign-in between initialize and watch is not lost.
+      listener(snapshot());
+    },
     unwatch(listener) { listeners.delete(listener); },
     async token(refresh) {
-      const token = await window.Clerk?.session?.getToken({ skipCache: refresh });
+      const session = window.Clerk?.session;
+      if (session?.status !== 'active') throw new Error('Sign in again.');
+      const token = await session.getToken({ skipCache: refresh });
       if (!token) throw new Error('Sign in again.');
       return token;
     },

@@ -476,6 +476,8 @@ Lỗi dùng envelope chung ở 8.4: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`, 
 
 Migration `003_private_tracks.sql` thêm `private_tracks` và `private_track_favorites`; các khóa ngoại composite buộc track/favorite/media cùng owner. `audio_asset_id` unique đảm bảo một bài cho mỗi audio asset. Bảng cũ được giữ nguyên. Neon không lưu signed URL hay byte file. Logout giải phóng provider container của phiên, audio player, catalog và image cache; phiên mới không dùng lại dữ liệu tài khoản trước.
 
+Bootstrap tài khoản: client chỉ bắt đầu khi session Clerk active; `GET /auth/me` xác minh đầy đủ token trước khi upsert hồ sơ tối thiểu `users(id,clerk_user_id)`. Token thiếu audience trả `401 UNAUTHORIZED` và không ghi Neon. Chưa đồng bộ email/tên/avatar hoặc webhook Clerk. Client giới hạn toàn bộ bước mở thư viện ở 25 giây, hiển thị Try again/Sign out khi lỗi và cho phép Sign out trong lúc chờ. Đổi session của cùng tài khoản khởi tạo lại xác minh; phản hồi đến sau timeout không tự mở thư viện.
+
 Web phục vụ qua Express chỉ từ `build/web`; CSP cho phép SDK/UI Clerk, Cloudflare challenge và `*.protect.clerk.com` (connect cho phép các port theo yêu cầu Clerk), cùng media Cloudinary. Không dùng testing token để bỏ qua bảo vệ trong luồng đăng ký thật. Không giảm kiểm tra audience để xử lý cấu hình thiếu claim.
 
 9. Điều hướng và cấu trúc màn hình
