@@ -15,18 +15,32 @@ class SectionHeading extends StatelessWidget {
   final VoidCallback? onAction;
 
   @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Expanded(
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final heading = Semantics(
+        header: true,
         child: Text(
           title,
           style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
         ),
-      ),
-      if (actionLabel != null)
-        TextButton(onPressed: onAction, child: Text(actionLabel!)),
-    ],
+      );
+      if (actionLabel == null) return heading;
+      final action = TextButton(onPressed: onAction, child: Text(actionLabel!));
+      if (constraints.maxWidth < 300 ||
+          MediaQuery.textScalerOf(context).scale(14) > 20) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [heading, action],
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: heading),
+          const SizedBox(width: 8),
+          action,
+        ],
+      );
+    },
   );
 }
 

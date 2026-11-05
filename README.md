@@ -61,6 +61,14 @@ Catalog, tên nghệ sĩ và artwork hiện dùng mẫu có sẵn; bốn bài d�
 
 Kiểm thử tương tác và bố cục nằm trong `test/mobile_experience_test.dart`, giả lập audio player, catalog và file picker; không dùng tài khoản, Neon hay Cloudinary thật. Xem kết quả kiểm tra và giới hạn rà soát giao diện trong [DESIGN.md](DESIGN.md).
 
+### Khám phá thể loại và bộ sưu tập — issue #7
+
+Home có hai lối vào **Sample collections**: Softer corners (Dream pop/Indie folk) và After hours (Alternative/Electronic), kèm số bài trong catalog mẫu. Explore có chip thể loại lấy từ catalog và chip bộ sưu tập. Từ khóa, thể loại và bộ sưu tập kết hợp với nhau; kết quả cần khớp mọi lựa chọn.
+
+**Clear search** chỉ xóa từ khóa; **All genres** và **All collections** bỏ nhóm tương ứng; chạm lại chip đang chọn cũng bỏ lựa chọn đó. **Clear all** xóa toàn bộ và đưa trang về đầu. Link như `/explore?collection=after-hours&genre=Electronic&q=Blue` mở đúng bộ lọc; quay lại từ Player giữ nguyên lựa chọn. Nhấn tab Explore từ tab khác mở chế độ duyệt mặc định.
+
+Đây là cách nhóm nội dung mẫu theo thể loại, chưa có cá nhân hóa hoặc API catalog mới. Kiểm thử domain/điều hướng/trạng thái nằm trong `test/discovery_test.dart`; xem [báo cáo và ảnh rà soát](docs/ui/issue-7-review.md).
+
 ## Đóng góp
 
 Xem [CONTRIBUTING.md](CONTRIBUTING.md) để biết quy trình làm việc và hướng dẫn tạo pull request. Tất cả người đóng góp cần tuân thủ [Quy tắc ứng xử](CODE_OF_CONDUCT.md).
