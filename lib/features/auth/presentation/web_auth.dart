@@ -33,6 +33,7 @@ class _WebAuthGateState extends State<WebAuthGate> {
   AuthSession? session;
   bool loading = true;
   bool failed = false;
+  int loadAttempt = 0;
   late final JSFunction listener = ((JSString value) {
     if (mounted) _receive(value.toDart);
   }).toJS;
@@ -41,7 +42,8 @@ class _WebAuthGateState extends State<WebAuthGate> {
     final data = jsonDecode(value);
     if (!loading &&
         session?.subject == data?['id'] &&
-        session?.name == data?['name']) {
+        session?.name == data?['name'] &&
+        session?.sessionId == data?['sessionId']) {
       return;
     }
     setState(() {
@@ -54,18 +56,20 @@ class _WebAuthGateState extends State<WebAuthGate> {
   }
 
   Future<void> _load() async {
+    final attempt = ++loadAttempt;
     setState(() {
       loading = true;
       failed = false;
     });
     try {
+      _unwatch(listener);
       final value = await _initialize(ClerkConfig.publishableKey.toJS).toDart
           .timeout(const Duration(seconds: 25));
-      if (!mounted) return;
-      _watch(listener);
+      if (!mounted || attempt != loadAttempt) return;
       _receive(value.toDart);
+      _watch(listener);
     } catch (_) {
-      if (mounted) {
+      if (mounted && attempt == loadAttempt) {
         setState(() {
           loading = false;
           failed = true;
@@ -82,7 +86,11 @@ class _WebAuthGateState extends State<WebAuthGate> {
 
   @override
   void dispose() {
-    _unwatch(listener);
+    try {
+      _unwatch(listener);
+    } catch (_) {
+      // The bridge asset can be unavailable when initialization failed.
+    }
     super.dispose();
   }
 
@@ -116,13 +124,15 @@ class _WebAuthGateState extends State<WebAuthGate> {
     if (session == null) return const _SignInScreen();
     final user = session!;
     return SessionScope(
-      key: ValueKey(user.subject),
+      key: ValueKey((user.subject, user.sessionId)),
       session: user,
       token: ({bool refresh = false}) async {
         try {
           return (await _token(refresh.toJS).toDart
                   .timeout(const Duration(seconds: 15)))
               .toDart;
+        } on TimeoutException {
+          throw const ApiException(0, 'SESSION_TIMEOUT');
         } catch (_) {
           throw const ApiException(401, 'UNAUTHORIZED');
         }

@@ -26,18 +26,20 @@ class ApiException implements Exception {
   const ApiException(this.status, this.code);
   final int status;
   final String code;
-  String get message => code == 'TRACK_ALREADY_EXISTS'
-      ? 'This MP3 is already in your library with different details. Choose a different file.'
-      : switch (status) {
-          401 => 'Your session could not be verified. Please sign in again.',
-          413 => 'The file is too large.',
-          415 => 'This file type or file content is not supported.',
-          429 => 'Too many requests. Please wait a few minutes and try again.',
-          400 => 'Some details are invalid. Check your file and track details.',
-          404 => 'This track or uploaded file is no longer available.',
-          409 => 'This file is being processed. Wait a moment and retry.',
-          _ => 'The service could not complete this request. Check your connection and try again.',
-        };
+  String get message => switch (code) {
+    'TRACK_ALREADY_EXISTS' => 'This MP3 is already in your library with different details. Choose a different file.',
+    'SESSION_TIMEOUT' => 'Opening your library took too long. Check your connection and try again.',
+    _ => switch (status) {
+      401 => 'Your session could not be verified. Please sign in again.',
+      413 => 'The file is too large.',
+      415 => 'This file type or file content is not supported.',
+      429 => 'Too many requests. Please wait a few minutes and try again.',
+      400 => 'Some details are invalid. Check your file and track details.',
+      404 => 'This track or uploaded file is no longer available.',
+      409 => 'This file is being processed. Wait a moment and retry.',
+      _ => 'The service could not complete this request. Check your connection and try again.',
+    },
+  };
 }
 
 class ApiClient {

@@ -14,7 +14,7 @@ SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá và nghe n
 
 ## Công nghệ
 
-Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Web dùng ClerkJS 6 và UI của Clerk; SDK quản lý đăng ký, email verification, khôi phục mật khẩu và phiên. Mã client đã nối API thư viện/upload/playback/yêu thích. Migration và kiểm tra kết nối development đã chạy; nghiệm thu đăng ký và upload/phát bằng tài khoản thật vẫn cần hoàn tất. Native chưa được nghiệm thu với dữ liệu thật.
+Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Web dùng ClerkJS 6 và UI của Clerk; SDK quản lý đăng ký, email verification, khôi phục mật khẩu và phiên. Đã xác minh đăng nhập bằng tài khoản thật, upload MP3/artwork và lưu bài vào Neon development. Playback, yêu thích, đăng ký mới và native vẫn cần nghiệm thu riêng.
 
 ## Ảnh chụp màn hình
 
@@ -42,6 +42,8 @@ Xem [báo cáo issue #5 với dữ liệu demo](docs/ui/issue-5-review.md) và [
 5. Mở `http://localhost:3000`, đăng ký/xác minh email rồi tải MP3 của bạn tại Upload. Library → All uploads hiển thị bài đã lưu; thích bài để thêm vào Liked tracks.
 
 Script chỉ xuất publishable key và API URL vào `.local/web-config.json` đã gitignore; không đưa `.env` backend vào build. Express chỉ phục vụ `build/web`. Secret/database URL luôn ở backend. Xem [cấu hình, kiểm tra và xử lý lỗi Clerk](docs/auth-real-data.md).
+
+Sau đăng nhập, ứng dụng chờ phiên Clerk active và xác minh qua `/api/v1/auth/me` trong tối đa 25 giây; có thể thử lại hoặc đăng xuất khi lỗi. Neon chỉ có hồ sơ `users` sau khi endpoint này trả `200`. Nếu gặp `401` với log `token-audience-missing`, cần sửa claim session trên Clerk; kết nối Neon thành công hoặc chạy lại migration không thay thế bước xác thực này.
 
 Để xem giao diện mẫu có chủ ý: `flutter run -d chrome --dart-define=DEMO_MODE=true`. Thiếu Clerk key trong chế độ thật sẽ hiển thị lỗi cấu hình, không tự chuyển sang dữ liệu giả.
 
@@ -265,7 +267,7 @@ npm run test:smoke
 
 Test PostgreSQL thực chỉ chạy khi `TEST_DATABASE_URL` trỏ tới database test riêng, khác `DATABASE_URL`; nếu chưa có thì test migration sẽ báo `SKIP`. Test này áp dụng migration từ schema rỗng trong transaction, kiểm tra default/ràng buộc và chạy lại migration `002` không mất metadata, sau đó rollback toàn bộ.
 
-Kết quả xác minh ngày **05/11/2026**: `npm test` có **54 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Flutter có **56 test đạt**, analyzer sạch và build Web release thành công. Kết quả smoke và các giới hạn xác minh phải được đọc riêng: kết nối provider thành công hoặc HTTP `401` không chứng minh upload/xóa bằng session Clerk thật đã hoạt động. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
+Kết quả xác minh ngày **05/11/2026**: `npm test` có **56 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Flutter có **57 test đạt**, analyzer sạch và build Web release thành công. Phiên người dùng thật đã nhận `200 /auth/me`, upload audio/artwork và tạo track trả `201`; truy vấn chỉ đọc Neon xác nhận hồ sơ, hai media asset và bài đã lưu. Playback, yêu thích, xóa file và phiên hết hạn bằng tài khoản thật chưa được nghiệm thu. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
 
 ### API thư viện riêng
 

@@ -105,6 +105,16 @@ test("media_assets migrations and constraints", {
     assert.equal((await client.query("SELECT count(*) FROM media_assets")).rows[0].count, "2");
   });
 
+  await t.test("verified-session profile upsert persists one application user across retries", async () => {
+    const repository = createTrackRepository(client);
+    const first = await repository.ensureUser("user_signup_fixture");
+    const retried = await repository.ensureUser("user_signup_fixture");
+    assert.equal(first.id, retried.id);
+    assert.equal(first.clerk_user_id, "user_signup_fixture");
+    const result = await client.query("SELECT count(*)::int AS profiles FROM users WHERE clerk_user_id = $1", ["user_signup_fixture"]);
+    assert.equal(result.rows[0].profiles, 1);
+  });
+
   await t.test("private track constraints enforce ownership and cursor retains timestamp precision", async () => {
     await client.query("INSERT INTO users(clerk_user_id) VALUES ($1),($2)", ["user_fixture", "user_other"]);
     const firstAudio = (await client.query("SELECT id FROM media_assets WHERE public_id=$1", [audio[2]])).rows[0].id;

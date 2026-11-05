@@ -12,12 +12,48 @@ import { createFakes, audioFile } from "./helpers/upload-fixtures.js";
 const keys = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const issuer = "https://fixture.clerk.accounts.dev";
 const clerkOptions = { publishableKey: `pk_test_${Buffer.from("fixture.clerk.accounts.dev$").toString("base64")}`, secretKey: "sk_test_fixture", jwtKey: keys.publicKey.export({ type: "spki", format: "pem" }), issuer, audience: "soundshare-api" };
-const token = (sub = "user_owner") => {
+const token = (sub = "user_owner", claims = {}) => {
   const now = Math.floor(Date.now() / 1000);
-  const parts = [Buffer.from(JSON.stringify({ alg: "RS256", kid: "fixture" })).toString("base64url"), Buffer.from(JSON.stringify({ sub, sid: "sess_fixture", sts: "active", v: 2, iss: issuer, aud: "soundshare-api", iat: now, nbf: now - 5, exp: now + 120 })).toString("base64url")];
+  const parts = [Buffer.from(JSON.stringify({ alg: "RS256", kid: "fixture" })).toString("base64url"), Buffer.from(JSON.stringify({ sub, sid: "sess_fixture", sts: "active", v: 2, iss: issuer, aud: "soundshare-api", iat: now, nbf: now - 5, exp: now + 120, ...claims })).toString("base64url")];
   const input = parts.join(".");
   return `${input}.${sign("RSA-SHA256", Buffer.from(input), keys.privateKey).toString("base64url")}`;
 };
+
+test("login creates the application profile only after full session verification and supports retry", async (t) => {
+  const profiles = new Map();
+  let writes = 0;
+  const repository = {
+    ensureUser: async (owner) => {
+      writes++;
+      if (!profiles.has(owner)) profiles.set(owner, { id: randomUUID(), clerk_user_id: owner });
+      return profiles.get(owner);
+    },
+  };
+  const app = createApp({ clerkOptions, logging: false, trackService: createTrackService({ repository }) });
+  const server = app.listen(0, "127.0.0.1"); await once(server, "listening");
+  t.after(() => new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); }));
+  const currentUser = (jwt) => fetch(`http://127.0.0.1:${server.address().port}/api/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  for (const claims of [{ aud: undefined }, { aud: "another-api" }, { exp: 1 }, { sts: "pending" }]) {
+    const response = await currentUser(token("user_owner", claims));
+    assert.equal(response.status, 401);
+    const json = await response.json();
+    assert.equal(json.error.code, "UNAUTHORIZED");
+    assert.ok(json.error.requestId);
+    assert.equal(writes, 0);
+    assert.equal(profiles.size, 0);
+  }
+  const first = await currentUser(token());
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get("cache-control"), "no-store");
+  const data = (await first.json()).data;
+  assert.deepEqual(data, { id: profiles.get("user_owner").id, clerkUserId: "user_owner" });
+  const retried = await currentUser(token());
+  assert.equal(retried.status, 200);
+  assert.deepEqual((await retried.json()).data, data);
+  assert.equal(profiles.size, 1);
+});
 
 test("private catalog API verifies identity, isolates owners, signs playback and persists likes", async (t) => {
   const rows = new Map(); const likes = new Set(); let calls = 0; let fail = false;
