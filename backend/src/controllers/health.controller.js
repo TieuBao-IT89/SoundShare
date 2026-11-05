@@ -1,6 +1,4 @@
-import { checkDatabaseConnection } from "../config/database.js";
-
-export const getHealth = async (req, res) => {
+export const createHealthController = (checkDatabaseConnection) => async (req, res) => {
   try {
     const database = await checkDatabaseConnection();
 
@@ -19,7 +17,7 @@ export const getHealth = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Health check failed:", error.message);
+    console.error(JSON.stringify({ requestId: req.requestId, code: "HEALTH_DATABASE_UNAVAILABLE" }));
 
     return res.status(503).json({
       success: false,
