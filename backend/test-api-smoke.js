@@ -6,18 +6,20 @@ import cloudinary from "./src/config/cloudinary.js";
 import { createMediaRepository } from "./src/repositories/media.repository.js";
 import { createCloudinaryStorage } from "./src/services/cloudinary-storage.service.js";
 import { createUploadService } from "./src/services/upload.service.js";
+import { createTrackRepository } from "./src/repositories/track.repository.js";
+import { createTrackService } from "./src/services/track.service.js";
 
 if (!["development", "test"].includes(process.env.NODE_ENV)) {
   throw new Error("Run the smoke check only with development or test configuration.");
 }
 
+const storage = createCloudinaryStorage(cloudinary);
+const uploadService = createUploadService({ repository: createMediaRepository(pool), storage });
 const app = createApp({
   logging: false,
   checkDatabaseConnection,
-  uploadService: createUploadService({
-    repository: createMediaRepository(pool),
-    storage: createCloudinaryStorage(cloudinary),
-  }),
+  uploadService,
+  trackService: createTrackService({ repository: createTrackRepository(pool), storage, uploadService }),
 });
 const server = app.listen(0, "127.0.0.1");
 let passed = 0;
@@ -36,6 +38,11 @@ try {
   for (const [method, route, expected] of [
     ["GET", "/health", 200],
     ["GET", "/auth/me", 401],
+    ["GET", "/songs", 401],
+    ["POST", "/songs", 401],
+    ["GET", `/songs/${id}/playback`, 401],
+    ["PUT", `/songs/${id}/favorite`, 401],
+    ["DELETE", `/songs/${id}/favorite`, 401],
     ["POST", "/uploads/artwork", 401],
     ["POST", "/uploads/audio", 401],
     ["GET", `/uploads/${id}/access`, 401],
@@ -61,6 +68,11 @@ try {
       const table = await pool.query("SELECT to_regclass($1) IS NOT NULL AS exists", ["public.media_assets"]);
       const migration = await pool.query("SELECT filename FROM schema_migrations WHERE filename = $1", ["002_create_media_assets.sql"]);
       return table.rows[0].exists && migration.rowCount === 1;
+    }],
+    ["Neon private tracks/favorites and migration 003", async () => {
+      const tables = await pool.query("SELECT to_regclass($1) IS NOT NULL AND to_regclass($2) IS NOT NULL AS ready", ["public.private_tracks", "public.private_track_favorites"]);
+      const migration = await pool.query("SELECT filename FROM schema_migrations WHERE filename = $1", ["003_private_tracks.sql"]);
+      return tables.rows[0].ready && migration.rowCount === 1;
     }],
   ];
   const results = await Promise.allSettled(checks.map(([, check]) => check()));

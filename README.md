@@ -265,7 +265,7 @@ npm run test:smoke
 
 Test PostgreSQL thực chỉ chạy khi `TEST_DATABASE_URL` trỏ tới database test riêng, khác `DATABASE_URL`; nếu chưa có thì test migration sẽ báo `SKIP`. Test này áp dụng migration từ schema rỗng trong transaction, kiểm tra default/ràng buộc và chạy lại migration `002` không mất metadata, sau đó rollback toàn bộ.
 
-Kết quả xác minh ngày **05/11/2026**: `npm test` có **54 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **9 kiểm tra đạt, 0 lỗi** với cấu hình development. Flutter có **56 test đạt**, analyzer sạch và build Web release thành công. Kết quả smoke và các giới hạn xác minh phải được đọc riêng: kết nối provider thành công hoặc HTTP `401` không chứng minh upload/xóa bằng session Clerk thật đã hoạt động. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
+Kết quả xác minh ngày **05/11/2026**: `npm test` có **54 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Flutter có **56 test đạt**, analyzer sạch và build Web release thành công. Kết quả smoke và các giới hạn xác minh phải được đọc riêng: kết nối provider thành công hoặc HTTP `401` không chứng minh upload/xóa bằng session Clerk thật đã hoạt động. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
 
 ### API thư viện riêng
 
