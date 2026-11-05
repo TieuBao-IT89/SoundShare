@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "migrate": "node src/database/migrate.js"
+    "migrate": "node src/database/migrate.js",
+    "test": "node --test test/*.test.js",
+    "test:smoke": "node test-api-smoke.js",
+    "test:media-assets": "node --test test/media-assets.test.js"
   },
   "keywords": [],
   "author": "",

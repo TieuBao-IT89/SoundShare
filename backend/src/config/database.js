@@ -18,8 +18,8 @@ export const pool = new Pool({
 });
 
 // Handle unexpected connection errors
-pool.on("error", (error) => {
-  console.error("Unexpected PostgreSQL pool error:", error.message);
+pool.on("error", () => {
+  console.error("Unexpected PostgreSQL pool error; connection details omitted.");
 });
 
 // Reusable query function

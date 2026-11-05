@@ -6,8 +6,8 @@ Sản phẩm: SoundShare
 Nền tảng ứng dụng: Flutter (mobile)
 Backend: Node.js + Express, cung cấp REST API
 Cơ sở dữ liệu: Neon PostgreSQL
-Authentication: dịch vụ xác thực độc lập, provider sẽ được chọn riêng
-Cloud Storage: dịch vụ lưu trữ object độc lập, provider sẽ được chọn riêng
+Authentication: Clerk, dịch vụ xác thực độc lập
+Cloud Storage: Cloudinary, dịch vụ lưu trữ file độc lập
 
 1. Tổng quan sản phẩm
    SoundShare là ứng dụng âm nhạc hướng đến trải nghiệm khám phá, nghe và chia sẻ âm nhạc. Ứng dụng tập trung đưa việc nghe nhạc từ một hoạt động cá nhân thành trải nghiệm có thể khám phá và chia sẻ với người khác.
@@ -20,7 +20,7 @@ PRD này mô tả mục tiêu sản phẩm, người dùng, phạm vi chức nă
 - Ứng dụng Flutter chỉ giao tiếp với backend Node.js/Express qua REST API HTTPS; Flutter không kết nối trực tiếp đến Neon PostgreSQL.
 - Backend Express xác thực access token từ dịch vụ Authentication độc lập, áp dụng nghiệp vụ và phân quyền, rồi mới truy cập Neon.
 - Audio và artwork được lưu tại Cloud Storage độc lập. Neon chỉ lưu metadata, trạng thái và object key; không lưu nội dung nhị phân của file.
-- Provider cụ thể cho Authentication và Cloud Storage cần được quyết định trước khi triển khai tích hợp. Hiện tại ứng dụng vẫn dùng dữ liệu mẫu; các tích hợp này chưa được xem là đã hoàn thành.
+- Provider đã chọn là Clerk cho Authentication và Cloudinary cho Cloud Storage. Flutter vẫn dùng dữ liệu mẫu; việc chọn provider và bổ sung schema không đồng nghĩa luồng upload đã hoàn thành.
 - Chuỗi kết nối Neon chỉ tồn tại trong môi trường backend dưới dạng secret, không được gửi tới ứng dụng Flutter, repository, log hay phản hồi API.
 1.1 Tuyên bố sản phẩm
 Giúp người yêu âm nhạc dễ dàng khám phá, nghe, lưu trữ và chia sẻ trải nghiệm âm nhạc trong một ứng dụng có giao diện trực quan, nhất quán và thuận tiện trên thiết bị di động.
@@ -265,12 +265,14 @@ MVP nên ưu tiên các luồng cốt lõi:
 1. Người dùng mở Upload.
 1. Chọn file âm thanh được hỗ trợ.
 1. Nhập hoặc xác nhận metadata bắt buộc.
-1. Ứng dụng gửi metadata và thuộc tính file tới `POST /api/v1/uploads` cùng access token.
-1. Express xác thực token, kiểm tra quyền và validation, tạo upload intent rồi trả URL ký có thời hạn.
-1. Ứng dụng tải file trực tiếp lên Cloud Storage bằng URL ký và hiển thị tiến trình.
-1. Ứng dụng gọi `POST /api/v1/uploads/{uploadId}/complete`; backend kiểm tra object thực tế, owner, loại và kích thước.
-1. Backend ghi metadata vào Neon và trả trạng thái hoàn tất; chỉ lúc này ứng dụng mới báo thành công.
-1. Nếu bước nào thất bại, ứng dụng hiển thị lỗi phù hợp và cho phép thử lại an toàn; không tạo song khả dụng từ upload chưa xác minh.
+1. API backend hiện nhận đúng một file trong trường `file` bằng multipart tại `POST /api/v1/uploads/audio` hoặc `/artwork`, cùng Clerk session token dạng Bearer. Flutter chưa được nối vào các endpoint này.
+1. Express xác minh chữ ký, issuer, audience, hạn token và session; lấy owner từ subject đã xác minh, kiểm tra metadata/file và giới hạn request.
+1. Backend sinh object key từ SHA-256 của owner, loại media và nội dung; dùng khóa transaction PostgreSQL để ngăn hai request đồng thời hoàn tất cùng asset.
+1. Express upload file tới Cloudinary với `type: authenticated`, `overwrite: false`, rồi đọc lại object để xác minh public ID, loại, format và dung lượng.
+1. Backend ghi `media_assets` trong transaction Neon và trả metadata cùng URL đọc hết hạn sau 5 phút; response chỉ được gửi thành công sau khi transaction commit.
+1. Gửi lại cùng file cho cùng owner/loại media trả lại cùng asset; người khác có asset riêng. Request trùng đang xử lý trả `409 UPLOAD_IN_PROGRESS` để retry.
+1. Nếu Neon lỗi, backend chỉ xóa object khi đã xác nhận chưa có metadata. Trạng thái không xác định giữ object private và cho phép đối soát khi retry; lỗi cleanup phát sự kiện an toàn. Worker dọn object mồ côi định kỳ chưa được triển khai.
+1. Luồng này tạo media asset, chưa tạo song/catalog hoặc công khai nội dung. Upload intent và client upload trực tiếp bằng URL ký ở FR-12 là hướng mở rộng, chưa có endpoint thực thi.
    6.5 Luồng xác thực và gọi API riêng tư
 1. Người dùng đăng nhập hoặc đăng ký qua Authentication provider độc lập.
 1. Provider trả access token và refresh token theo chính sách của provider.
@@ -338,6 +340,28 @@ MVP nên ưu tiên các luồng cốt lõi:
 
 Đây là mô hình khái niệm. Mọi thay đổi schema phải đi kèm migration có phiên bản và cập nhật API contract.
 
+Schema bổ sung ở bước 6 — `media_assets`
+
+Migration `002_create_media_assets.sql` tạo bảng metadata cho file trên Cloudinary:
+
+| Cột | Kiểu dữ liệu | Ràng buộc / ý nghĩa |
+|---|---|---|
+| `id` | `UUID` | Khóa chính, mặc định `gen_random_uuid()`. |
+| `clerk_user_id` | `TEXT` | Bắt buộc; chủ sở hữu từ identity Clerk đã được backend xác minh. Không có khóa ngoại tới `users` vì đồng bộ hồ sơ có thể chưa hoàn thiện. |
+| `media_type` | `VARCHAR(20)` | Bắt buộc, chỉ `artwork` hoặc `audio`. |
+| `public_id` | `TEXT` | Bắt buộc và duy nhất; object key Cloudinary dùng khi quản lý/xóa file. |
+| `secure_url` | `TEXT` | Bắt buộc; URL HTTPS của file từ kết quả upload Cloudinary, không lưu URL ký tạm thời. |
+| `resource_type` | `VARCHAR(20)` | Bắt buộc, chỉ `image` hoặc `video`; luồng dự kiến dùng `image` cho artwork và `video` cho audio. |
+| `format` | `VARCHAR(20)` | Định dạng file, có thể chưa có. |
+| `bytes` | `BIGINT` | Bắt buộc và không âm; dung lượng file, không phải nội dung nhị phân. |
+| `original_filename` | `TEXT` | Tên file ban đầu, có thể chưa có. |
+| `mime_type` | `VARCHAR(100)` | MIME type, có thể chưa có. |
+| `created_at` | `TIMESTAMPTZ` | Bắt buộc, mặc định `NOW()`. |
+
+Index hỗ trợ lọc theo `clerk_user_id`, `media_type` và sắp xếp `created_at DESC`. Backend phải lấy owner từ token đã xác minh, kiểm tra quyền trên từng asset và dùng `public_id` cùng `resource_type` khi thao tác Cloudinary. `secure_url` lưu trong bảng không tự cấp quyền đọc file; URL truy cập có thời hạn vẫn phải được phát hành theo chính sách visibility/quyền.
+
+Bước 6 bổ sung schema. Backend bước 7 bổ sung Cloudinary Upload Service và API multipart theo contract bên dưới. Kiểm thử tự động dùng Neon/Cloudinary giả lập và middleware Clerk thật với khóa test; không suy ra rằng Flutter hoặc phiên Clerk thật đã được kiểm tra end-to-end.
+
    8.2 Nguồn dữ liệu và ranh giới dịch vụ
 
 - Flutter dùng mock repository cho tới khi backend REST API được triển khai; UI không kết nối trực tiếp Neon.
@@ -358,20 +382,55 @@ MVP nên ưu tiên các luồng cốt lõi:
 
    8.4 REST API đề xuất
 
-Base URL: `/api/v1`. Tất cả endpoint dùng HTTPS và JSON, trừ thao tác truyền file trực tiếp tới URL ký của Cloud Storage. API trả lỗi theo cấu trúc ổn định:
+Base URL: `/api/v1`. Production dùng HTTPS. Endpoint thông thường dùng JSON; API upload media hiện dùng multipart qua Express. Luồng truyền file trực tiếp tới URL ký của Cloud Storage vẫn là đề xuất. API trả lỗi theo cấu trúc ổn định:
 
-The current Clerk integration also exposes `GET /api/v1/auth/me`. It requires a verified Clerk session token in the `Authorization: Bearer <session-token>` header and returns the authenticated Clerk user ID; it does not query or synchronize a user profile in Neon.
+Clerk integration có `GET /api/v1/auth/me`, yêu cầu Clerk session token đã xác minh trong header `Authorization: Bearer <session-token>` và trả Clerk user ID; không truy vấn hoặc đồng bộ hồ sơ Neon. Các API riêng tư chỉ nhận Bearer session token, kiểm tra issuer khớp publishable key của instance và bắt buộc `aud` khớp `CLERK_AUDIENCE` (mặc định `soundshare-api`), cùng chữ ký, hạn và session của token. Trong Clerk Dashboard cần thêm audience tương ứng tại Sessions → Customize session token. Không dùng API key hoặc token máy thay session token.
 
 ```json
 {
+  "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "Thông tin gửi lên chưa hợp lệ.",
-    "details": [],
     "requestId": "..."
   }
 }
 ```
+
+API media đã có trong mã backend (mọi đường dẫn bên dưới có prefix `/api/v1`):
+
+| Method và endpoint | Request | Thành công / quyền |
+|---|---|---|
+| `POST /uploads/artwork` | Multipart, đúng một trường `file`; không text field/query. JPG/JPEG (`image/jpeg`), PNG (`image/png`), WebP (`image/webp`), tối đa 5 × 1024 × 1024 byte. | `201` khi tạo asset; `200` khi retry cùng nội dung và loại media của cùng owner. |
+| `POST /uploads/audio` | Multipart, đúng một trường `file`; không text field/query. Chỉ MP3 (`audio/mpeg`), tối đa 20 × 1024 × 1024 byte. | `201`/`200` như artwork; Cloudinary dùng `resource_type: video`. |
+| `GET /uploads/{assetId}/access` | UUID hợp lệ, không query; Bearer token của owner. | `200` trả URL đọc mới. Asset không tồn tại hoặc của người khác trả cùng `404 MEDIA_NOT_FOUND`, không tiết lộ metadata. |
+| `DELETE /uploads/{assetId}` | UUID từ response upload; không body/query; Clerk Bearer session token của owner. | `204 No Content` sau khi Cloudinary xác nhận xóa và metadata Neon đã commit. Không có JSON response thành công. |
+
+Response thành công cho upload/access: `{ "success": true, "data": { "id": "UUID", "mediaType": "artwork|audio", "resourceType": "image|video", "format": "jpg|png|webp|mp3", "bytes": 1234, "originalFilename": "...", "mimeType": "...", "createdAt": "ISO8601", "access": { "url": "HTTPS URL", "expiresAt": "ISO8601" } } }`. `bytes` là JSON number trong giới hạn file trên. Không trả secret hoặc owner của người khác. Tên file tối đa 255 ký tự, không chứa path/control character; tên lưu theo lần tạo đầu tiên khi cùng nội dung được gửi lại.
+
+Asset Cloudinary dùng `type: authenticated`; URL đọc được ký bằng `private_download_url`, TTL 300 giây, không được lưu trong Neon hoặc log. Response có `Cache-Control: no-store`. Backend kiểm tra phần mở rộng, MIME và magic bytes, sau đó Cloudinary xác nhận format/bytes/public ID và object tồn tại trước khi ghi Neon. Object key hoàn toàn do server sinh. SQL tham số hóa, khóa advisory trong transaction tương thích pooled connection; không có migration schema mới cho API này.
+
+Luồng DELETE: backend lọc theo UUID và owner từ identity đã xác minh, lấy khóa transaction theo `public_id` dùng chung với upload, rồi đọc lại UUID/owner dưới khóa. Không nhận `public_id`, `resource_type` hoặc owner từ client. Cloudinary `destroy` dùng object key/resource type từ metadata, `type: authenticated` và `invalidate: true`. Chỉ kết quả `ok`/`not found` mới cho phép xóa metadata Neon và commit trước khi trả `204`.
+
+Asset không tồn tại, đã bị xóa hoặc thuộc người khác đều trả `404 MEDIA_NOT_FOUND`, không gọi Cloudinary. Retry không xóa asset mới có UUID khác dù upload lại cùng nội dung và tái sử dụng public ID. Không cung cấp bulk delete hoặc xóa theo URL/public ID tùy ý.
+
+Cloudinary lỗi thì giữ metadata và trả `502 STORAGE_DELETE_FAILED`. Nếu Cloudinary đã xóa nhưng Neon/commit lỗi, trả `503 DATABASE_UNAVAILABLE` và ghi sự kiện an toàn `MEDIA_DELETE_RECONCILIATION_REQUIRED`; retry DELETE cùng UUID có thể hoàn tất khi Cloudinary trả `not found`. Nếu commit đã thành công nhưng mất phản hồi, retry trả `404`. Chưa có worker đối soát tự động; lỗi một phần có thể để metadata trỏ tới file đã xóa. Transaction PostgreSQL không thể rollback thao tác xóa trên Cloudinary. `invalidate: true` yêu cầu dọn cache CDN nhưng không cam kết thu hồi cache tức thời. Kiểm thử luồng xóa dùng Cloudinary/Neon giả lập, chưa xác minh xóa bằng phiên Clerk thật.
+
+Lỗi media ổn định:
+
+| HTTP | Error code | Tình huống |
+|---|---|---|
+| `400` | `FILE_REQUIRED`, `INVALID_FILE`, `INVALID_MULTIPART`, `VALIDATION_ERROR` | Thiếu file, metadata/tên không hợp lệ, multipart sai, field thừa, UUID/query hoặc body DELETE sai. |
+| `401` | `UNAUTHORIZED` | Thiếu/sai/hết hạn token, chữ ký/issuer/audience/session không hợp lệ. |
+| `404` | `MEDIA_NOT_FOUND` | Không tìm thấy asset trong phạm vi owner, kể cả đã xóa hoàn tất. |
+| `409` | `UPLOAD_IN_PROGRESS`, `MEDIA_BUSY` | Cùng asset đang upload/xóa; thử lại sau. `MEDIA_BUSY` dùng cho DELETE. |
+| `413` | `FILE_TOO_LARGE` | File/request vượt giới hạn upload. |
+| `415` | `INVALID_FILE_TYPE` | MIME, phần mở rộng hoặc nội dung không khớp định dạng cho phép. |
+| `429` | `RATE_LIMITED` | Vượt giới hạn request, có `Retry-After`. |
+| `502` | `STORAGE_UNAVAILABLE`, `STORAGE_VERIFICATION_FAILED`, `STORAGE_DELETE_FAILED` | Cloudinary lỗi, object/metadata không khớp hoặc chưa xác nhận xóa. |
+| `503` | `DATABASE_UNAVAILABLE`, `UPLOAD_BUSY` | Neon lỗi hoặc hết slot upload; `UPLOAD_BUSY` có `Retry-After`. |
+
+Mọi lỗi có `error.requestId` và header `X-Request-Id`, không trả lỗi driver/provider. Giới hạn hiện tại: 10 upload/15 phút/user, 20 lần xóa/15 phút/user, 60 request/15 phút/user cho upload/access/delete, 120 request/15 phút/IP cho API riêng tư và 4 upload đang xử lý/process. Limiter dùng bộ nhớ trong một process; triển khai nhiều instance cần kho giới hạn chung và cấu hình proxy tin cậy. Lỗi cleanup/đối soát phát mã sự kiện và request ID, không log token, dữ liệu file, tên người dùng hay URL ký.
 
 Các endpoint cho giai đoạn backend:
 
@@ -388,7 +447,7 @@ Các endpoint cho giai đoạn backend:
 | `GET /me/uploads?cursor=&limit=` | Có | Xem trạng thái các upload của người dùng hiện tại. |
 | `POST /uploads` | Có | Validate metadata và tạo upload intent; trả `uploadId`, URL ký, method/header cần thiết và thời điểm hết hạn. |
 | `POST /uploads/{uploadId}/complete` | Có | Xác minh object đã nhận rồi hoàn tất upload và tạo song metadata. |
-| `DELETE /uploads/{uploadId}` | Có, owner | Hủy upload đang chờ và dọn object tạm nếu có. |
+| `DELETE /upload-intents/{uploadId}` | Có, owner | Đề xuất cho giai đoạn sau: hủy upload intent đang chờ; tách khỏi DELETE media asset đã hoàn tất. |
 
 Đăng ký, đăng nhập, refresh và logout thuộc Authentication provider độc lập, không phải endpoint xử lý mật khẩu của Express. API có thể bổ sung endpoint sau khi thống nhất provider, schema và chính sách quyền.
 
