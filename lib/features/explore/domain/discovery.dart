@@ -12,6 +12,14 @@ class DiscoveryFilters {
   final String query;
   final String? genre;
   final String? collectionId;
+  @override
+  bool operator ==(Object other) =>
+      other is DiscoveryFilters &&
+      other.query == query &&
+      other.genre == genre &&
+      other.collectionId == collectionId;
+  @override
+  int get hashCode => Object.hash(query, genre, collectionId);
 
   bool get isActive =>
       query.isNotEmpty || genre != null || collectionId != null;

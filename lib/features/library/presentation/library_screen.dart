@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/config/app_mode.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
@@ -15,9 +16,10 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
-  bool samples = false;
+  bool? showAll;
   @override
   Widget build(BuildContext context) {
+    final samples = showAll ?? !ref.watch(demoModeProvider);
     final liked = ref.watch(likedSongIndicesProvider);
     return AppScaffold(
       child: ListView(
@@ -60,8 +62,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Saved for this listening session',
+                      Text(
+                        ref.watch(demoModeProvider)
+                            ? 'Saved for this listening session'
+                            : 'Saved to your account',
                         style: TextStyle(color: AppColors.muted, height: 1.4),
                       ),
                     ],
@@ -78,12 +82,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ChoiceChip(
                 label: const Text('Liked tracks'),
                 selected: !samples,
-                onSelected: (_) => setState(() => samples = false),
+                onSelected: (_) => setState(() => showAll = false),
               ),
               ChoiceChip(
-                label: const Text('Sample catalog'),
+                label: Text(
+                  ref.watch(demoModeProvider)
+                      ? 'Sample catalog'
+                      : 'All uploads',
+                ),
                 selected: samples,
-                onSelected: (_) => setState(() => samples = true),
+                onSelected: (_) => setState(() => showAll = true),
               ),
             ],
           ),
@@ -102,7 +110,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     return EmptyState(
                       icon: Icons.favorite_border_rounded,
                       title: samples
-                          ? 'No sample tracks yet'
+                          ? (ref.watch(demoModeProvider)
+                                ? 'No sample tracks yet'
+                                : 'No uploads yet')
                           : 'Find your first favorite',
                       message:
                           'Tap the heart in the player to keep a track here.',
@@ -119,8 +129,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 },
               ),
           const SizedBox(height: 24),
-          const Text(
-            'Likes are kept during this session. Playlists and library sync are coming later.',
+          Text(
+            ref.watch(demoModeProvider)
+                ? 'Likes are kept during this session. Playlists and library sync are coming later.'
+                : 'Your uploads and likes are saved to your account. Files stay private.',
             style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.5),
           ),
         ],

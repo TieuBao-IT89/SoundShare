@@ -2,6 +2,9 @@ import { HttpError } from "../utils/http-error.js";
 
 export const createMediaRepository = (pool) => {
   const queries = (client) => ({
+    isReferencedByTrack: async (id, owner) => (await client.query(
+      "SELECT EXISTS(SELECT 1 FROM private_tracks WHERE clerk_user_id = $2 AND (audio_asset_id = $1 OR artwork_asset_id = $1)) AS used", [id, owner],
+    )).rows[0].used,
     findById: async (id, userId) => {
       const result = await client.query(
         "SELECT * FROM media_assets WHERE id = $1 AND clerk_user_id = $2",

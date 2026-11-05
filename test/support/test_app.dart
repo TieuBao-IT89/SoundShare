@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:soundshare/app/app.dart';
+import 'package:soundshare/core/config/app_mode.dart';
 import 'package:soundshare/core/services/audio_service.dart';
 import 'package:soundshare/features/home/application/catalog_provider.dart';
 import 'package:soundshare/features/home/data/mock_song_repository.dart';
@@ -79,7 +80,7 @@ class TestPlayer extends Fake implements AudioPlayer {
   }
 }
 
-class TestRepository implements SongRepository {
+class TestRepository extends SongRepository {
   TestRepository(this.load);
   final Future<List<Song>> Function() load;
   @override
@@ -125,6 +126,7 @@ Future<ProviderContainer> showApp(
   final router = createAppRouter(initialLocation: route);
   final container = ProviderContainer(
     overrides: [
+      demoModeProvider.overrideWithValue(true),
       audioPlayerProvider.overrideWithValue(audio),
       if (repository != null)
         songRepositoryProvider.overrideWithValue(repository),
@@ -139,7 +141,7 @@ Future<ProviderContainer> showApp(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: SoundShareApp(router: router),
+      child: SoundShareApp(router: router, authenticationRequired: false),
     ),
   );
   await tester.pump();

@@ -110,6 +110,9 @@ export const createUploadService = ({ repository, storage, report = (event) => c
           if (current.public_id !== initial.public_id) {
             throw new HttpError(409, "MEDIA_BUSY", "This asset is being changed. Retry shortly.");
           }
+          if (await records.isReferencedByTrack(id, userId)) {
+            throw new HttpError(409, "MEDIA_IN_USE", "This file is used by a saved track.");
+          }
           try {
             // Storage accepts both a confirmed deletion and an already missing file.
             await storage.remove(current.public_id, current.resource_type);

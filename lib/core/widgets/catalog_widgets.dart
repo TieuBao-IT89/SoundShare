@@ -74,7 +74,7 @@ class CatalogLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     liveRegion: true,
-    label: 'Loading sample catalog',
+    label: 'Loading music library',
     child: ExcludeSemantics(
       child: Column(
         children: [

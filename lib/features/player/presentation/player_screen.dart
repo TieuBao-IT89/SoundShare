@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/services/audio_service.dart';
+import '../../../core/config/app_mode.dart';
 import '../../../core/widgets/artwork.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
@@ -111,7 +112,25 @@ class PlayerScreen extends ConsumerWidget {
                                 tooltip: liked
                                     ? 'Remove from liked songs'
                                     : 'Like song',
-                                onPressed: () {
+                                onPressed: () async {
+                                  try {
+                                    await ref
+                                        .read(songRepositoryProvider)
+                                        .favorite(song, !liked);
+                                  } catch (_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Your like could not be saved. Please retry.',
+                                              ),
+                                            ),
+                                          );
+                                    }
+                                    return;
+                                  }
+                                  if (!context.mounted) return;
                                   final likes = {
                                     ...ref.read(likedSongIndicesProvider),
                                   };
@@ -353,8 +372,10 @@ class PlayerScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          'Sample catalog · Demo audio',
+                        Text(
+                          ref.watch(demoModeProvider)
+                              ? 'Sample catalog · Demo audio'
+                              : 'Your private music library',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.muted,

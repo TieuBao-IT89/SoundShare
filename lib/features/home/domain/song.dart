@@ -1,5 +1,7 @@
 class Song {
   const Song({
+    this.id,
+    this.liked = false,
     required this.title,
     required this.artist,
     required this.artwork,
@@ -10,6 +12,20 @@ class Song {
   });
 
   final String title;
+  final String? id;
+  final bool liked;
+  String get identity => id ?? '$title|$artist';
+
+  factory Song.fromJson(Map<String, dynamic> data) => Song(
+    id: data['id'] as String,
+    title: data['title'] as String,
+    artist: data['artist'] as String,
+    genre: data['genre'] as String,
+    artwork: (data['artwork']?['url'] as String?) ?? '',
+    duration: '--:--',
+    audioUrl: '',
+    liked: data['liked'] == true,
+  );
   final String artist;
   final String artwork;
   final String duration;

@@ -11,10 +11,12 @@ class SampleCollectionTile extends StatelessWidget {
     required this.collection,
     required this.songs,
     required this.onTap,
+    this.sample = true,
   });
   final SampleCollection collection;
   final List<Song> songs;
   final VoidCallback onTap;
+  final bool sample;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +63,7 @@ class SampleCollectionTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${matches.length} sample ${matches.length == 1 ? 'track' : 'tracks'}',
+                        '${matches.length} ${sample ? 'sample ' : ''}${matches.length == 1 ? 'track' : 'tracks'}',
                         style: const TextStyle(
                           color: AppColors.mint,
                           fontSize: 12,

@@ -14,6 +14,7 @@ final audioPlayerProvider = Provider<AudioPlayer>((ref) {
 });
 
 final currentSongIndexProvider = StateProvider<int>((ref) => 0);
+final selectedSongProvider = StateProvider<Song?>((ref) => null);
 final hasSelectedSongProvider = StateProvider<bool>((ref) => false);
 final playbackLoadingProvider = StateProvider<bool>((ref) => false);
 final playbackErrorProvider = StateProvider<String?>((ref) => null);
@@ -21,13 +22,29 @@ final shuffleEnabledProvider = StateProvider<bool>((ref) => false);
 final repeatEnabledProvider = StateProvider<bool>((ref) => false);
 
 final currentSongProvider = Provider<Song?>((ref) {
-  final songs = ref.watch(catalogProvider).asData?.value ?? const <Song>[];
+  final songs = ref.watch(catalogProvider).valueOrNull ?? const <Song>[];
+  final selected = ref.watch(selectedSongProvider);
+  if (selected != null) {
+    for (final song in songs) {
+      if (song.identity == selected.identity) return song;
+    }
+    return selected;
+  }
   if (songs.isEmpty) return null;
   return songs[ref.watch(currentSongIndexProvider) % songs.length];
 });
 
 final playbackActionsProvider = Provider<PlaybackActions>((ref) {
   final actions = PlaybackActions(ref);
+  ref.listen(catalogProvider, (_, next) {
+    final selected = ref.read(selectedSongProvider);
+    final songs = next.asData?.value;
+    if (selected == null || songs == null) return;
+    final index = songs.indexWhere(
+      (song) => song.identity == selected.identity,
+    );
+    if (index >= 0) ref.read(currentSongIndexProvider.notifier).state = index;
+  });
   ref.onDispose(() => actions._disposed = true);
   return actions;
 });
@@ -35,7 +52,8 @@ final playbackActionsProvider = Provider<PlaybackActions>((ref) {
 class PlaybackActions {
   PlaybackActions(this.ref);
   final Ref ref;
-  int? _loadedIndex;
+  String? _loadedId;
+  DateTime? _loadedAt;
   int _request = 0;
   bool _disposed = false;
 
@@ -50,17 +68,31 @@ class PlaybackActions {
     final songs = ref.read(catalogProvider).asData?.value ?? const <Song>[];
     if (songs.isEmpty) return;
     final selected = index % songs.length;
+    final song = songs[selected];
+    final retry = ref.read(playbackErrorProvider) != null;
     final request = ++_request;
     final player = ref.read(audioPlayerProvider);
     ref.read(currentSongIndexProvider.notifier).state = selected;
+    ref.read(selectedSongProvider.notifier).state = song;
     ref.read(hasSelectedSongProvider.notifier).state = true;
     ref.read(playbackLoadingProvider.notifier).state = true;
     ref.read(playbackErrorProvider.notifier).state = null;
     try {
-      if (_loadedIndex != selected || player.audioSource == null) {
-        await player.setUrl(songs[selected].audioUrl);
+      if (_loadedId != song.identity ||
+          player.audioSource == null ||
+          retry ||
+          (_loadedAt != null &&
+              DateTime.now().difference(_loadedAt!) >
+                  const Duration(minutes: 4))) {
+        final resumeAt = _loadedId == song.identity
+            ? player.position
+            : Duration.zero;
+        final url = await ref.read(songRepositoryProvider).playback(song);
         if (_disposed || request != _request) return;
-        _loadedIndex = selected;
+        await player.setUrl(url, initialPosition: resumeAt);
+        if (_disposed || request != _request) return;
+        _loadedId = song.identity;
+        _loadedAt = DateTime.now();
       }
       if (player.processingState == ProcessingState.completed) {
         await player.seek(Duration.zero);
@@ -69,7 +101,7 @@ class PlaybackActions {
       ref.read(playbackLoadingProvider.notifier).state = false;
       unawaited(player.play().catchError((Object _) => _error(request)));
     } catch (_) {
-      _loadedIndex = null;
+      _loadedId = null;
       _error(request);
     }
   }

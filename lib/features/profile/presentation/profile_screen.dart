@@ -1,10 +1,11 @@
-import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
-import '../../../core/config/clerk_config.dart';
+import '../../../core/config/app_mode.dart';
+import '../../../core/services/api_client.dart';
+import '../../../core/services/audio_service.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../home/application/catalog_provider.dart';
@@ -14,20 +15,12 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!ClerkConfig.isConfigured) return _profile(context, ref);
-    return ClerkAuthBuilder(
-      builder: (context, auth) {
-        final user = auth.user;
-        return _profile(
-          context,
-          ref,
-          name: user == null
-              ? null
-              : user.hasName
-              ? user.name
-              : user.username ?? 'Music lover',
-        );
-      },
+    return _profile(
+      context,
+      ref,
+      name: ref.watch(demoModeProvider)
+          ? null
+          : ref.watch(authSessionProvider)?.name,
     );
   }
 
@@ -64,7 +57,7 @@ class ProfileScreen extends ConsumerWidget {
           Text(
             name == null
                 ? 'You are exploring the sample catalog. Your likes stay in this session.'
-                : 'Welcome back. Your likes in this preview stay in this session.',
+                : 'Your uploads and likes are saved to your private account.',
             style: const TextStyle(color: AppColors.muted, height: 1.5),
           ),
           const SizedBox(height: 26),
@@ -86,7 +79,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           const Text(
-            'Profile editing, uploads and follower counts will appear when account features are ready.',
+            'Upload your own MP3s and artwork from Home. Your music stays private; public profiles and followers are not enabled.',
             style: TextStyle(color: AppColors.muted, height: 1.5),
           ),
           const SizedBox(height: 28),
@@ -98,6 +91,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
+          if (!ref.watch(demoModeProvider)) const _SignOutButton(),
           const Text(
             'SOUNDSHARE',
             style: TextStyle(
@@ -115,4 +109,41 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _SignOutButton extends ConsumerStatefulWidget {
+  const _SignOutButton();
+  @override
+  ConsumerState<_SignOutButton> createState() => _SignOutButtonState();
+}
+
+class _SignOutButtonState extends ConsumerState<_SignOutButton> {
+  bool busy = false;
+  @override
+  Widget build(BuildContext context) => OutlinedButton(
+    onPressed: busy
+        ? null
+        : () async {
+            setState(() => busy = true);
+            try {
+              try {
+                await ref.read(audioPlayerProvider).pause();
+              } catch (_) {
+                /* The session still needs to close. */
+              }
+              await ref.read(signOutProvider)();
+            } catch (_) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Sign out failed. Please retry.'),
+                  ),
+                );
+              }
+            } finally {
+              if (mounted) setState(() => busy = false);
+            }
+          },
+    child: Text(busy ? 'Signing out…' : 'Đăng xuất'),
+  );
 }
