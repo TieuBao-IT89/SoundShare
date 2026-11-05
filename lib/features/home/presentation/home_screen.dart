@@ -7,6 +7,8 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
+import '../../explore/domain/discovery.dart';
+import '../../explore/presentation/sample_collection_tile.dart';
 import '../application/catalog_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -89,6 +91,25 @@ class HomeScreen extends ConsumerWidget {
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text('Listen to this track'),
                     ),
+                    const SizedBox(height: 28),
+                    SectionHeading(
+                      'Take a different turn',
+                      actionLabel: 'Browse all',
+                      onAction: () => context.go('/explore'),
+                    ),
+                    const Text(
+                      'Sample collections · Grouped by genre',
+                      style: TextStyle(color: AppColors.muted, fontSize: 12),
+                    ),
+                    for (final collection in sampleCollections)
+                      SampleCollectionTile(
+                        collection: collection,
+                        songs: songs,
+                        onTap: () => context.go(
+                          DiscoveryFilters(collectionId: collection.id)
+                              .location,
+                        ),
+                      ),
                     const SizedBox(height: 28),
                     SectionHeading(
                       'Keep discovering',

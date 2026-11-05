@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/config/clerk_config.dart';
 import '../features/auth/presentation/backend_auth_bootstrap.dart';
+import '../features/explore/domain/discovery.dart';
 import '../features/explore/presentation/explore_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/library/presentation/library_screen.dart';
@@ -20,7 +21,8 @@ GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/explore',
-      builder: (context, state) => const ExploreScreen(),
+      builder: (context, state) =>
+          ExploreScreen(filters: DiscoveryFilters.fromUri(state.uri)),
     ),
     GoRoute(path: '/player', builder: (context, state) => const PlayerScreen()),
     GoRoute(path: '/upload', builder: (context, state) => const UploadScreen()),

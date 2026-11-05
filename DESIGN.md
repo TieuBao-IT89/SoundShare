@@ -62,3 +62,13 @@ Giữ bảng màu và Roboto hiện có. Ý tưởng chung là một phòng nghe
 Quy tắc mobile: nội dung cuộn được khi mở bàn phím hoặc tăng cỡ chữ; vùng chạm tối thiểu 48 logical pixels; trạng thái chọn có nhãn và semantics; ảnh lỗi có fallback. Chỉ thêm trạng thái loading/error ở nơi thực sự lấy dữ liệu bất đồng bộ, không tạo trạng thái upload server giả. Mini-player tiếp tục hiện khi tạm dừng và các màn hình dùng chung lựa chọn bài/lượt thích trong phiên. Các thành phần mới không dùng animation trang trí; chỉ báo tiến trình cần tôn trọng reduced motion.
 
 Kết quả kiểm tra 05/11/2026: 30 widget test đạt, analyzer sạch và build Flutter Web thành công. Đã xem ảnh cả sáu màn hình ở 320×640, 390×844 và 430×932; bố cục ở cỡ chữ gấp đôi được kiểm tra bằng widget test. Xem [báo cáo, ảnh và giới hạn xác minh](docs/ui/issue-5-review.md). Chưa kiểm tra bằng Android/iOS emulator hoặc thiết bị thật; catalog, audio demo, lượt thích trong phiên và Upload local preview vẫn tách rõ khỏi năng lực backend thực tế.
+
+## Khám phá theo thể loại và bộ sưu tập — issue #7
+
+- Home giúp người nghe bắt đầu mà chưa cần từ khóa: giữ bài nổi bật, rồi giới thiệu hai bộ sưu tập mẫu như hai lối đi trong phòng nghe. Mỗi lối có artwork hiện có, mô tả và số bài thực tế trong catalog mẫu.
+- Explore là kệ đĩa có nhãn: tìm kiếm, thể loại và bộ sưu tập kết hợp để thu hẹp kết quả. Chip có dấu chọn và semantics; nút Clear all đưa cả từ khóa và bộ lọc về trạng thái duyệt mặc định. Clear search chỉ xóa từ khóa; All genres/All collections chỉ bỏ nhóm tương ứng.
+- Hai chủ đề mẫu là Softer corners (Dream pop/Indie folk) và After hours (Alternative/Electronic). Nhãn Sample collections giải thích đây là cách nhóm mẫu theo thể loại, không phải đề xuất cá nhân hóa hay kết quả từ lịch sử nghe.
+- Bộ lọc nằm trong query của route Explore để mở từ Home/link và quay lại từ Player giữ đúng lựa chọn. Kết quả dùng index của catalog gốc để tiếp tục phát đúng bài. Mỗi trạng thái tải, lỗi, catalog trống, bộ sưu tập không có bài và không khớp bộ lọc có thông báo riêng; luôn có cách bỏ lựa chọn đang dùng.
+- Giữ palette, Roboto và artwork hiện tại; chip được Wrap, thẻ nội dung cao linh hoạt và toàn màn hình cuộn khi dùng điện thoại hẹp/cỡ chữ lớn.
+
+Kiểm tra issue #7: 49 test đạt, analyzer sạch và build web release thành công. Đã rà soát Home/Explore ở 320×640, 390×844, 430×932 bằng ảnh Flutter Web; widget test bao phủ cỡ chữ 2× và thể loại dài. Heading có action tự xuống dòng ở màn hình hẹp/chữ lớn; Clear all đưa trang về đầu, còn sửa từ khóa không tự đóng bàn phím. Xem [báo cáo, ảnh và giới hạn xác minh](docs/ui/issue-7-review.md).
