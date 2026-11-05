@@ -16,6 +16,7 @@ export const createFakes = () => {
   const calls = { upload: 0, remove: 0, insert: 0, delete: 0 };
   const findById = async (id, owner) => [...assets.values()].find((asset) => asset.id === id && asset.clerk_user_id === owner) || null;
   const records = {
+    isReferencedByTrack: async () => false,
     findById,
     deleteById: async (id, owner) => {
       calls.delete++;

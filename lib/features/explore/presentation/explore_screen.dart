@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/config/app_mode.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../home/application/catalog_provider.dart';
 import '../../home/domain/song.dart';
 import '../domain/discovery.dart';
+import '../application/search_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key, this.filters = const DiscoveryFilters()});
@@ -59,10 +61,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         children: [
-          const ScreenHeading(
+          ScreenHeading(
             eyebrow: 'EXPLORE',
             title: 'Follow your ears.',
-            subtitle: 'Start with a genre, a collection, or a name. All tracks here are samples.',
+            subtitle: ref.watch(demoModeProvider)
+                ? 'Start with a genre, a collection, or a name. All tracks here are samples.'
+                : 'Find a track in your private uploads by genre, collection or name.',
           ),
           const SizedBox(height: 22),
           TextField(
@@ -113,17 +117,53 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _discovery(List<Song> songs, DiscoveryFilters filters) {
+  Widget _discovery(
+    List<Song> songs,
+    DiscoveryFilters filters, {
+    List<Song>? serverMatches,
+  }) {
+    if (!ref.watch(demoModeProvider) &&
+        filters.isActive &&
+        serverMatches == null) {
+      return ref
+          .watch(searchProvider(filters))
+          .when(
+            loading: () => const CatalogLoading(),
+            error: (_, _) => EmptyState(
+              icon: Icons.cloud_off_outlined,
+              title: 'Search could not be completed',
+              message: 'Your choices are kept. Try again when connected.',
+              actionLabel: 'Try again',
+              onAction: () => ref.invalidate(searchProvider(filters)),
+            ),
+            data: (matches) =>
+                _discovery(songs, filters, serverMatches: matches),
+          );
+    }
     if (songs.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.library_music_outlined,
-        title: 'The sample catalog is empty',
-        message: 'Genres and collections will have music when sample tracks are available.',
+        title: ref.watch(demoModeProvider)
+            ? 'The sample catalog is empty'
+            : 'Your library is empty',
+        message: ref.watch(demoModeProvider)
+            ? 'Genres and collections will have music when sample tracks are available.'
+            : 'Upload your first MP3 to discover your own collection.',
+        actionLabel: ref.watch(demoModeProvider) ? null : 'Upload a track',
+        onAction: () => context.go('/upload'),
       );
     }
     final genres = catalogGenres(songs);
     final collection = findSampleCollection(filters.collectionId);
-    final matches = matchingSongIndices(songs, filters);
+    final matches = serverMatches == null
+        ? matchingSongIndices(songs, filters)
+        : [
+            for (var i = 0; i < songs.length; i++)
+              if (serverMatches.any(
+                (song) => song.identity == songs[i].identity,
+              ))
+                i,
+          ];
     final hasUnknownGenre =
         filters.genre != null &&
         !genres.any(
@@ -160,7 +200,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ],
         ),
         const SizedBox(height: 22),
-        const SectionHeading('Sample collections'),
+        SectionHeading(
+          ref.watch(demoModeProvider)
+              ? 'Sample collections'
+              : 'Your collections',
+        ),
         const SizedBox(height: 6),
         const Text(
           'Small selections grouped by genre.',
@@ -208,7 +252,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           child: SectionHeading(
             filters.isActive
                 ? '${matches.length} ${matches.length == 1 ? 'track' : 'tracks'} found'
-                : 'The sample catalog',
+                : ref.watch(demoModeProvider)
+                ? 'The sample catalog'
+                : 'Your tracks',
           ),
         ),
         const SizedBox(height: 8),
@@ -221,7 +267,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ? 'This collection is quiet'
                 : 'No tracks found',
             message: collection != null && !songs.any(collection.contains)
-                ? 'There are no sample tracks in this collection yet. Try another collection or browse all tracks.'
+                ? (ref.watch(demoModeProvider)
+                      ? 'There are no sample tracks in this collection yet. Try another collection or browse all tracks.'
+                      : 'There are no uploads in this collection yet. Try another collection or browse all tracks.')
                 : 'Try another genre or collection, or clear your search.',
             actionLabel: filters.query.isNotEmpty
                 ? 'Clear search'
@@ -237,8 +285,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           for (final index in matches)
             SongTile(song: songs[index], index: index),
         const SizedBox(height: 18),
-        const Text(
-          'Sample tracks and artists · Demo audio',
+        Text(
+          ref.watch(demoModeProvider)
+              ? 'Sample tracks and artists · Demo audio'
+              : 'Your uploads · Private to your account',
           style: TextStyle(color: AppColors.muted, fontSize: 12),
         ),
       ],

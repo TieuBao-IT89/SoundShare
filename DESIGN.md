@@ -1,5 +1,7 @@
 # Định hướng thiết kế SoundShare
 
+Luồng tài khoản/dữ liệu thật: trên Web, màn hình vào ứng dụng là cửa vào thư viện riêng, với đăng nhập và đăng ký Clerk rõ ràng; form xác minh/khôi phục do Clerk xử lý. Không tự chuyển sang dữ liệu mẫu khi cấu hình hoặc backend lỗi. Home/Explore/Library hiển thị bài của tài khoản, Upload xác nhận đã lưu sau khi Storage và Neon hoàn tất, Profile có đăng xuất. Trạng thái chưa có bài dẫn tới Upload; các bộ sưu tập chỉ là nhóm theo thể loại, không phải gợi ý cá nhân hóa. Chế độ demo phục vụ review/test phải được bật rõ ràng.
+
 ## Mục tiêu
 
 SoundShare là nơi nghệ sĩ độc lập chia sẻ âm nhạc và người nghe khám phá những giai điệu mới. Giao diện cần hiện đại, dễ dùng trên điện thoại và có bản sắc riêng, không sao chép trực tiếp dịch vụ nghe nhạc nào khác.
@@ -30,7 +32,7 @@ SoundShare là nơi nghệ sĩ độc lập chia sẻ âm nhạc và người ng
 - **Khám phá:** ô tìm kiếm theo tên bài hát hoặc nghệ sĩ, kết quả và trạng thái không có kết quả.
 - **Trình phát:** bìa lớn, thông tin bài hát, tiến trình, thời gian, phát/tạm dừng, chuyển bài, yêu thích, phát ngẫu nhiên và lặp lại.
 - **Tải nhạc lên:** chọn MP3, kiểm tra dung lượng, điền thông tin bài hát và chọn ảnh bìa.
-- **Thư viện:** lượt thích trong phiên và tab catalog mẫu; đồng bộ, bài đã upload và playlist chưa được triển khai.
+- **Thư viện:** chế độ thật mặc định All uploads và có Liked tracks lưu theo tài khoản; chế độ demo giữ catalog mẫu và lượt thích trong phiên. Playlist chưa được triển khai.
 - **Hồ sơ:** danh tính Clerk khi có phiên hoặc trạng thái khách; tính năng chỉnh sửa và thống kê xã hội chưa được triển khai.
 
 ## Chuyển động và khả năng tiếp cận
@@ -43,7 +45,7 @@ SoundShare là nơi nghệ sĩ độc lập chia sẻ âm nhạc và người ng
 
 - Tổ chức mã theo tính năng trong `lib/features`; tách giao diện, nghiệp vụ, dữ liệu và repository.
 - Dùng Riverpod cho trạng thái, GoRouter cho điều hướng và widget dùng chung cho các mẫu giao diện lặp lại.
-- Catalog Flutter vẫn dùng dữ liệu mẫu và một nguồn audio demo. Authentication đã chọn Clerk; backend dùng Express, Neon và Cloudinary. Luồng media Flutter chưa nối vào API upload/xóa và không được hiển thị như đã xuất bản thành công.
+- Chế độ thật dùng Clerk và Express/Neon/Cloudinary, chỉ hiển thị dữ liệu riêng của tài khoản. Dữ liệu mẫu và audio demo chỉ tồn tại trong `DEMO_MODE=true`. Upload chỉ báo Saved sau khi backend xác nhận file và metadata; không hiển thị như đã xuất bản công khai.
 - Không đưa khóa API, thông tin đăng nhập hoặc dữ liệu nhạy cảm vào mã nguồn.
 
 ## Hướng thiết kế cho issue #5
@@ -72,3 +74,11 @@ Kết quả kiểm tra 05/11/2026: 30 widget test đạt, analyzer sạch và bu
 - Giữ palette, Roboto và artwork hiện tại; chip được Wrap, thẻ nội dung cao linh hoạt và toàn màn hình cuộn khi dùng điện thoại hẹp/cỡ chữ lớn.
 
 Kiểm tra issue #7: 49 test đạt, analyzer sạch và build web release thành công. Đã rà soát Home/Explore ở 320×640, 390×844, 430×932 bằng ảnh Flutter Web; widget test bao phủ cỡ chữ 2× và thể loại dài. Heading có action tự xuống dòng ở màn hình hẹp/chữ lớn; Clear all đưa trang về đầu, còn sửa từ khóa không tự đóng bàn phím. Xem [báo cáo, ảnh và giới hạn xác minh](docs/ui/issue-7-review.md).
+
+## Web dùng tài khoản và dữ liệu thật
+
+Màn hình vào ứng dụng dùng thông điệp “Your sound. Your space.” với hai hành động Đăng nhập/Tạo tài khoản, nối tới form Clerk cùng palette charcoal/tím. ClerkJS Core 3 dùng biến màu foreground/input hiện hành; input và nút chính có chiều cao tối thiểu 48 px. Form cuộn ở màn hình hẹp. Đã xem entry, sign-up và sign-in tại 430×932 trên Chrome, xác nhận ClerkJS 6.42.2 tải Device Intelligence và không có CSP violation trong lượt mở form.
+
+Sau backend session gate, Home/Explore/Library hiển thị thư viện riêng; tài khoản mới có lời mời Upload thay vì bài giả. Library mặc định All uploads. Upload phân biệt đang gửi, lỗi/retry và Saved; Profile dùng tên từ Clerk và có Đăng xuất. Mỗi tài khoản có provider container riêng để dọn player, catalog và cache khi đổi phiên. Demo giữ nhãn nội dung mẫu và hành vi preview cũ.
+
+Kiểm tra tự động: 56 Flutter test đạt, analyzer sạch, Web release build thành công. Kiểm tra đăng ký và upload/playback có xác thực bằng tài khoản thật vẫn cần hoàn tất; xem [checklist và giới hạn](docs/auth-real-data.md). Chưa nghiệm thu native.

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/config/app_mode.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
 import '../../../core/widgets/catalog_widgets.dart';
@@ -44,17 +45,25 @@ class HomeScreen extends ConsumerWidget {
                   return EmptyState(
                     icon: Icons.library_music_outlined,
                     title: 'The listening room is quiet',
-                    message: 'Tracks will appear here when they are available.',
-                    actionLabel: 'Explore',
-                    onAction: () => context.go('/explore'),
+                    message: ref.watch(demoModeProvider)
+                        ? 'Tracks will appear here when they are available.'
+                        : 'Upload your first MP3 to start your private music library.',
+                    actionLabel: ref.watch(demoModeProvider)
+                        ? 'Explore'
+                        : 'Upload a track',
+                    onAction: () => context.go(
+                      ref.read(demoModeProvider) ? '/explore' : '/upload',
+                    ),
                   );
                 }
                 final featured = songs.first;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'IN FOCUS · SAMPLE SELECTION',
+                    Text(
+                      ref.watch(demoModeProvider)
+                          ? 'IN FOCUS · SAMPLE SELECTION'
+                          : 'IN FOCUS · YOUR LIBRARY',
                       style: TextStyle(
                         color: AppColors.mint,
                         fontSize: 11,
@@ -97,12 +106,15 @@ class HomeScreen extends ConsumerWidget {
                       actionLabel: 'Browse all',
                       onAction: () => context.go('/explore'),
                     ),
-                    const Text(
-                      'Sample collections · Grouped by genre',
+                    Text(
+                      ref.watch(demoModeProvider)
+                          ? 'Sample collections · Grouped by genre'
+                          : 'Your collections · Grouped by genre',
                       style: TextStyle(color: AppColors.muted, fontSize: 12),
                     ),
                     for (final collection in sampleCollections)
                       SampleCollectionTile(
+                        sample: ref.watch(demoModeProvider),
                         collection: collection,
                         songs: songs,
                         onTap: () => context.go(
@@ -119,8 +131,10 @@ class HomeScreen extends ConsumerWidget {
                     for (var i = 1; i < songs.length; i++)
                       SongTile(song: songs[i], index: i),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Sample catalog · All tracks use demo audio.',
+                    Text(
+                      ref.watch(demoModeProvider)
+                          ? 'Sample catalog · All tracks use demo audio.'
+                          : 'Your uploads · Private to your account',
                       style: TextStyle(
                         color: AppColors.muted,
                         fontSize: 12,

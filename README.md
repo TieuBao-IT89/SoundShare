@@ -2,23 +2,23 @@
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
-SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá, phát và chia sẻ âm nhạc độc lập. Phiên bản hiện tại tập trung vào giao diện MVP và sử dụng dữ liệu mẫu trong khi các dịch vụ backend đang được chuẩn bị.
+SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá và nghe nhạc. Bản Web hiện có luồng đăng ký/đăng nhập Clerk và thư viện riêng từ MP3, artwork do chính người dùng tải lên. Flutter gọi Express; Express quản lý metadata trong Neon và file private trên Cloudinary.
 
 ## Tính năng
 
 - Giao diện nghe nhạc nền tối, thích ứng với màn hình, có màn hình khởi động và thanh điều hướng dưới.
-- Trang chủ với gợi ý mẫu và danh sách bài hát có thể tìm kiếm.
+- Trang chủ, tìm kiếm và thư viện lấy bài hát của tài khoản đã xác minh qua REST API.
 - Trình phát nhạc hỗ trợ phát trực tuyến, tua bài, yêu thích, phát ngẫu nhiên, lặp lại và chuyển bài.
-- Chọn tệp MP3 và kiểm tra giới hạn dung lượng 20 MB trên màn hình tải nhạc lên.
-- Thư viện lưu lượt thích trong phiên; Profile dùng danh tính Clerk khi có phiên hoặc hiển thị trạng thái khách.
+- Upload MP3 tối đa 20 MB, artwork JPG/PNG/WebP tối đa 5 MB; chỉ báo lưu thành công sau khi file và metadata được backend xác nhận.
+- Lượt thích lưu trong Neon theo tài khoản. Đăng xuất dừng audio và giải phóng dữ liệu phiên; tài khoản mới bắt đầu với thư viện rỗng.
 
 ## Công nghệ
 
-Ứng dụng hiện tại: Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Mã backend đã có API upload, cấp URL đọc và xóa media; Flutter chưa nối vào các API media này. Kiểm thử tự động và kiểm tra kết nối được mô tả bên dưới; chưa xác minh toàn bộ luồng media bằng phiên Clerk thật.
+Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Web dùng ClerkJS 6 và UI của Clerk; SDK quản lý đăng ký, email verification, khôi phục mật khẩu và phiên. Mã client đã nối API thư viện/upload/playback/yêu thích. Migration và kiểm tra kết nối development đã chạy; nghiệm thu đăng ký và upload/phát bằng tài khoản thật vẫn cần hoàn tất. Native chưa được nghiệm thu với dữ liệu thật.
 
 ## Ảnh chụp màn hình
 
-Xem [ảnh sáu màn hình và báo cáo rà soát issue #5](docs/ui/issue-5-review.md). Ảnh chụp từ Flutter Web ở kích thước điện thoại; chưa thay thế kiểm tra Android/iOS thật.
+Xem [báo cáo issue #5 với dữ liệu demo](docs/ui/issue-5-review.md) và [hướng dẫn bản Web dùng tài khoản thật](docs/auth-real-data.md). Ảnh rà soát Web chưa thay thế kiểm tra Android/iOS thật.
 
 ## Yêu cầu
 
@@ -26,7 +26,26 @@ Xem [ảnh sáu màn hình và báo cáo rà soát issue #5](docs/ui/issue-5-rev
 - Android Studio cùng Android SDK và trình giả lập, hoặc thiết bị Android thật.
 - Visual Studio Code cùng các tiện ích mở rộng Flutter và Dart.
 
-## Chạy trên Windows
+## Chạy Web trên Windows
+
+1. Cài Flutter và Node.js 22+, chạy `flutter pub get` tại thư mục gốc và `npm ci` tại `backend/`.
+2. Cấu hình `backend/.env` theo `backend/.env.example` với Clerk, Cloudinary và Neon **development**. Trong Clerk Sessions → Customize session token thêm `"aud": "soundshare-api"`; đặt `CLERK_AUTHORIZED_PARTIES=http://localhost:3000` tại backend.
+3. Chạy `npm run migrate` tại `backend/`. Migration mới `003_private_tracks.sql` bổ sung thư viện và lượt thích riêng; không xóa bảng/dữ liệu cũ.
+4. Từ thư mục gốc, chạy:
+
+   ```powershell
+   .\scripts\run-web.ps1
+   # Nếu Flutter chưa có trong PATH:
+   .\scripts\run-web.ps1 -FlutterExecutable 'C:\path\to\flutter\bin\flutter.bat'
+   ```
+
+5. Mở `http://localhost:3000`, đăng ký/xác minh email rồi tải MP3 của bạn tại Upload. Library → All uploads hiển thị bài đã lưu; thích bài để thêm vào Liked tracks.
+
+Script chỉ xuất publishable key và API URL vào `.local/web-config.json` đã gitignore; không đưa `.env` backend vào build. Express chỉ phục vụ `build/web`. Secret/database URL luôn ở backend. Xem [cấu hình, kiểm tra và xử lý lỗi Clerk](docs/auth-real-data.md).
+
+Để xem giao diện mẫu có chủ ý: `flutter run -d chrome --dart-define=DEMO_MODE=true`. Thiếu Clerk key trong chế độ thật sẽ hiển thị lỗi cấu hình, không tự chuyển sang dữ liệu giả.
+
+## Chạy Android trên Windows
 
 1. Cài Flutter và Android Studio, sau đó tạo và khởi động Android Emulator trong Device Manager của Android Studio.
 2. Mở thư mục dự án bằng VS Code và chọn trình giả lập đang chạy trong danh sách thiết bị.
@@ -34,7 +53,7 @@ Xem [ảnh sáu màn hình và báo cáo rà soát issue #5](docs/ui/issue-5-rev
 
    ```powershell
    flutter pub get
-   flutter run
+   flutter run --dart-define=DEMO_MODE=true
    ```
 
 Bạn cũng có thể chạy `flutter run -d <device-id>` sau khi xem các thiết bị khả dụng bằng `flutter devices`.
@@ -55,9 +74,9 @@ Backend mục tiêu giao tiếp với Neon qua Express REST API; ứng dụng Fl
 
 Hướng thiết kế và mục tiêu cho Home, Explore, Player, Upload, Library, Profile nằm trong [DESIGN.md](DESIGN.md). Dự án dùng [Taste Skill bản Flutter](.agents/skills/design-taste-frontend/SKILL.md).
 
-Chọn bài từ Home/Explore/Library cập nhật đúng Player; mini-player giữ bài đang chọn khi tạm dừng hoặc đổi tab. Tìm kiếm khớp tên bài, nghệ sĩ và thể loại, không phân biệt chữ hoa/thường. Nút yêu thích cập nhật Library và Profile trong phiên hiện tại; khởi động lại sẽ mất các lượt thích này.
+Chọn bài từ Home/Explore/Library cập nhật đúng Player; mini-player giữ bài đang chọn khi tạm dừng hoặc đổi tab. Trong chế độ thật, tìm kiếm chạy ở server và lượt thích được lưu theo tài khoản. Nội dung bên dưới mô tả chế độ demo đã nghiệm thu ở issue #5.
 
-Catalog, tên nghệ sĩ và artwork hiện dùng mẫu có sẵn; bốn bài dùng chung một URL audio demo. Upload kiểm tra MP3 tối đa 20 MB, artwork JPG/PNG/WebP tối đa 5 MB và trường bắt buộc, sau đó chỉ tạo bản xem trước trên thiết bị. File và lượt thích chưa gửi tới backend. Validation client không thay thế kiểm tra MIME/magic bytes phía server.
+Với `DEMO_MODE=true`, catalog/nghệ sĩ/artwork là mẫu, bốn bài dùng chung một URL audio demo và lượt thích chỉ tồn tại trong phiên. Upload demo chỉ tạo bản xem trước trên thiết bị. Chế độ thật gửi file và metadata tới Express; validation client không thay thế kiểm tra MIME/magic bytes phía server.
 
 Kiểm thử tương tác và bố cục nằm trong `test/mobile_experience_test.dart`, giả lập audio player, catalog và file picker; không dùng tài khoản, Neon hay Cloudinary thật. Xem kết quả kiểm tra và giới hạn rà soát giao diện trong [DESIGN.md](DESIGN.md).
 
@@ -67,7 +86,7 @@ Home có hai lối vào **Sample collections**: Softer corners (Dream pop/Indie 
 
 **Clear search** chỉ xóa từ khóa; **All genres** và **All collections** bỏ nhóm tương ứng; chạm lại chip đang chọn cũng bỏ lựa chọn đó. **Clear all** xóa toàn bộ và đưa trang về đầu. Link như `/explore?collection=after-hours&genre=Electronic&q=Blue` mở đúng bộ lọc; quay lại từ Player giữ nguyên lựa chọn. Nhấn tab Explore từ tab khác mở chế độ duyệt mặc định.
 
-Đây là cách nhóm nội dung mẫu theo thể loại, chưa có cá nhân hóa hoặc API catalog mới. Kiểm thử domain/điều hướng/trạng thái nằm trong `test/discovery_test.dart`; xem [báo cáo và ảnh rà soát](docs/ui/issue-7-review.md).
+Hai bộ sưu tập nhóm bài theo thể loại, chưa có cá nhân hóa. Trong chế độ thật, chúng lọc thư viện riêng qua API; chế độ demo giữ nội dung mẫu. Kiểm thử nằm trong `test/discovery_test.dart`; xem [báo cáo demo issue #7](docs/ui/issue-7-review.md).
 
 ## Đóng góp
 
@@ -189,7 +208,7 @@ curl.exe -X POST http://localhost:3000/api/v1/uploads/audio -H "Authorization: B
 
 Response thành công có dạng `{ "success": true, "data": { "id": "...", "mediaType": "artwork", "resourceType": "image", "format": "png", "bytes": 1234, "originalFilename": "cover.png", "mimeType": "image/png", "createdAt": "...", "access": { "url": "...", "expiresAt": "..." } } }`. Trả `201` khi tạo mới, `200` khi cùng owner gửi lại cùng nội dung và loại media. Hai người upload cùng file có object key và bản ghi riêng. Retry cùng file không ghi đè object hoặc tạo metadata trùng; tên file lưu theo lần tạo đầu tiên.
 
-Cloudinary lưu asset với `type: authenticated`. Neon lưu `public_id`, URL metadata HTTPS không có chữ ký và thuộc tính file; URL đọc có chữ ký chỉ được tạo trong response với `Cache-Control: no-store`. Chủ sở hữu có thể lấy lại URL qua endpoint `/access`; asset không tồn tại hoặc thuộc người khác đều trả `404` để không lộ dữ liệu riêng tư. API này chưa tạo bài hát catalog hoặc công khai nội dung.
+Cloudinary lưu asset với `type: authenticated`. Neon lưu `public_id`, URL metadata HTTPS không có chữ ký và thuộc tính file; URL đọc có chữ ký chỉ được tạo trong response với `Cache-Control: no-store`. Chủ sở hữu có thể lấy lại URL qua endpoint `/access`; asset không tồn tại hoặc thuộc người khác đều trả `404` để không lộ dữ liệu riêng tư. Sau upload, `POST /api/v1/songs` tạo bài hát riêng từ asset ID; không công khai nội dung. Xóa asset đang được bài hát sử dụng trả `409 MEDIA_IN_USE` trước khi gọi Cloudinary.
 
 Lỗi có dạng `{ "success": false, "error": { "code": "...", "message": "...", "requestId": "..." } }`, kèm header `X-Request-Id`. Các mã chính: `400 FILE_REQUIRED/INVALID_FILE/INVALID_MULTIPART/VALIDATION_ERROR`, `401 UNAUTHORIZED`, `404 MEDIA_NOT_FOUND`, `409 UPLOAD_IN_PROGRESS`, `413 FILE_TOO_LARGE`, `415 INVALID_FILE_TYPE`, `429 RATE_LIMITED`, `502 STORAGE_UNAVAILABLE/STORAGE_VERIFICATION_FAILED`, `503 DATABASE_UNAVAILABLE/UPLOAD_BUSY`. Với `409`, đợi một chút rồi gửi lại cùng file.
 
@@ -209,7 +228,7 @@ curl.exe -i -X DELETE http://localhost:3000/api/v1/uploads/UUID_CUA_ASSET -H "Au
 
 Backend tìm asset trong phạm vi owner đã xác minh, dùng chung khóa transaction với upload và kiểm tra lại UUID sau khi lấy khóa. Backend gọi Cloudinary `destroy` bằng `public_id` và `resource_type` từ Neon, với `type: authenticated`, `invalidate: true`; chỉ sau khi Cloudinary xác nhận `ok` hoặc `not found` mới xóa metadata. Thành công trả `204 No Content`, không có JSON body. Không cần migration mới.
 
-Các lỗi chính: `400 VALIDATION_ERROR` khi UUID/body/query không hợp lệ, `401 UNAUTHORIZED` khi thiếu/sai token, `404 MEDIA_NOT_FOUND` khi asset không còn hoặc không thuộc owner, `409 MEDIA_BUSY` khi cùng asset đang upload/xóa, `429 RATE_LIMITED`, `502 STORAGE_DELETE_FAILED` khi Cloudinary chưa xác nhận xóa, `503 DATABASE_UNAVAILABLE` khi Neon hoặc commit lỗi. Lỗi vẫn dùng JSON có `error.requestId`. Xóa lại UUID đã xóa hoàn tất trả `404` và không gọi Cloudinary, kể cả cùng nội dung vừa được upload lại thành asset mới.
+Các lỗi chính: `400 VALIDATION_ERROR` khi UUID/body/query không hợp lệ, `401 UNAUTHORIZED` khi thiếu/sai token, `404 MEDIA_NOT_FOUND` khi asset không còn hoặc không thuộc owner, `409 MEDIA_BUSY` khi cùng asset đang upload/xóa, `409 MEDIA_IN_USE` nếu bài hát đang dùng asset, `429 RATE_LIMITED`, `502 STORAGE_DELETE_FAILED` khi Cloudinary chưa xác nhận xóa, `503 DATABASE_UNAVAILABLE` khi Neon hoặc commit lỗi. Lỗi vẫn dùng JSON có `error.requestId`. Xóa lại UUID đã xóa hoàn tất trả `404` và không gọi Cloudinary, kể cả cùng nội dung vừa được upload lại thành asset mới.
 
 Cloudinary lỗi thì metadata được giữ để retry. Nếu Cloudinary đã xóa nhưng Neon chưa hoàn tất, backend phát sự kiện `MEDIA_DELETE_RECONCILIATION_REQUIRED`; gửi lại DELETE cùng UUID sẽ chấp nhận file đã mất trên Cloudinary và hoàn tất metadata. Nếu commit trước đó đã thành công nhưng mất phản hồi, retry trả `404`. Không có transaction phân tán giữa Cloudinary và Neon, nên lỗi một phần có thể tạm để lại metadata trỏ tới file đã xóa; cần hoàn tất DELETE trước khi dùng lại asset đó.
 
@@ -246,7 +265,11 @@ npm run test:smoke
 
 Test PostgreSQL thực chỉ chạy khi `TEST_DATABASE_URL` trỏ tới database test riêng, khác `DATABASE_URL`; nếu chưa có thì test migration sẽ báo `SKIP`. Test này áp dụng migration từ schema rỗng trong transaction, kiểm tra default/ràng buộc và chạy lại migration `002` không mất metadata, sau đó rollback toàn bộ.
 
-Kết quả xác minh ngày **05/11/2026**: `npm test` có **47 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **9 kiểm tra đạt, 0 lỗi** với cấu hình development. Kết quả smoke và các giới hạn xác minh phải được đọc riêng: kết nối provider thành công hoặc HTTP `401` không chứng minh upload/xóa bằng session Clerk thật đã hoạt động. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
+Kết quả xác minh ngày **05/11/2026**: `npm test` có **54 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Flutter có **56 test đạt**, analyzer sạch và build Web release thành công. Kết quả smoke và các giới hạn xác minh phải được đọc riêng: kết nối provider thành công hoặc HTTP `401` không chứng minh upload/xóa bằng session Clerk thật đã hoạt động. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
+
+### API thư viện riêng
+
+Mọi endpoint yêu cầu Clerk Bearer session token. `GET /api/v1/songs` lấy thư viện owner, hỗ trợ `query`, `genre`, `collection`, `limit` 1–50 và `cursor`; `POST /api/v1/songs` lưu bài từ asset ID đã upload. `GET /api/v1/songs/{id}/playback` cấp URL phát có hạn; `PUT`/`DELETE /api/v1/songs/{id}/favorite` lưu/bỏ yêu thích idempotent. Track/favorite được lưu trong migration 003, owner lấy từ token. Xem schema, status và error code tại [PRD mục 8.5](PRD.md) và [hướng dẫn nghiệm thu](docs/auth-real-data.md).
 
 ### Các bảng dữ liệu
 
@@ -259,3 +282,5 @@ Kết quả xác minh ngày **05/11/2026**: `npm test` có **47 kiểm tra đạ
 - favorites
 - listening_history
 - media_assets (metadata Cloudinary; không lưu nội dung file hoặc URL ký tạm thời)
+- private_tracks (MP3 và metadata của từng tài khoản)
+- private_track_favorites (lượt thích của owner trong thư viện riêng)

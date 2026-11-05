@@ -3,7 +3,7 @@ Product Requirements Document
 Phiên bản: 1.0
 Trạng thái: Draft
 Sản phẩm: SoundShare
-Nền tảng ứng dụng: Flutter (mobile)
+Nền tảng ứng dụng: Flutter (Web Chrome cho luồng tài khoản/dữ liệu thật; mobile cần nghiệm thu riêng)
 Backend: Node.js + Express, cung cấp REST API
 Cơ sở dữ liệu: Neon PostgreSQL
 Authentication: Clerk, dịch vụ xác thực độc lập
@@ -20,7 +20,7 @@ PRD này mô tả mục tiêu sản phẩm, người dùng, phạm vi chức nă
 - Ứng dụng Flutter chỉ giao tiếp với backend Node.js/Express qua REST API HTTPS; Flutter không kết nối trực tiếp đến Neon PostgreSQL.
 - Backend Express xác thực access token từ dịch vụ Authentication độc lập, áp dụng nghiệp vụ và phân quyền, rồi mới truy cập Neon.
 - Audio và artwork được lưu tại Cloud Storage độc lập. Neon chỉ lưu metadata, trạng thái và object key; không lưu nội dung nhị phân của file.
-- Provider đã chọn là Clerk cho Authentication và Cloudinary cho Cloud Storage. Flutter vẫn dùng dữ liệu mẫu; việc chọn provider và bổ sung schema không đồng nghĩa luồng upload đã hoàn thành.
+- Provider đã chọn là Clerk cho Authentication và Cloudinary cho Cloud Storage. Chế độ mặc định yêu cầu đăng nhập và gọi API thư viện riêng; dữ liệu mẫu chỉ bật bằng `DEMO_MODE=true`. Kết quả kiểm tra kỹ thuật và các bước nghiệm thu còn thiếu nằm trong `docs/auth-real-data.md`.
 - Chuỗi kết nối Neon chỉ tồn tại trong môi trường backend dưới dạng secret, không được gửi tới ứng dụng Flutter, repository, log hay phản hồi API.
 1.1 Tuyên bố sản phẩm
 Giúp người yêu âm nhạc dễ dàng khám phá, nghe, lưu trữ và chia sẻ trải nghiệm âm nhạc trong một ứng dụng có giao diện trực quan, nhất quán và thuận tiện trên thiết bị di động.
@@ -270,20 +270,22 @@ MVP nên ưu tiên các luồng cốt lõi:
 1. Người dùng mở Upload.
 1. Chọn file âm thanh được hỗ trợ.
 1. Nhập hoặc xác nhận metadata bắt buộc.
-1. API backend hiện nhận đúng một file trong trường `file` bằng multipart tại `POST /api/v1/uploads/audio` hoặc `/artwork`, cùng Clerk session token dạng Bearer. Flutter chưa được nối vào các endpoint này.
+1. Flutter gửi đúng một file trong trường `file` bằng multipart tại `POST /api/v1/uploads/audio` hoặc `/artwork`, cùng Clerk session token dạng Bearer.
 1. Express xác minh chữ ký, issuer, audience, hạn token và session; lấy owner từ subject đã xác minh, kiểm tra metadata/file và giới hạn request.
 1. Backend sinh object key từ SHA-256 của owner, loại media và nội dung; dùng khóa transaction PostgreSQL để ngăn hai request đồng thời hoàn tất cùng asset.
 1. Express upload file tới Cloudinary với `type: authenticated`, `overwrite: false`, rồi đọc lại object để xác minh public ID, loại, format và dung lượng.
 1. Backend ghi `media_assets` trong transaction Neon và trả metadata cùng URL đọc hết hạn sau 5 phút; response chỉ được gửi thành công sau khi transaction commit.
 1. Gửi lại cùng file cho cùng owner/loại media trả lại cùng asset; người khác có asset riêng. Request trùng đang xử lý trả `409 UPLOAD_IN_PROGRESS` để retry.
 1. Nếu Neon lỗi, backend chỉ xóa object khi đã xác nhận chưa có metadata. Trạng thái không xác định giữ object private và cho phép đối soát khi retry; lỗi cleanup phát sự kiện an toàn. Worker dọn object mồ côi định kỳ chưa được triển khai.
-1. Luồng này tạo media asset, chưa tạo song/catalog hoặc công khai nội dung. Upload intent và client upload trực tiếp bằng URL ký ở FR-12 là hướng mở rộng, chưa có endpoint thực thi.
+1. Sau khi upload audio và artwork tùy chọn thành công, Flutter gọi `POST /api/v1/songs` với asset ID và metadata. Backend kiểm tra owner và loại file, khóa asset cùng cơ chế với DELETE rồi tạo bài trong `private_tracks`. Chỉ khi thao tác này thành công UI mới báo Saved và tải lại Library.
+1. Retry cùng audio và metadata trả lại bài cũ; thay đổi metadata của MP3 đã lưu trả `409 TRACK_ALREADY_EXISTS`. File đã upload nhưng chưa tạo bài vẫn private, có thể retry; chưa có worker dọn định kỳ. Không công khai bài hát. Upload intent và client upload trực tiếp bằng URL ký ở FR-12 vẫn là hướng mở rộng.
    6.5 Luồng xác thực và gọi API riêng tư
 1. Người dùng đăng nhập hoặc đăng ký qua Authentication provider độc lập.
-1. Provider trả access token và refresh token theo chính sách của provider.
-1. Flutter giữ token theo cơ chế lưu trữ an toàn của nền tảng; không ghi token vào log.
+1. Trên Web, ClerkJS 6 và bundle UI của Clerk xử lý form, email verification, khôi phục mật khẩu và duy trì phiên. SDK sở hữu credentials/cookies, không lưu token vào state ứng dụng hoặc log.
+1. Client xin session token ngắn hạn cho mỗi request. Khi API trả `401`, xin token mới bỏ cache và thử lại đúng một lần.
 1. Flutter gọi endpoint riêng tư qua HTTPS với `Authorization: Bearer <access-token>`.
 1. Express xác minh chữ ký, issuer, audience, thời hạn và trạng thái token; lấy subject từ token đã xác minh.
+1. Client gọi `/auth/me` trước khi mở thư viện. Backend upsert hồ sơ tối thiểu trong `users` theo subject đã xác minh rồi trả `{id, clerkUserId}`. Không lưu mật khẩu hoặc đồng bộ email qua payload client.
 1. Backend kiểm tra quyền trên tài nguyên, truy cập Neon qua repository/service phía server và trả dữ liệu tối thiểu cần thiết.
 1. Khi token hết hạn, client refresh qua Authentication provider; nếu refresh thất bại, xóa phiên cục bộ và yêu cầu đăng nhập lại.
    6.6 Luồng catalog và tìm kiếm qua REST API
@@ -369,7 +371,7 @@ Bước 6 bổ sung schema. Backend bước 7 bổ sung Cloudinary Upload Servic
 
    8.2 Nguồn dữ liệu và ranh giới dịch vụ
 
-- Flutter dùng mock repository cho tới khi backend REST API được triển khai; UI không kết nối trực tiếp Neon.
+- Flutter dùng API repository trong chế độ thật; mock repository chỉ dành cho demo được bật rõ ràng và test. UI không kết nối trực tiếp Neon.
 - Node.js + Express cung cấp REST API có version tại `/api/v1`, xác thực request, áp dụng nghiệp vụ và truy cập Neon PostgreSQL.
 - Neon là nguồn dữ liệu quan hệ cho hồ sơ ứng dụng, catalog, thư viện và trạng thái upload. Chuỗi kết nối chỉ nằm ở backend.
 - Authentication là dịch vụ riêng. Backend xác minh token ở mỗi request được bảo vệ và ánh xạ subject đã xác minh tới hồ sơ ứng dụng.
@@ -389,7 +391,7 @@ Bước 6 bổ sung schema. Backend bước 7 bổ sung Cloudinary Upload Servic
 
 Base URL: `/api/v1`. Production dùng HTTPS. Endpoint thông thường dùng JSON; API upload media hiện dùng multipart qua Express. Luồng truyền file trực tiếp tới URL ký của Cloud Storage vẫn là đề xuất. API trả lỗi theo cấu trúc ổn định:
 
-Clerk integration có `GET /api/v1/auth/me`, yêu cầu Clerk session token đã xác minh trong header `Authorization: Bearer <session-token>` và trả Clerk user ID; không truy vấn hoặc đồng bộ hồ sơ Neon. Các API riêng tư chỉ nhận Bearer session token, kiểm tra issuer khớp publishable key của instance và bắt buộc `aud` khớp `CLERK_AUDIENCE` (mặc định `soundshare-api`), cùng chữ ký, hạn và session của token. Trong Clerk Dashboard cần thêm audience tương ứng tại Sessions → Customize session token. Không dùng API key hoặc token máy thay session token.
+Clerk integration có `GET /api/v1/auth/me`, yêu cầu Clerk session token đã xác minh trong header `Authorization: Bearer <session-token>`, upsert hồ sơ tối thiểu trong Neon và trả `{success:true,data:{id,clerkUserId}}`. Các API riêng tư chỉ nhận Bearer session token, kiểm tra issuer khớp publishable key của instance và bắt buộc `aud` khớp `CLERK_AUDIENCE` (mặc định `soundshare-api`), cùng chữ ký, hạn và session của token. Trong Clerk Dashboard cần thêm audience tương ứng tại Sessions → Customize session token. Không dùng API key hoặc token máy thay session token.
 
 ```json
 {
@@ -437,11 +439,11 @@ Lỗi media ổn định:
 
 Mọi lỗi có `error.requestId` và header `X-Request-Id`, không trả lỗi driver/provider. Giới hạn hiện tại: 10 upload/15 phút/user, 20 lần xóa/15 phút/user, 60 request/15 phút/user cho upload/access/delete, 120 request/15 phút/IP cho API riêng tư và 4 upload đang xử lý/process. Limiter dùng bộ nhớ trong một process; triển khai nhiều instance cần kho giới hạn chung và cấu hình proxy tin cậy. Lỗi cleanup/đối soát phát mã sự kiện và request ID, không log token, dữ liệu file, tên người dùng hay URL ký.
 
-Các endpoint cho giai đoạn backend:
+Các endpoint đề xuất cho giai đoạn sau (không thay thế contract thư viện riêng ở 8.5):
 
 | Method và endpoint | Xác thực | Mục đích |
 |---|---|---|
-| `GET /songs?query=&genre=&cursor=&limit=` | Không | Tìm kiếm/list catalog, phân trang cursor, giới hạn page size ở server. |
+| Catalog công khai (chưa có đường dẫn) | Theo visibility | Catalog khám phá công khai cần contract riêng; `GET /songs` hiện là thư viện private có xác thực. |
 | `GET /songs/{songId}` | Theo visibility | Lấy metadata chi tiết bài hát. |
 | `GET /songs/{songId}/playback` | Theo visibility/quyền | Nhận URL phát ngắn hạn hoặc thông tin playback được phép. |
 | `GET /me` | Có | Lấy hồ sơ gắn với subject của token. |
@@ -455,6 +457,26 @@ Các endpoint cho giai đoạn backend:
 | `DELETE /upload-intents/{uploadId}` | Có, owner | Đề xuất cho giai đoạn sau: hủy upload intent đang chờ; tách khỏi DELETE media asset đã hoàn tất. |
 
 Đăng ký, đăng nhập, refresh và logout thuộc Authentication provider độc lập, không phải endpoint xử lý mật khẩu của Express. API có thể bổ sung endpoint sau khi thống nhất provider, schema và chính sách quyền.
+
+8.5 Contract thư viện riêng đã triển khai trong mã
+
+Mọi endpoint dưới đây có prefix `/api/v1`, bắt buộc Bearer session token và `Cache-Control: no-store`. Owner luôn từ `sub` đã xác minh. UUID không tồn tại hoặc của người khác trả cùng `404`.
+
+| Method / endpoint | Input | Thành công |
+|---|---|---|
+| `GET /songs` | `query` tối đa 120 ký tự, `genre` tối đa 100, `collection=soft-focus\|after-hours`, `limit=1..50` mặc định 50, `cursor` opaque tối đa 400. Không body hoặc field lạ. | `200 {success:true,data:{items,nextCursor}}`. Tìm literal không phân biệt hoa/thường trong title/artist/genre; các filter kết hợp AND. Sắp xếp `created_at DESC,id DESC`. |
+| `POST /songs` | JSON strict: `audioAssetId` UUID, `artworkAssetId` UUID/null tùy chọn, `title`/`artist` 1..120, `genre` 1..100, `description` tối đa 1000 mặc định rỗng. Không query. | `201 {success:true,data:{id}}`; `200` khi retry cùng audio/metadata. Asset phải đúng owner và media type. |
+| `GET /songs/{songId}/playback` | UUID; không body/query. | `200 {success:true,data:{url,expiresAt}}`, URL đọc audio hết hạn sau 300 giây. |
+| `PUT /songs/{songId}/favorite` | UUID; không body/query. | `204`, lưu yêu thích idempotent. |
+| `DELETE /songs/{songId}/favorite` | UUID; không body/query. | `204`, bỏ yêu thích idempotent. |
+
+Item có `{id,title,artist,genre,description,createdAt,liked,artwork}`; `artwork` là `null` hoặc `{url,expiresAt}`. Không trả audio URL trong catalog. Cursor giữ độ chính xác microsecond của timestamp PostgreSQL. Backend dùng SQL tham số hóa và escape wildcard của từ khóa. `soft-focus` nhóm Dream pop/Indie folk; `after-hours` nhóm Alternative/Electronic. Đây là bộ lọc thể loại, chưa phải gợi ý cá nhân hóa.
+
+Lỗi dùng envelope chung ở 8.4: `400 VALIDATION_ERROR`, `401 UNAUTHORIZED`, `404 SONG_NOT_FOUND/MEDIA_NOT_FOUND`, `409 TRACK_ALREADY_EXISTS/MEDIA_BUSY/MEDIA_IN_USE`, `429 RATE_LIMITED`, `502` lỗi Storage và `503 DATABASE_UNAVAILABLE`. `MEDIA_IN_USE` bảo vệ DELETE asset được bài hát tham chiếu trước khi xóa Cloudinary. `/songs` giới hạn 120 request/15 phút/user, riêng POST 20/15 phút/user, cộng giới hạn IP toàn API.
+
+Migration `003_private_tracks.sql` thêm `private_tracks` và `private_track_favorites`; các khóa ngoại composite buộc track/favorite/media cùng owner. `audio_asset_id` unique đảm bảo một bài cho mỗi audio asset. Bảng cũ được giữ nguyên. Neon không lưu signed URL hay byte file. Logout giải phóng provider container của phiên, audio player, catalog và image cache; phiên mới không dùng lại dữ liệu tài khoản trước.
+
+Web phục vụ qua Express chỉ từ `build/web`; CSP cho phép SDK/UI Clerk, Cloudflare challenge và `*.protect.clerk.com` (connect cho phép các port theo yêu cầu Clerk), cùng media Cloudinary. Không dùng testing token để bỏ qua bảo vệ trong luồng đăng ký thật. Không giảm kiểm tra audience để xử lý cấu hình thiếu claim.
 
 9. Điều hướng và cấu trúc màn hình
    Các khu vực điều hướng chính hiện có:
@@ -488,7 +510,7 @@ Không đặt mục tiêu số học cụ thể cho đến khi có baseline ho�
 
 - Nguồn audio: URL mẫu có thể hết hạn, không truy cập được hoặc không phù hợp để phát hành.
 - Bản quyền: cần xác định quyền lưu trữ, phát và chia sẻ nội dung âm nhạc.
-- Backend: cần chốt Authentication provider và Cloud Storage provider; cần thiết kế Express REST API, schema Neon, migration, secret và chính sách quyền trước khi tích hợp production.
+- Backend: Clerk và Cloudinary đã được chọn, Express/Neon có API private và migration; vẫn cần nghiệm thu phiên thật, playback và cấu hình triển khai/secret trước production.
 - Upload: URL ký, xác minh MIME/magic bytes, giới hạn kích thước, trạng thái retry và dọn object mồ côi cần được kiểm thử.
 - Playback nền: phát nhạc khi ứng dụng ở background có thể cần cấu hình native và xử lý lifecycle riêng.
 - Chất lượng mạng: tải audio/artwork phụ thuộc kết nối; cần cache và lỗi dự phòng.
