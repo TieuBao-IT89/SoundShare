@@ -13,8 +13,8 @@ import '../features/splash/presentation/splash_screen.dart';
 import '../features/upload/presentation/upload_screen.dart';
 import 'theme/app_theme.dart';
 
-final _router = GoRouter(
-  initialLocation: '/splash',
+GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
+  initialLocation: initialLocation,
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
@@ -35,15 +35,18 @@ final _router = GoRouter(
   ],
 );
 
+final _router = createAppRouter();
+
 class SoundShareApp extends StatelessWidget {
-  const SoundShareApp({super.key});
+  const SoundShareApp({super.key, this.router});
+  final GoRouter? router;
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
     title: 'SoundShare',
     debugShowCheckedModeBanner: false,
     theme: AppTheme.dark,
-    routerConfig: _router,
+    routerConfig: router ?? _router,
     builder: (context, child) {
       final appContent = child ?? const SizedBox.shrink();
       if (!ClerkConfig.isConfigured) return appContent;

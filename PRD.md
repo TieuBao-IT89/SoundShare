@@ -87,6 +87,8 @@ SoundShare hướng đến giải quyết các vấn đề sau:
    Profile Hiển thị và quản lý thông tin hồ sơ
 
 Ứng dụng hiện sử dụng dữ liệu bài hát mẫu trong source code. Không được mặc định rằng backend, đăng nhập, đồng bộ dữ liệu hoặc tải file lên máy chủ đã hoàn thiện chỉ vì chúng xuất hiện trong định hướng kiến trúc hoặc README.
+
+Phạm vi UI đã triển khai cho issue #5: Home/Explore/Library dùng chung catalog mẫu qua Riverpod và chọn đúng bài trong Player; mini-player giữ trạng thái khi tạm dừng và chuyển tab. Explore tìm tên bài, nghệ sĩ và thể loại không phân biệt hoa/thường. Lượt thích chỉ lưu trong bộ nhớ của phiên ứng dụng, thể hiện ở Library/Profile, chưa đồng bộ tài khoản. Profile hiển thị danh tính Clerk khi có phiên; khi chưa cấu hình Clerk thì hiển thị khách, không có tên hoặc thống kê giả. Upload chọn MP3 không rỗng tối đa 20 MB, artwork tùy chọn JPG/PNG/WebP tối đa 5 MB, kiểm tra title/artist bắt buộc (mỗi trường tối đa 120 ký tự), description tối đa 1000 ký tự và tạo bản xem trước tại thiết bị. Flutter chưa gửi file, tạo song hoặc lưu bản nháp qua API; không hiển thị kết quả xuất bản. Catalog có loading/error/retry/empty; playback và file picker có lỗi an toàn để thử lại. Các hành vi này không thay đổi API contract backend bên dưới.
 4.2 MVP — phiên bản khả dụng tối thiểu
 MVP nên ưu tiên các luồng cốt lõi:
 

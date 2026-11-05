@@ -1,146 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../../core/widgets/artwork.dart';
-import '../../home/domain/song.dart';
+import '../../../core/widgets/catalog_widgets.dart';
+import '../../../core/widgets/section_heading.dart';
+import '../../home/application/catalog_provider.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
   @override
-  Widget build(BuildContext context) => AppScaffold(
-    child: ListView(
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
-      children: [
-        const Text(
-          'Your library',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 18),
-        Row(
-          children: [
-            Expanded(
-              child: _CollectionCard(
-                icon: Icons.favorite_rounded,
-                title: 'Liked songs',
-                subtitle: '12 tracks',
-                color: AppColors.violet,
-                onTap: () => context.push('/player'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _CollectionCard(
-                icon: Icons.queue_music_rounded,
-                title: 'Playlists',
-                subtitle: 'Make a mix',
-                color: AppColors.mint,
-                onTap: () {},
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 26),
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Your uploads',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => context.push('/upload'),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Upload'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ...sampleSongs
-            .take(2)
-            .map(
-              (song) => ListTile(
-                onTap: () => context.push('/player'),
-                contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                leading: Artwork(url: song.artwork),
-                title: Text(song.title),
-                subtitle: Text(
-                  song.artist,
-                  style: const TextStyle(color: AppColors.muted),
-                ),
-                trailing: const Icon(
-                  Icons.more_horiz_rounded,
-                  color: AppColors.muted,
-                ),
-              ),
-            ),
-        const SizedBox(height: 22),
-        const Text(
-          'Made for you',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
-        ListTile(
-          onTap: () => context.push('/explore'),
-          contentPadding: EdgeInsets.zero,
-          leading: const CircleAvatar(
-            backgroundColor: AppColors.surfaceLight,
-            child: Icon(Icons.auto_awesome_rounded, color: AppColors.violet),
-          ),
-          title: const Text('Discover weekly'),
-          subtitle: const Text(
-            'A fresh mix every week',
-            style: TextStyle(color: AppColors.muted),
-          ),
-        ),
-      ],
-    ),
-  );
+  ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _CollectionCard extends StatelessWidget {
-  const _CollectionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
+class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+  bool samples = false;
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(18),
-    child: Container(
-      height: 128,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget build(BuildContext context) {
+    final liked = ref.watch(likedSongIndicesProvider);
+    return AppScaffold(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         children: [
-          Icon(icon, color: color, size: 28),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          ScreenHeading(
+            eyebrow: 'YOUR LIBRARY',
+            title: 'Keep the good ones.',
+            subtitle: 'A little shelf for the tracks you want to hear again.',
+            action: IconButton(
+              tooltip: 'Prepare a track',
+              onPressed: () => context.push('/upload'),
+              icon: const Icon(Icons.add_rounded),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.favorite_rounded,
+                  color: AppColors.violet,
+                  size: 28,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${liked.length} liked ${liked.length == 1 ? 'track' : 'tracks'}',
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Saved for this listening session',
+                        style: TextStyle(color: AppColors.muted, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text(
-                subtitle,
-                style: const TextStyle(color: AppColors.muted, fontSize: 12),
+              ChoiceChip(
+                label: const Text('Liked tracks'),
+                selected: !samples,
+                onSelected: (_) => setState(() => samples = false),
+              ),
+              ChoiceChip(
+                label: const Text('Sample catalog'),
+                selected: samples,
+                onSelected: (_) => setState(() => samples = true),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          ref
+              .watch(catalogProvider)
+              .when(
+                loading: () => const CatalogLoading(),
+                error: (_, _) => const CatalogError(),
+                data: (songs) {
+                  final indices = [
+                    for (var i = 0; i < songs.length; i++)
+                      if (samples || liked.contains(i)) i,
+                  ];
+                  if (indices.isEmpty) {
+                    return EmptyState(
+                      icon: Icons.favorite_border_rounded,
+                      title: samples
+                          ? 'No sample tracks yet'
+                          : 'Find your first favorite',
+                      message:
+                          'Tap the heart in the player to keep a track here.',
+                      actionLabel: 'Explore tracks',
+                      onAction: () => context.go('/explore'),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final index in indices)
+                        SongTile(song: songs[index], index: index),
+                    ],
+                  );
+                },
+              ),
+          const SizedBox(height: 24),
+          const Text(
+            'Likes are kept during this session. Playlists and library sync are coming later.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.5),
+          ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }

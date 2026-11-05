@@ -1,26 +1,33 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/catalog_widgets.dart';
 
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key});
+  const UploadScreen({super.key, this.filePicker});
+  final FilePicker? filePicker;
+
   @override
   State<UploadScreen> createState() => _UploadScreenState();
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  PlatformFile? file;
-  PlatformFile? artwork;
-  String? message;
-  bool uploading = false;
+  final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final artistController = TextEditingController();
   final descriptionController = TextEditingController();
+  PlatformFile? file;
+  PlatformFile? artwork;
+  String? message;
+  String genre = 'Indie';
+  bool busy = false;
+  bool previewReady = false;
 
   @override
   void dispose() {
@@ -30,21 +37,54 @@ class _UploadScreenState extends State<UploadScreen> {
     super.dispose();
   }
 
-  Future<void> _chooseFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['mp3'],
-    );
-    if (result == null || result.files.isEmpty) return;
-    final selected = result.files.first;
+  void _changed() => setState(() => previewReady = false);
+  void _back() => context.canPop() ? context.pop() : context.go('/');
+
+  Future<void> _chooseFile({bool image = false}) async {
     setState(() {
-      file = selected;
-      message = selected.size > 20 * 1024 * 1024
-          ? 'Files must be smaller than 20 MB.'
-          : null;
+      busy = true;
+      message = null;
+      previewReady = false;
     });
-    if (selected.size <= 20 * 1024 * 1024) {
-      await _readMetadata(selected);
+    try {
+      final result = await (widget.filePicker ?? FilePicker.platform).pickFiles(
+        type: FileType.custom,
+        allowedExtensions: image ? ['jpg', 'jpeg', 'png', 'webp'] : ['mp3'],
+        withData: image,
+      );
+      if (!mounted || result == null || result.files.isEmpty) return;
+      final selected = result.files.first;
+      final extension = selected.extension?.toLowerCase();
+      final validType = image
+          ? ['jpg', 'jpeg', 'png', 'webp'].contains(extension)
+          : extension == 'mp3';
+      if (!validType ||
+          selected.size <= 0 ||
+          selected.size > (image ? 5 : 20) * 1024 * 1024) {
+        setState(
+          () => message = image
+              ? 'Choose a JPG, PNG or WebP image up to 5 MB.'
+              : 'Choose a non-empty MP3 file up to 20 MB.',
+        );
+        return;
+      }
+      setState(() {
+        if (image) {
+          artwork = selected;
+        } else {
+          file = selected;
+        }
+      });
+      if (!image) await _readMetadata(selected);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () =>
+              message = 'The file could not be opened. Please choose it again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
     }
   }
 
@@ -62,214 +102,287 @@ class _UploadScreenState extends State<UploadScreen> {
         artistController.text = metadata.artist!;
       }
     } catch (_) {
-      // Some valid MP3 files do not include readable ID3 tags.
+      // Valid MP3 files do not always have readable ID3 tags.
     }
   }
 
-  Future<void> _chooseArtwork() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      withData: true,
-    );
-    if (result == null || result.files.isEmpty) return;
-    setState(() => artwork = result.files.first);
+  void _preview() {
+    final detailsValid = formKey.currentState!.validate();
+    setState(() {
+      message = file == null ? 'Choose an MP3 file first.' : null;
+      previewReady = file != null && detailsValid;
+    });
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Share a track'),
+      title: const Text('Prepare a track'),
       leading: IconButton(
-        onPressed: () => Navigator.of(context).maybePop(),
+        tooltip: 'Back to browsing',
+        onPressed: _back,
         icon: const Icon(Icons.arrow_back_rounded),
       ),
     ),
-    body: ListView(
-      padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
-      children: [
-        const Text(
-          'Put your sound out there.',
-          style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Share a song with listeners everywhere.',
-          style: TextStyle(color: AppColors.muted),
-        ),
-        const SizedBox(height: 22),
-        InkWell(
-          onTap: _chooseFile,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.surfaceLight),
-            ),
-            child: Column(
+    body: SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Form(
+            key: formKey,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(22, 12, 22, 32),
               children: [
-                const Icon(
-                  Icons.graphic_eq_rounded,
-                  size: 38,
-                  color: AppColors.violet,
+                const ScreenHeading(
+                  eyebrow: 'MADE BY YOU',
+                  title: 'Give your sound\na place to land.',
+                  subtitle: 'Prepare a local preview. Nothing is published or sent yet.',
                 ),
-                const SizedBox(height: 9),
-                Text(
-                  file?.name ?? 'Choose an MP3 file',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                const SizedBox(height: 28),
+                const _Step(number: '01', title: 'Start with the sound'),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: busy ? null : () => _chooseFile(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(22),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        file == null
+                            ? Icons.graphic_eq_rounded
+                            : Icons.audio_file_rounded,
+                        size: 36,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        file?.name ?? 'Choose an MP3 file',
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        file == null
+                            ? 'MP3 · Up to 20 MB'
+                            : '${(file!.size / 1024 / 1024).toStringAsFixed(1)} MB · Change file',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  file == null
-                      ? 'MP3 · Up to 20 MB'
-                      : '${(file!.size / 1024 / 1024).toStringAsFixed(1)} MB',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                if (busy)
+                  Padding(
+                    padding: EdgeInsets.only(top: 10),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: const Text('Opening file…'),
+                    ),
+                  ),
+                if (message != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        message!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 28),
+                const _Step(number: '02', title: 'Tell its story'),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: titleController,
+                  maxLength: 120,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Song title',
+                    hintText: 'Give your track a name',
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Add a title for this track.'
+                      : null,
+                  onChanged: (_) => _changed(),
                 ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: artistController,
+                  maxLength: 120,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Artist name',
+                    hintText: 'Who made this track?',
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Add the artist name.'
+                      : null,
+                  onChanged: (_) => _changed(),
+                ),
+                const SizedBox(height: 14),
+                DropdownButtonFormField<String>(
+                  initialValue: genre,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Genre'),
+                  items:
+                      const [
+                            'Indie',
+                            'Electronic',
+                            'Hip-hop',
+                            'Jazz',
+                            'Pop',
+                            'Other',
+                          ]
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        genre = value;
+                        previewReady = false;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 18),
+                TextFormField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  maxLength: 1000,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                    hintText: 'A little context for your listeners',
+                  ),
+                  onChanged: (_) => _changed(),
+                ),
+                const SizedBox(height: 28),
+                const _Step(number: '03', title: 'Set the scene'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Optional artwork · JPG, PNG or WebP up to 5 MB.',
+                  style: TextStyle(color: AppColors.muted),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: busy ? null : () => _chooseFile(image: true),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                  ),
+                  child: Row(
+                    children: [
+                      if (artwork?.bytes != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            artwork!.bytes!,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                const Icon(Icons.image_not_supported_outlined),
+                          ),
+                        )
+                      else
+                        const Icon(Icons.add_photo_alternate_outlined),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          artwork?.name ?? 'Add album artwork',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+                if (previewReady)
+                  Semantics(
+                    liveRegion: true,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your local preview is ready',
+                            style: TextStyle(
+                              color: AppColors.mint,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${titleController.text.trim()} · ${artistController.text.trim()}',
+                          ),
+                          Text(
+                            genre,
+                            style: const TextStyle(color: AppColors.muted),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Publishing is not available in this preview. Your file has not been uploaded.',
+                            style: TextStyle(color: AppColors.muted),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                FilledButton(
+                  onPressed: busy ? null : _preview,
+                  child: const Text(
+                    'Preview track details',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(onPressed: _back, child: const Text('Cancel')),
               ],
             ),
           ),
         ),
-        if (message != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              message!,
-              style: const TextStyle(color: Colors.orangeAccent),
-            ),
-          ),
-        const SizedBox(height: 20),
-        _Field(
-          controller: titleController,
-          label: 'Song title',
-          hint: 'Give your track a name',
-        ),
-        const SizedBox(height: 14),
-        _Field(
-          controller: artistController,
-          label: 'Artist name',
-          hint: 'Who made this track?',
-        ),
-        const SizedBox(height: 14),
-        _Field(
-          controller: descriptionController,
-          label: 'Description',
-          hint: 'Tell listeners a little about it',
-          maxLines: 3,
-        ),
-        const SizedBox(height: 14),
-        const Text('Genre', style: TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: 'Indie',
-          items:
-              const ['Indie', 'Electronic', 'Hip-hop', 'Jazz', 'Pop', 'Other']
-                  .map(
-                    (genre) =>
-                        DropdownMenuItem(value: genre, child: Text(genre)),
-                  )
-                  .toList(),
-          onChanged: (_) {},
-        ),
-        const SizedBox(height: 14),
-        OutlinedButton(
-          onPressed: _chooseArtwork,
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.all(14),
-            foregroundColor: AppColors.violet,
-          ),
-          child: artwork?.bytes == null
-              ? const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_photo_alternate_outlined),
-                    SizedBox(width: 8),
-                    Text('Add album artwork'),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.memory(
-                        artwork!.bytes!,
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(artwork!.name, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-        ),
-        const SizedBox(height: 20),
-        if (uploading) const LinearProgressIndicator(color: AppColors.violet),
-        FilledButton(
-          onPressed: uploading
-              ? null
-              : () {
-                  if (file == null ||
-                      file!.size > 20 * 1024 * 1024 ||
-                      titleController.text.trim().isEmpty ||
-                      artistController.text.trim().isEmpty) {
-                    setState(
-                      () =>
-                          message = file == null ? 'Choose an MP3 file first.' : 'Add a title and artist, and keep the file under 20 MB.',
-                    );
-                    return;
-                  }
-                  setState(() => uploading = true);
-                  final messenger = ScaffoldMessenger.of(context);
-                  Future<void>.delayed(const Duration(milliseconds: 700), () {
-                    if (!mounted) return;
-                    setState(() => uploading = false);
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Upload preview complete. Connect Supabase to publish this track.',
-                        ),
-                      ),
-                    );
-                  });
-                },
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.violet,
-            padding: const EdgeInsets.all(16),
-          ),
-          child: Text(uploading ? 'Preparing…' : 'Share track'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.muted)),
-        ),
-      ],
+      ),
     ),
   );
 }
 
-class _Field extends StatelessWidget {
-  const _Field({
-    required this.controller,
-    required this.label,
-    required this.hint,
-    this.maxLines = 1,
-  });
-  final TextEditingController controller;
-  final String label;
-  final String hint;
-  final int maxLines;
+class _Step extends StatelessWidget {
+  const _Step({required this.number, required this.title});
+  final String number;
+  final String title;
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-      const SizedBox(height: 8),
-      TextField(
-        controller: controller,
-        maxLines: maxLines,
-        decoration: InputDecoration(hintText: hint),
+      Text(
+        number,
+        style: const TextStyle(
+          color: AppColors.violet,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
       ),
     ],
   );

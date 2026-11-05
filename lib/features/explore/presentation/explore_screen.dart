@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../../core/widgets/artwork.dart';
-import '../../home/domain/song.dart';
+import '../../../core/widgets/catalog_widgets.dart';
+import '../../../core/widgets/section_heading.dart';
+import '../../home/application/catalog_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -14,90 +14,97 @@ class ExploreScreen extends ConsumerStatefulWidget {
 }
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
+  final searchController = TextEditingController();
   String query = '';
-  @override
-  Widget build(BuildContext context) {
-    final results = sampleSongs
-        .where(
-          (song) => '${song.title} ${song.artist}'.toLowerCase().contains(
-            query.toLowerCase(),
-          ),
-        )
-        .toList();
-    return AppScaffold(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Explore',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 18),
-            TextField(
-              onChanged: (value) => setState(() => query = value),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search_rounded),
-                hintText: 'Songs, artists, and more',
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text(
-              query.isEmpty ? 'Recently shared' : '${results.length} results',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: results.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.music_off_rounded,
-                            size: 42,
-                            color: AppColors.muted,
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'No tracks found',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Try another title or artist',
-                            style: TextStyle(color: AppColors.muted),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: results.length,
-                      itemBuilder: (context, index) {
-                        final song = results[index];
-                        return ListTile(
-                          onTap: () => context.push('/player'),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 4,
-                          ),
-                          leading: Artwork(url: song.artwork),
-                          title: Text(song.title),
-                          subtitle: Text(
-                            song.artist,
-                            style: const TextStyle(color: AppColors.muted),
-                          ),
-                          trailing: const Icon(
-                            Icons.play_circle_outline,
-                            color: AppColors.violet,
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void clearSearch() {
+    searchController.clear();
+    setState(() => query = '');
   }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AppScaffold(
+    child: ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+      children: [
+        const ScreenHeading(
+          eyebrow: 'EXPLORE',
+          title: 'Follow your ears.',
+          subtitle: 'Find a track, an artist, or a different direction.',
+        ),
+        const SizedBox(height: 22),
+        TextField(
+          controller: searchController,
+          textInputAction: TextInputAction.search,
+          onChanged: (value) => setState(() => query = value.trim()),
+          decoration: InputDecoration(
+            labelText: 'Search music',
+            hintText: 'Title, artist, or genre',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: searchController.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Clear search',
+                    onPressed: clearSearch,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 22),
+        ref
+            .watch(catalogProvider)
+            .when(
+              loading: () => const CatalogLoading(),
+              error: (_, _) => const CatalogError(),
+              data: (songs) {
+                final matches = [
+                  for (var i = 0; i < songs.length; i++)
+                    if ('${songs[i].title} ${songs[i].artist} ${songs[i].genre}'
+                        .toLowerCase()
+                        .contains(query.toLowerCase()))
+                      i,
+                ];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      liveRegion: true,
+                      child: SectionHeading(
+                        query.isEmpty
+                            ? 'The sample catalog'
+                            : '${matches.length} ${matches.length == 1 ? 'track' : 'tracks'} found',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (matches.isEmpty)
+                      EmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: query.isEmpty
+                            ? 'No tracks here yet'
+                            : 'No tracks found',
+                        message: 'Try another title, artist, or genre.',
+                        actionLabel: query.isEmpty ? null : 'Clear search',
+                        onAction: clearSearch,
+                      )
+                    else
+                      for (final index in matches)
+                        SongTile(song: songs[index], index: index),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Sample tracks and artists · Demo audio',
+                      style: TextStyle(color: AppColors.muted, fontSize: 12),
+                    ),
+                  ],
+                );
+              },
+            ),
+      ],
+    ),
+  );
 }

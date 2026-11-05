@@ -1,104 +1,118 @@
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/config/clerk_config.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../auth/presentation/backend_auth_debug.dart';
+import '../../../core/widgets/catalog_widgets.dart';
+import '../../home/application/catalog_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => AppScaffold(
-    child: ListView(
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 28),
-      children: [
-        const Text(
-          'Your profile',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 34),
-        const Center(
-          child: CircleAvatar(
-            radius: 48,
-            backgroundColor: AppColors.surfaceLight,
-            child: Icon(
-              Icons.person_rounded,
-              size: 48,
-              color: AppColors.violet,
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ClerkConfig.isConfigured) return _profile(context, ref);
+    return ClerkAuthBuilder(
+      builder: (context, auth) {
+        final user = auth.user;
+        return _profile(
+          context,
+          ref,
+          name: user == null
+              ? null
+              : user.hasName
+              ? user.name
+              : user.username ?? 'Music lover',
+        );
+      },
+    );
+  }
+
+  Widget _profile(BuildContext context, WidgetRef ref, {String? name}) {
+    final likes = ref.watch(likedSongIndicesProvider).length;
+    return AppScaffold(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
+        children: [
+          const ScreenHeading(
+            eyebrow: 'YOUR CORNER',
+            title: 'A little more you.',
+            subtitle: 'Make room for the music you come back to.',
+          ),
+          const SizedBox(height: 32),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: CircleAvatar(
+              radius: 38,
+              backgroundColor: AppColors.surfaceLight,
+              child: Icon(
+                Icons.person_outline_rounded,
+                size: 36,
+                color: AppColors.violet,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        const Center(
-          child: Text(
-            'Alex Morgan',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          const SizedBox(height: 18),
+          Text(
+            name ?? 'Listening as a guest',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
           ),
-        ),
-        const SizedBox(height: 5),
-        const Center(
-          child: Text(
-            '@alexmakesmusic',
+          const SizedBox(height: 10),
+          Text(
+            name == null
+                ? 'You are exploring the sample catalog. Your likes stay in this session.'
+                : 'Welcome back. Your likes in this preview stay in this session.',
+            style: const TextStyle(color: AppColors.muted, height: 1.5),
+          ),
+          const SizedBox(height: 26),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(
+              Icons.favorite_border_rounded,
+              color: AppColors.violet,
+            ),
+            title: Text('$likes liked ${likes == 1 ? 'track' : 'tracks'}'),
+            subtitle: const Text('Open your listening shelf'),
+            trailing: const Icon(Icons.arrow_forward_rounded),
+            onTap: () => context.go('/library'),
+          ),
+          const Divider(height: 32),
+          const Text(
+            'Your artist profile',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Profile editing, uploads and follower counts will appear when account features are ready.',
+            style: TextStyle(color: AppColors.muted, height: 1.5),
+          ),
+          const SizedBox(height: 28),
+          FilledButton(
+            onPressed: () => context.go('/explore'),
+            child: const Text(
+              'Find your next favorite',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          const Text(
+            'SOUNDSHARE',
+            style: TextStyle(
+              color: AppColors.mint,
+              fontSize: 11,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Independent sounds. A place to listen.',
             style: TextStyle(color: AppColors.muted),
           ),
-        ),
-        const SizedBox(height: 14),
-        const Center(
-          child: Text(
-            'Collecting little moments and turning them into songs.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.muted),
-          ),
-        ),
-        const SizedBox(height: 20),
-        OutlinedButton(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile editing is coming soon.')),
-          ),
-          child: const Text('Edit profile'),
-        ),
-        const SizedBox(height: 28),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _Stat(value: '8', label: 'Uploads'),
-            _Stat(value: '240', label: 'Followers'),
-            _Stat(value: '186', label: 'Following'),
-          ],
-        ),
-        const SizedBox(height: 34),
-        const Text(
-          'About SoundShare',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'A place for independent artists and curious listeners.',
-          style: TextStyle(color: AppColors.muted),
-        ),
-        if (ClerkConfig.isConfigured) ...[
-          const SizedBox(height: 24),
-          const BackendAuthDebug(),
         ],
-      ],
-    ),
-  );
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label});
-  final String value;
-  final String label;
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Text(
-        value,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
       ),
-      const SizedBox(height: 4),
-      Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-    ],
-  );
+    );
+  }
 }
