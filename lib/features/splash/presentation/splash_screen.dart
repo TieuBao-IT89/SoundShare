@@ -41,7 +41,9 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) => Scaffold(
     body: Center(
       child: FadeTransition(
-        opacity: _fade,
+        opacity: MediaQuery.disableAnimationsOf(context)
+            ? const AlwaysStoppedAnimation(1)
+            : _fade,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

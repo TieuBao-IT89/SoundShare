@@ -10,11 +10,13 @@ class Artwork extends StatelessWidget {
     this.size = 56,
     this.radius = 14,
     this.semanticLabel,
+    this.height,
   });
   final String url;
   final double size;
   final double radius;
   final String? semanticLabel;
+  final double? height;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -26,11 +28,15 @@ class Artwork extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: url,
           width: size,
-          height: size,
+          height: height ?? size,
           fit: BoxFit.cover,
+          fadeInDuration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 200),
+          fadeOutDuration: Duration.zero,
           placeholder: (context, error) => Container(
             width: size,
-            height: size,
+            height: height ?? size,
             color: AppColors.surfaceLight,
             child: const Icon(
               Icons.graphic_eq_rounded,
@@ -39,7 +45,7 @@ class Artwork extends StatelessWidget {
           ),
           errorWidget: (context, error, stackTrace) => Container(
             width: size,
-            height: size,
+            height: height ?? size,
             color: AppColors.surfaceLight,
             child: const Icon(
               Icons.music_note_rounded,

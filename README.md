@@ -10,7 +10,7 @@ SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá, phát và
 - Trang chủ với gợi ý mẫu và danh sách bài hát có thể tìm kiếm.
 - Trình phát nhạc hỗ trợ phát trực tuyến, tua bài, yêu thích, phát ngẫu nhiên, lặp lại và chuyển bài.
 - Chọn tệp MP3 và kiểm tra giới hạn dung lượng 20 MB trên màn hình tải nhạc lên.
-- Thư viện và hồ sơ cá nhân sử dụng dữ liệu mẫu.
+- Thư viện lưu lượt thích trong phiên; Profile dùng danh tính Clerk khi có phiên hoặc hiển thị trạng thái khách.
 
 ## Công nghệ
 
@@ -18,7 +18,7 @@ SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá, phát và
 
 ## Ảnh chụp màn hình
 
-Ảnh chụp sẽ được bổ sung sau khi hoàn tất các bản xem trước trên thiết bị.
+Xem [ảnh sáu màn hình và báo cáo rà soát issue #5](docs/ui/issue-5-review.md). Ảnh chụp từ Flutter Web ở kích thước điện thoại; chưa thay thế kiểm tra Android/iOS thật.
 
 ## Yêu cầu
 
@@ -50,6 +50,16 @@ flutter test
 ```
 
 Backend mục tiêu giao tiếp với Neon qua Express REST API; ứng dụng Flutter không kết nối trực tiếp Neon. Khi triển khai, giữ connection string và secret ở backend thông qua biến môi trường/secret manager. Không commit thông tin bí mật.
+
+### Giao diện mobile — issue #5
+
+Hướng thiết kế và mục tiêu cho Home, Explore, Player, Upload, Library, Profile nằm trong [DESIGN.md](DESIGN.md). Dự án dùng [Taste Skill bản Flutter](.agents/skills/design-taste-frontend/SKILL.md).
+
+Chọn bài từ Home/Explore/Library cập nhật đúng Player; mini-player giữ bài đang chọn khi tạm dừng hoặc đổi tab. Tìm kiếm khớp tên bài, nghệ sĩ và thể loại, không phân biệt chữ hoa/thường. Nút yêu thích cập nhật Library và Profile trong phiên hiện tại; khởi động lại sẽ mất các lượt thích này.
+
+Catalog, tên nghệ sĩ và artwork hiện dùng mẫu có sẵn; bốn bài dùng chung một URL audio demo. Upload kiểm tra MP3 tối đa 20 MB, artwork JPG/PNG/WebP tối đa 5 MB và trường bắt buộc, sau đó chỉ tạo bản xem trước trên thiết bị. File và lượt thích chưa gửi tới backend. Validation client không thay thế kiểm tra MIME/magic bytes phía server.
+
+Kiểm thử tương tác và bố cục nằm trong `test/mobile_experience_test.dart`, giả lập audio player, catalog và file picker; không dùng tài khoản, Neon hay Cloudinary thật. Xem kết quả kiểm tra và giới hạn rà soát giao diện trong [DESIGN.md](DESIGN.md).
 
 ## Đóng góp
 

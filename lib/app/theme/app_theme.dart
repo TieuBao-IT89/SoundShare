@@ -68,6 +68,13 @@ abstract final class AppTheme {
         indicatorColor: AppColors.violet.withValues(alpha: 0.2),
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? AppColors.violet
+                : AppColors.muted,
+          ),
+        ),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
@@ -76,6 +83,13 @@ abstract final class AppTheme {
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
           );
         }),
+      ),
+      chipTheme: ChipThemeData(
+        selectedColor: AppColors.violet.withValues(alpha: 0.2),
+        checkmarkColor: AppColors.violet,
+        labelStyle: const TextStyle(color: Color(0xFFF5F3FA)),
+        side: const BorderSide(color: AppColors.surfaceLight),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: AppColors.violet,

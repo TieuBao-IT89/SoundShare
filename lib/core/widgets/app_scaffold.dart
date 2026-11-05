@@ -1,13 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../app/theme/app_theme.dart';
-import '../../core/services/audio_service.dart';
-import '../../features/home/domain/song.dart';
+import '../services/audio_service.dart';
 import 'artwork.dart';
 
 class AppScaffold extends ConsumerWidget {
@@ -29,29 +26,39 @@ class AppScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).uri.path;
+    final song = ref.watch(currentSongProvider);
+    final hasSelection = ref.watch(hasSelectedSongProvider);
+    final loading = ref.watch(playbackLoadingProvider);
+    final error = ref.watch(playbackErrorProvider);
     final player = ref.watch(audioPlayerProvider);
+    final actions = ref.watch(playbackActionsProvider);
     return Scaffold(
-      body: SafeArea(child: child),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: child,
+          ),
+        ),
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (showMiniPlayer)
+            if (showMiniPlayer && hasSelection && song != null)
               StreamBuilder<PlayerState>(
                 stream: player.playerStateStream,
+                initialData: player.playerState,
                 builder: (context, snapshot) {
-                  if (snapshot.data?.playing != true) {
-                    return const SizedBox.shrink();
-                  }
-                  final song =
-                      sampleSongs[ref.watch(currentSongIndexProvider) %
-                          sampleSongs.length];
+                  final playing = snapshot.data?.playing ?? false;
                   return Container(
+                    key: const ValueKey('mini-player'),
                     margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.surfaceLight),
                     ),
                     child: Row(
                       children: [
@@ -69,11 +76,12 @@ class AppScaffold extends ConsumerWidget {
                                     radius: 10,
                                     semanticLabel: 'Artwork for ${song.title}',
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
                                           song.title,
@@ -84,11 +92,15 @@ class AppScaffold extends ConsumerWidget {
                                           ),
                                         ),
                                         Text(
-                                          song.artist,
+                                          error == null
+                                              ? song.artist
+                                              : 'Playback unavailable',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: AppColors.muted,
+                                          style: TextStyle(
+                                            color: error == null
+                                                ? AppColors.muted
+                                                : AppColors.error,
                                             fontSize: 12,
                                           ),
                                         ),
@@ -101,24 +113,27 @@ class AppScaffold extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Pause ${song.title}',
-                          onPressed: player.pause,
-                          icon: const Icon(Icons.pause_rounded, size: 25),
+                          tooltip: playing ? 'Pause track' : 'Resume track',
+                          onPressed: loading ? null : actions.togglePlayback,
+                          icon: loading
+                              ? MediaQuery.disableAnimationsOf(context)
+                                    ? const Icon(Icons.hourglass_top_rounded)
+                                    : const SizedBox.square(
+                                        dimension: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                              : Icon(
+                                  playing
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                ),
                         ),
                         IconButton(
                           tooltip: 'Play next track',
-                          onPressed: () async {
-                            final next =
-                                (ref.read(currentSongIndexProvider) + 1) %
-                                sampleSongs.length;
-                            ref.read(currentSongIndexProvider.notifier).state =
-                                next;
-                            try {
-                              await player.setUrl(sampleSongs[next].audioUrl);
-                              unawaited(player.play());
-                            } catch (_) {}
-                          },
-                          icon: const Icon(Icons.skip_next_rounded, size: 24),
+                          onPressed: loading ? null : () => actions.skip(1),
+                          icon: const Icon(Icons.skip_next_rounded),
                         ),
                       ],
                     ),
