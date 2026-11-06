@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../../core/services/api_client.dart';
 import '../../explore/domain/discovery.dart';
 import '../domain/song.dart';
@@ -7,6 +9,9 @@ import 'mock_song_repository.dart';
 class ApiSongRepository extends SongRepository {
   ApiSongRepository(this.api);
   final ApiClient api;
+  (String, Uint8List, String?, Uint8List?)? _pendingSource;
+  String? _audioAssetId;
+  String? _artworkAssetId;
 
   Future<List<Song>> _list(Map<String, String> filters) async {
     final songs = <Song>[];
@@ -48,18 +53,68 @@ class ApiSongRepository extends SongRepository {
 
   @override
   Future<String> playback(Song song) async =>
-      (await api.request('GET', '/songs/${song.id}/playback'))['url'] as String;
+      (await playbackInfo(song))['url'] as String;
+  @override
+  Future<Map<String, dynamic>> playbackInfo(Song song) async =>
+      Map<String, dynamic>.from(
+        await api.request('GET', '/community/songs/${song.id}/playback'),
+      );
+  @override
+  Future<bool> heartbeat(String sessionId, int positionMs, bool playing) async {
+    final result = await api.request(
+      'POST',
+      '/playback-sessions/$sessionId/heartbeat',
+      body: {'positionMs': positionMs, 'playing': playing},
+    );
+    return result['isValid'] == true;
+  }
+
   @override
   Future<void> favorite(Song song, bool liked) async {
-    await api.request(liked ? 'PUT' : 'DELETE', '/songs/${song.id}/favorite');
+    await api.request(
+      liked ? 'PUT' : 'DELETE',
+      song.community
+          ? '/community/songs/${song.id}/like'
+          : '/songs/${song.id}/favorite',
+    );
   }
 
   @override
   Future<void> upload(TrackDraft draft) async {
-    final audio = await api.upload('audio', draft.audioName, draft.audioBytes);
+    if (draft.visibility == 'public') {
+      final profile = await api.request('GET', '/users/me');
+      if (profile['username'] == null) {
+        throw const ApiException(400, 'PROFILE_REQUIRED');
+      }
+    }
+    final source = (
+      draft.audioName,
+      draft.audioBytes,
+      draft.artworkName,
+      draft.artworkBytes,
+    );
+    if (_pendingSource != source) {
+      _pendingSource = source;
+      _audioAssetId = null;
+      _artworkAssetId = null;
+    }
+    // Keep confirmed asset IDs until metadata succeeds. A lost POST response
+    // can then be retried through the server's existing idempotency check.
+    final audio = _audioAssetId ??= await api.upload(
+      'audio',
+      draft.audioName,
+      draft.audioBytes,
+      control: draft.transfer,
+    );
     final artwork = draft.artworkBytes == null
         ? null
-        : await api.upload('artwork', draft.artworkName!, draft.artworkBytes!);
+        : _artworkAssetId ??= await api.upload(
+            'artwork',
+            draft.artworkName!,
+            draft.artworkBytes!,
+            control: draft.transfer,
+          );
+    draft.transfer?.confirming();
     await api.request(
       'POST',
       '/songs',
@@ -70,7 +125,13 @@ class ApiSongRepository extends SongRepository {
         'artist': draft.artist,
         'genre': draft.genre,
         'description': draft.description,
+        'visibility': draft.visibility,
+        'rightsConfirmed': draft.rightsConfirmed,
       },
     );
+    draft.transfer?.completed();
+    _pendingSource = null;
+    _audioAssetId = null;
+    _artworkAssetId = null;
   }
 }

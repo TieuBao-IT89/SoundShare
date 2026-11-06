@@ -17,6 +17,8 @@ export const createCloudinaryStorage = (cloudinary) => ({
     try {
       const asset = await cloudinary.api.resource(publicId, {
         resource_type: resourceType, type: "authenticated", timeout: 15000,
+        // Admin API omits audio/video duration unless this flag is requested.
+        ...(resourceType === "video" ? { media_metadata: true } : {}),
       });
       // Persist an unsigned metadata URL, never a delivery signature.
       return { ...asset, secure_url: cloudinary.url(publicId, {

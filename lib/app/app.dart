@@ -19,19 +19,98 @@ import '../features/player/presentation/player_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/splash/presentation/splash_screen.dart';
 import '../features/upload/presentation/upload_screen.dart';
+import '../features/community/presentation/discover_screen.dart';
+import '../features/community/presentation/community_search_screen.dart';
+import '../features/community/presentation/public_profile_screen.dart';
+import '../features/community/presentation/profile_editor_screen.dart';
+import '../features/community/presentation/playlists_screen.dart';
+import '../features/community/presentation/manage_songs_screen.dart';
+import '../features/community/application/community_providers.dart';
+import '../features/community/presentation/queue_screen.dart';
+import '../l10n/l10n.dart';
+import '../core/widgets/aurora_widgets.dart';
+import '../core/widgets/authentication_header.dart';
 import 'theme/app_theme.dart';
 
 GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
     GoRoute(
-      path: '/explore',
-      builder: (context, state) =>
-          ExploreScreen(filters: DiscoveryFilters.fromUri(state.uri)),
+      path: '/library/search',
+      builder: (context, state) => ExploreScreen(
+        privateLibrary: true,
+        filters: DiscoveryFilters.fromUri(state.uri),
+      ),
     ),
-    GoRoute(path: '/player', builder: (context, state) => const PlayerScreen()),
+    GoRoute(
+      path: '/liked',
+      builder: (context, state) => const SavedTracksScreen(liked: true),
+    ),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, shell) => shell,
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/explore',
+              builder: (context, state) => Consumer(
+                builder: (context, ref, _) => ref.watch(demoModeProvider)
+                    ? ExploreScreen(
+                        filters: DiscoveryFilters.fromUri(state.uri),
+                      )
+                    : DiscoverScreen(
+                        initialGenre: state.uri.queryParameters['genre'],
+                      ),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => Consumer(
+                builder: (context, ref, _) => ref.watch(demoModeProvider)
+                    ? ExploreScreen(
+                        filters: DiscoveryFilters.fromUri(state.uri),
+                      )
+                    : CommunitySearchScreen(
+                        initialQuery: state.uri.queryParameters['q'] ?? '',
+                      ),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/library',
+              builder: (context, state) => const LibraryScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/player',
+      pageBuilder: (context, state) =>
+          _auroraPage(context, state, const PlayerScreen()),
+    ),
     GoRoute(
       path: '/upload',
       builder: (context, state) => Consumer(
@@ -41,22 +120,76 @@ GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
               : (draft) async {
                   await ref.read(songRepositoryProvider).upload(draft);
                   ref.invalidate(catalogProvider);
+                  ref.invalidate(communityHomeProvider);
+                  ref.invalidate(communitySongsProvider);
+                  ref.invalidate(myPublicProfileProvider);
                 },
         ),
       ),
     ),
     GoRoute(
-      path: '/library',
-      builder: (context, state) => const LibraryScreen(),
+      path: '/u/:username',
+      builder: (context, state) =>
+          PublicProfileScreen(username: state.pathParameters['username']!),
     ),
     GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
+      path: '/profile/edit',
+      builder: (context, state) => const ProfileEditorScreen(),
+    ),
+    GoRoute(
+      path: '/connections/:id/:kind',
+      builder: (context, state) => ConnectionsScreen(
+        id: state.pathParameters['id']!,
+        kind: state.pathParameters['kind']!,
+      ),
+    ),
+    GoRoute(
+      path: '/playlists',
+      builder: (context, state) => const PlaylistsScreen(),
+    ),
+    GoRoute(
+      path: '/playlists/:id',
+      builder: (context, state) =>
+          PlaylistScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/saved',
+      builder: (context, state) => const SavedTracksScreen(),
+    ),
+    GoRoute(
+      path: '/manage-songs',
+      builder: (context, state) => const ManageSongsScreen(),
     ),
   ],
 );
 
 final _router = createAppRouter();
+
+CustomTransitionPage<void> _auroraPage(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) => CustomTransitionPage<void>(
+  key: state.pageKey,
+  child: child,
+  transitionDuration: MediaQuery.disableAnimationsOf(context)
+      ? Duration.zero
+      : const Duration(milliseconds: 280),
+  reverseTransitionDuration: MediaQuery.disableAnimationsOf(context)
+      ? Duration.zero
+      : const Duration(milliseconds: 220),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+      FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, .025),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+);
 
 class SoundShareApp extends ConsumerWidget {
   const SoundShareApp({
@@ -70,6 +203,9 @@ class SoundShareApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
     title: 'SoundShare',
+    locale: const Locale('vi'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
     debugShowCheckedModeBanner: false,
     theme: AppTheme.dark,
     routerConfig: router ?? _router,
@@ -79,13 +215,15 @@ class SoundShareApp extends ConsumerWidget {
         return appContent;
       }
       if (!ClerkConfig.isConfigured) {
-        return const Scaffold(
-          body: Center(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'Sign-in is not configured for this build. Use the documented web setup to connect your account.',
-                textAlign: TextAlign.center,
+        return Scaffold(
+          body: AuroraBackground(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  context.l10n.signInNotConfigured,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -100,21 +238,21 @@ class SoundShareApp extends ConsumerWidget {
             subject: authState.user!.id,
             name: authState.user!.hasName
                 ? authState.user!.name
-                : authState.user!.username ?? 'Music lover',
+                : authState.user!.username ?? context.l10n.accountName,
           ),
           token: ({bool refresh = false}) async =>
               (await authState.sessionToken()).jwt,
           signOut: authState.signOut,
           child: appContent,
         ),
-        signedOutBuilder: (context, _) => Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: ClerkErrorListener(child: ClerkAuthentication()),
-              ),
-            ),
+        signedOutBuilder: (context, _) => const AuthenticationScaffold(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AuthenticationHeader(),
+              SizedBox(height: 28),
+              ClerkErrorListener(child: ClerkAuthentication()),
+            ],
           ),
         ),
       );

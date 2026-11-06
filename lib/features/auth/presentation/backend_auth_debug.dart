@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/backend_auth_provider.dart';
+import '../../../l10n/l10n.dart';
 
 class BackendAuthDebug extends ConsumerWidget {
   const BackendAuthDebug({super.key});
@@ -11,15 +12,15 @@ class BackendAuthDebug extends ConsumerWidget {
     final userState = ref.watch(backendCurrentUserProvider);
 
     return userState.when(
-      loading: () => const Text('Backend: Verifying...'),
+      loading: () => Text(context.l10n.backendVerifying),
       error: (error, stack) => Text(
-        'Backend authentication failed: $error',
+        context.l10n.sessionInvalid,
         style: const TextStyle(color: Colors.red),
       ),
       data: (user) => Text(
         user == null
-            ? 'Backend: Not verified'
-            : 'Backend: Authenticated (${user.clerkUserId})',
+            ? context.l10n.backendNotVerified
+            : context.l10n.backendVerified,
         style: const TextStyle(color: Colors.green),
       ),
     );

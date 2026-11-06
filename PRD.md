@@ -1,7 +1,7 @@
 PRD — SoundShare
 Product Requirements Document
 Phiên bản: 1.0
-Trạng thái: Draft
+Trạng thái: Draft; phần V3 bên dưới mở rộng MVP thư viện riêng
 Sản phẩm: SoundShare
 Nền tảng ứng dụng: Flutter (Web Chrome cho luồng tài khoản/dữ liệu thật; mobile cần nghiệm thu riêng)
 Backend: Node.js + Express, cung cấp REST API
@@ -312,6 +312,11 @@ MVP nên ưu tiên các luồng cốt lõi:
 - Trạng thái loading, empty, error và success phải phân biệt được.
 - Giao diện tuân thủ hệ thống thiết kế trong DESIGN.md.
   7.4 Khả năng bảo trì
+
+Giao diện Mystic Aurora mặc định tiếng Việt qua Flutter localization/ARB, dùng font Be Vietnam Pro và palette trong DESIGN.md. Điện thoại dùng bốn tab; từ 900 px chuyển sang navigation bên và bố cục nhiều cột. Chỉ hiển thị section có dữ liệu thật hoặc nhạc mẫu được ghi rõ; không có playlist, thông báo, lịch sử nghe hoặc cài đặt giả. Player và mini player giữ cùng nguồn trạng thái audio; tiến trình upload không hiển thị phần trăm nếu service không cung cấp. Reduce Motion, semantic tap, cỡ chữ 2× và trạng thái rỗng/lỗi là tiêu chí nghiệm thu. Thiết kế lại này không thay đổi REST API contract.
+
+Profile có nút quản lý tài khoản bằng giao diện Clerk cho phiên thật; thông tin chỉnh sửa do Clerk quản lý, không thêm đồng bộ email/avatar hay endpoint Neon. Tên hiển thị được cập nhật khi Clerk thông báo thay đổi trong cùng phiên mà không tạo lại container playback/catalog. Thẻ bài, Mini Player, shimmer và glow theo ảnh có Reduce Motion; trường tìm kiếm/form tải nhạc phải sử dụng được khi bàn phím mở, kể cả màn hình ngang.
+
 - Tách biệt presentation, domain và data layer theo cấu trúc dự án.
 - Tái sử dụng widget và theme thay vì tạo các biến thể không cần thiết.
 - Không đặt logic nghiệp vụ phức tạp trực tiếp trong widget UI.
@@ -555,3 +560,50 @@ Khám phá nhạc → Chọn bài hát → Phát nhạc → Tiếp tục nghe kh
 Home, Explore, Player, mini-player và Library là các thành phần quan trọng nhất của trải nghiệm MVP. Upload và chia sẻ là hướng mở rộng có giá trị, nhưng cần chốt rõ quy tắc nội dung, backend và bản quyền trước khi coi là năng lực hoàn chỉnh của sản phẩm.
 
 PRD này là bản định hướng ban đầu dựa trên cấu trúc ứng dụng hiện tại; các giả định về đối tượng người dùng, mô hình chia sẻ và backend cần được xác thực trước khi phát triển production.
+
+## V3 — NOCTURNE: hợp đồng cộng đồng
+
+Phần này mở rộng các mô tả “chỉ có thư viện riêng” trước đó. Luồng bắt buộc vẫn là Flutter → Express → Neon; Clerk xác minh identity và Cloudinary giữ file private. Mọi endpoint dưới `/api/v1` trong bảng sau **yêu cầu Bearer Clerk đã xác minh**, kể cả đọc nội dung có visibility public. Health là endpoint công khai không cần token. Không có anonymous listening trong phiên bản này.
+
+Migration `004_social_music.sql` mở rộng `users` và `private_tracks`, thêm follows, likes/saves, playback sessions/events, playlist_tracks, reports và deletion/cleanup receipts. Các bài cũ giữ `visibility=private`; public profile chỉ được liệt kê khi có username hợp lệ. `users` là mapping ổn định giữa UUID ứng dụng và Clerk sub; email/sub không nằm trong public response. Username do SoundShare quản lý, không suy ra từ email/Clerk ID.
+
+Response giữ `{success:true,data:...}`; lỗi `{success:false,error:{code,message,requestId}}`. Danh sách V3 dùng `{items,nextOffset}` với `limit=1..50` (mặc định 20), `offset=0..10000`; cursor của `GET /songs` cũ giữ nguyên. Input strict, không nhận owner/role/object key từ client.
+
+| Method / endpoint | Input và kết quả |
+|---|---|
+| GET `/users/me` | Hồ sơ của người gọi, username có thể null trước khi chọn |
+| PATCH `/users/me` | `{username,displayName,bio?,avatarAssetId?,coverAssetId?}`; username lowercase 3–24, regex `^[a-z0-9_][a-z0-9._]*[a-z0-9_]$`, unique, bỏ @ đầu; reserved admin/support/soundshare/system/official/search; tên 1–100, bio ≤500; asset phải artwork cùng owner |
+| GET `/users/search` | `q` ≤120, limit/offset; thứ tự exact username → prefix → contains → display name Unicode, case-insensitive; không tìm trường bí mật |
+| GET `/users/:username` | Public DTO: id, username, displayName, bio, avatar/cover access có hạn, followerCount, followingCount, songCount, following, isSelf, createdAt |
+| GET `/users/:username/songs` | Bài public/active của đúng profile, phân trang |
+| GET `/users/:username/playlists` | Playlist public của profile, phân trang |
+| POST / DELETE `/users/:id/follow` | UUID public profile; không body/query; 204 idempotent, không self-follow, unique pair |
+| GET `/users/:id/followers` / `following` | Public DTO phân trang; không xuất hồ sơ ẩn/chưa chọn username |
+| GET `/community/search` | `q,type=all|songs|users|playlists,genre?,limit,offset`; trả ba page `users,songs,playlists`; bắt đầu @ chỉ ưu tiên tài khoản, không trả private song/playlist |
+| GET `/discover/home` | newReleases, following, recommended, recent, popular (ranking 7 ngày), mỗi nhóm tối đa 8; reason `liked-genres-then-newest` |
+| GET `/discover/trending` | `period=today|week|month|all,limit,offset`; same-window score/validPlayCount/uniqueListeners/likeCount/saveCount/totalPlayCount; nhãn experimental |
+| GET `/discover/featured-creators` | `mode=featured|new|popular|growing|emerging,limit,offset`; chỉ creator có public active track |
+| GET `/discover/new-releases` | q/genre và phân trang trên bài public active |
+| GET `/discover/following` / `recent` | Feed người theo dõi hoặc tiến trình nghe của người gọi; recent được thấy private của chính chủ |
+| GET `/genres` | Thể loại có public active track và songCount thực |
+| GET `/community/saved` / `liked` | Bài đã lưu/thích có quyền đọc: public hoặc private của chính chủ |
+| GET `/community/songs/:id/playback` | Owner private hoặc public active; `{url,expiresAt,playSessionId,thresholdMs,durationSeconds}`; duration từ Cloudinary, ticket bound user/song |
+| POST `/playback-sessions/:id/heartbeat` | `{positionMs:integer 0..86400000,playing:boolean}`; chỉ ticket của người gọi chưa quá 2 giờ; `{creditedMs,isValid}`; isValid nghĩa ticket đạt ngưỡng, rolling dedupe có thể ngăn thêm event |
+| PUT / DELETE `/community/songs/:id/like` / `save` | 204 idempotent khi có quyền đọc; likes owner đồng bộ quan hệ cũ, không cộng trùng |
+| PATCH `/community/songs/:id` | Owner active; subset title/artist/genre/description/visibility/rightsConfirmed, strict; public cần profile và rightsConfirmed=true |
+| DELETE `/community/songs/:id` | Owner; 202 `{id,status:'removed',cleanupPending}` sau transaction gỡ track/quan hệ và lưu receipt/job; Storage cleanup có retry; cùng owner retry được, khác owner 404 |
+| GET / POST `/community/playlists` | GET page playlist của mình; POST `{title 1..150,description? ≤1000,visibility?}` →201 `{id}`, mặc định private |
+| GET / DELETE `/community/playlists/:id` | GET metadata và `tracks` page, lọc từng track theo quyền hiện tại; DELETE owner 204, không xóa audio |
+| POST `/community/playlists/:id/tracks` | Owner playlist, `{trackId}` có quyền đọc; unique item, position cấp dưới row lock, 204 idempotent |
+| DELETE `/community/playlists/:id/tracks/:trackId` | Owner playlist, 204 |
+| POST `/community/reports` | Chính xác một trackId/profileId có quyền thấy, reason copyright/abuse/spam/other, details ≤1000; 202 `{status:'pending'}`, dedupe theo reporter/target |
+
+`POST /songs` cũ thêm hai trường tùy chọn `visibility` (default private), `rightsConfirmed` (default false). Public cần profile đã chọn username và xác nhận quyền. Retry so cả visibility, không âm thầm đổi riêng tư sang công khai. `GET /songs` vẫn là catalog owner; thêm visibility trong item, bỏ track hidden/deleted. API upload/access/delete cũ giữ giới hạn MP3 20 MB/artwork 5 MB và quyền owner; profile references cũng ngăn xóa asset đang dùng.
+
+Valid credit không vượt elapsed server, position delta và 20 giây/heartbeat; ngưỡng min(30 giây, nửa duration được xác minh). Valid events dedupe user/song trong 30 phút bằng transaction/advisory lock và unique constraint. Ranking max-normalized 0.45/0.25/0.20/0.10 trên cùng cửa sổ; today theo giờ Việt Nam, week/month trượt, zero interactions tie-break createdAt/id. TotalPlayCount đếm ticket, không gọi đó là valid plays. Đây là baseline thử nghiệm, chưa chống bot phân tán.
+
+Giới hạn một process: API chung 600/15 phút/IP để đủ heartbeat 15 giây; search/discovery 60/phút/user, start playback 30/15 phút/user, heartbeat 150/15 phút/user, sửa profile 20/15 phút, follow 60/15 phút theo method, tạo playlist 20/15 phút, report 10/15 phút. Giới hạn upload/xóa media cũ không tăng. Nhiều server cần shared limiter.
+
+Lỗi mới chính: 400 VALIDATION_ERROR/CANNOT_FOLLOW_SELF/RIGHTS_REQUIRED; 401 UNAUTHORIZED; 404 RESOURCE_NOT_FOUND (gộp absent/private/hidden để tránh lộ nội dung); 409 USERNAME_TAKEN/PROFILE_REQUIRED/RESOURCE_BUSY; 429 RATE_LIMITED; 502 STORAGE_UNAVAILABLE/AUDIO_DURATION_UNAVAILABLE; 503 COMMUNITY_UNAVAILABLE. Client dùng bản dịch an toàn, không hiện raw SQL/provider error.
+
+Moderation report không tự gỡ nội dung. Operator CLI tin cậy có hide/restore/dismiss trong transaction, lưu resolution/reviewed_at; không có endpoint client để tự cấp role. Hidden bị loại khỏi discovery/search/playback và owner không PATCH unhide. URL ký đã cấp còn dùng đến hết hạn. Xem [vận hành, cleanup và giới hạn](docs/nocturne-v3.md).

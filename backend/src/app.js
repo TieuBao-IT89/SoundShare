@@ -15,8 +15,9 @@ import { createRateLimit } from "./middleware/upload-limits.middleware.js";
 import { HttpError } from "./utils/http-error.js";
 import { notFoundHandler } from "./middleware/not-found.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import { createCommunityRouter } from './routes/community.routes.js';
 
-export const createApp = ({ uploadService, trackService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory } = {}) => {
+export const createApp = ({ uploadService, trackService, communityService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory } = {}) => {
   const app = express();
   app.disable("x-powered-by");
   app.use(requestContext);
@@ -46,7 +47,7 @@ export const createApp = ({ uploadService, trackService, checkDatabaseConnection
   const authenticate = clerkMiddleware(clerkOptions);
   const requireAuth = createRequireClerkAuth({ ...clerkOptions, onReject: logging
     ? (reason, requestId) => console.warn(JSON.stringify({ event: "AUTH_REJECTED", reason, requestId })) : undefined });
-  app.use("/api/v1", createRateLimit({ limit: 120, key: (req) => req.ip }));
+  app.use("/api/v1", createRateLimit({ limit: 600, key: (req) => req.ip }));
   app.use("/api/v1", (req, res, next) => {
     // APIs accept Bearer tokens only and do not use cookie handshake redirects.
     if (!req.get("authorization")) return next();
@@ -59,6 +60,7 @@ export const createApp = ({ uploadService, trackService, checkDatabaseConnection
       : undefined));
   });
   app.use(express.json({ limit: "1mb" }));
+  if (communityService) app.use('/api/v1',createCommunityRouter({service:communityService,requireAuth}));
   if (trackService) {
     app.get("/api/v1/auth/me", requireAuth, async (req, res) => {
       res.set("Cache-Control", "no-store");

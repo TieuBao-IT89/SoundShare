@@ -7,6 +7,27 @@
 
 ---
 
+## NOCTURNE V3 — cập nhật 06/11/2026
+
+Phần theo dõi bên dưới là backlog lịch sử. Trạng thái V3 căn cứ vào [audit](docs/ui/nocturne-v3-audit.md), [hướng dẫn vận hành](docs/nocturne-v3.md) và [báo cáo kiểm tra](docs/ui/nocturne-v3-review.md).
+
+- [x] Audit repository, nghiên cứu nguồn, design system NOCTURNE và navigation năm tab.
+- [x] Migration 004 additive; đã chạy Neon development, giữ 3 user/2 bài cũ, hai bài vẫn private.
+- [x] API và UI username/profile, tìm cộng đồng, follow, follower/following, feed.
+- [x] Discovery, trending cùng cửa sổ thống kê, valid play threshold/dedupe và thể loại thực.
+- [x] Cùng AudioPlayer, queue, resume, mini player; playlist, thích/lưu có lưu server.
+- [x] Public/private upload, byte progress/hủy Web, retry giữ asset ID, sửa/xóa owned song và cleanup bền vững.
+- [x] Báo cáo nội dung và CLI moderation; không có nút cấp quyền admin từ client.
+- [x] Kiểm thử PostgreSQL biệt lập, regression Flutter/JS, smoke chỉ đọc dịch vụ development, build Web và Chrome fixture.
+- [x] Người dùng xác nhận Web thật đăng nhập và mở được Cá nhân → Tạo hồ sơ công khai.
+- [x] Người dùng xác nhận lưu username/tên hiển thị và F5 vẫn giữ đúng hồ sơ trên Web thật.
+- [x] Người dùng xác nhận hai tài khoản thật: tìm @username mở đúng hồ sơ, follow thành công và F5 vẫn Đang theo dõi.
+- [x] Người dùng xác nhận tài khoản thứ hai thấy/phát được bài công khai và chuyển tab nhạc vẫn chạy.
+- [x] Người dùng xác nhận lượt nghe tăng; đọc Neon có 1 valid play event và truy vấn ranking cả bốn khoảng thời gian trả 1 valid play cho bài công khai.
+- [x] Người dùng xác nhận đăng xuất/đăng nhập lại thành công và vẫn giữ trạng thái Đang theo dõi.
+- [ ] Android/iOS thật, profile performance/large catalog, TCP PostgreSQL test branch và nhiều server instance.
+- [ ] Worker TTL cho upload dở, dashboard moderation và quy trình kháng nghị (chưa triển khai).
+
 ## 1. Tổng quan tiến độ
 
 SoundShare là ứng dụng nghe và chia sẻ âm nhạc được xây dựng bằng Flutter.

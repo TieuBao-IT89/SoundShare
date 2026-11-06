@@ -8,8 +8,18 @@ import 'package:soundshare/core/widgets/catalog_widgets.dart';
 import 'package:soundshare/features/explore/domain/discovery.dart';
 import 'package:soundshare/features/explore/presentation/explore_screen.dart';
 import 'package:soundshare/features/home/domain/song.dart';
+import 'package:soundshare/l10n/generated/app_localizations_vi.dart';
 
 import 'support/test_app.dart';
+
+final t = AppLocalizationsVi();
+
+String collectionName(SampleCollection collection) =>
+    collection.id == 'soft-focus' ? t.softFocusTitle : t.afterHoursTitle;
+String collectionDescription(SampleCollection collection) =>
+    collection.id == 'soft-focus'
+    ? t.softFocusDescription
+    : t.afterHoursDescription;
 
 Uri exploreUri(WidgetTester tester) =>
     GoRouterState.of(tester.element(find.byType(ExploreScreen))).uri;
@@ -141,19 +151,18 @@ void main() {
       tester,
     ) async {
       await showApp(tester, '/');
-      expect(
-        find.text('Sample collections · Grouped by genre'),
-        findsOneWidget,
-      );
-      await tapVisible(tester, find.text(collection.title));
+      expect(find.text(t.collectionsDemoSubtitle), findsOneWidget);
+      await tapVisible(tester, find.text(collectionName(collection)));
       expect(exploreUri(tester).queryParameters['collection'], collection.id);
       expect(
-        tester.widget<ChoiceChip>(collectionChip(collection.title, 2)).selected,
+        tester
+            .widget<ChoiceChip>(collectionChip(collectionName(collection), 2))
+            .selected,
         isTrue,
       );
       expect(find.byType(SongTile), findsNWidgets(2));
-      expect(find.text(collection.description), findsOneWidget);
-      await tapVisible(tester, find.text('Clear all'));
+      expect(find.text(collectionDescription(collection)), findsOneWidget);
+      await tapVisible(tester, find.text(t.clearAll));
       expect(exploreUri(tester).queryParameters, isEmpty);
       expect(find.byType(SongTile), findsNWidgets(4));
     });
@@ -171,16 +180,16 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         'NIA',
       );
-      await tapVisible(tester, find.byTooltip('Play Blue Again'));
+      await tapVisible(tester, find.byTooltip(t.playSong('Blue Again')));
       expect(container.read(currentSongIndexProvider), 3);
-      await tapVisible(tester, find.byTooltip('Back to browsing'));
+      await tapVisible(tester, find.byTooltip(t.backToBrowsing));
       expect(exploreUri(tester).queryParameters, {
         'collection': 'after-hours',
         'genre': 'Electronic',
         'q': 'NIA',
       });
       expect(find.byType(SongTile), findsOneWidget);
-      await tapVisible(tester, find.text('Clear all'), scrollDelta: -300);
+      await tapVisible(tester, find.text(t.clearAll), scrollDelta: -300);
       expect(exploreUri(tester).queryParameters, isEmpty);
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -198,17 +207,17 @@ void main() {
         tester,
         '/explore?collection=after-hours&genre=Electronic&q=Blue',
       );
-      await tapVisible(tester, find.byTooltip('Clear search'));
+      await tapVisible(tester, find.byTooltip(t.clearSearch));
       expect(exploreUri(tester).queryParameters, {
         'collection': 'after-hours',
         'genre': 'Electronic',
       });
-      await tapVisible(tester, genreChip('All genres'));
+      await tapVisible(tester, genreChip(t.allGenres));
       expect(exploreUri(tester).queryParameters, {'collection': 'after-hours'});
       expect(find.byType(SongTile), findsNWidgets(2));
-      await tapVisible(tester, collectionChip('After hours', 2));
+      await tapVisible(tester, collectionChip(t.afterHoursTitle, 2));
       expect(exploreUri(tester).queryParameters, isEmpty);
-      expect(find.text('Clear all'), findsNothing);
+      expect(find.text(t.clearAll), findsNothing);
       expect(find.byType(SongTile), findsNWidgets(4));
     },
   );
@@ -233,17 +242,17 @@ void main() {
     'Conflicting choices show no results with a way back to all tracks',
     (tester) async {
       await showApp(tester, '/explore?collection=soft-focus&genre=Electronic');
-      expect(find.text('0 tracks found'), findsOneWidget);
-      expect(find.text('No tracks found'), findsOneWidget);
+      expect(find.text(t.resultsCount(0)), findsOneWidget);
+      expect(find.text(t.noResults), findsOneWidget);
       expect(
         tester.widget<ChoiceChip>(genreChip('Electronic')).selected,
         isTrue,
       );
       expect(
-        tester.widget<ChoiceChip>(collectionChip('Softer corners', 2)).selected,
+        tester.widget<ChoiceChip>(collectionChip(t.softFocusTitle, 2)).selected,
         isTrue,
       );
-      await tapVisible(tester, find.text('Browse all tracks'));
+      await tapVisible(tester, find.text(t.browseAllTracks));
       expect(find.byType(SongTile), findsNWidgets(4));
       expect(exploreUri(tester).queryParameters, isEmpty);
     },
@@ -257,9 +266,9 @@ void main() {
         '/explore?collection=soft-focus',
         repository: TestRepository(() async => [sampleSongs.last]),
       );
-      expect(collectionChip('Softer corners', 0), findsOneWidget);
-      expect(find.text('This collection is quiet'), findsOneWidget);
-      await tapVisible(tester, find.text('Browse all tracks'));
+      expect(collectionChip(t.softFocusTitle, 0), findsOneWidget);
+      expect(find.text(t.collectionQuiet), findsOneWidget);
+      await tapVisible(tester, find.text(t.browseAllTracks));
       expect(find.text('Blue Again'), findsOneWidget);
     },
   );
@@ -268,11 +277,11 @@ void main() {
     'Unavailable collection and genre links remain visible and removable',
     (tester) async {
       await showApp(tester, '/explore?collection=missing&genre=Jazz');
-      expect(find.text('This collection is unavailable'), findsOneWidget);
-      expect(find.text('Unavailable collection'), findsOneWidget);
-      await tapVisible(tester, find.byTooltip('Remove unavailable collection'));
+      expect(find.text(t.collectionUnavailable), findsOneWidget);
+      expect(find.text(t.unknownCollection), findsOneWidget);
+      await tapVisible(tester, find.byTooltip(t.removeUnknownCollection));
       expect(exploreUri(tester).queryParameters, {'genre': 'Jazz'});
-      await tapVisible(tester, find.byTooltip('Remove unavailable genre'));
+      await tapVisible(tester, find.byTooltip(t.removeUnknownGenre));
       expect(exploreUri(tester).queryParameters, isEmpty);
       expect(find.byType(SongTile), findsNWidgets(4));
     },
@@ -291,12 +300,12 @@ void main() {
       ),
     );
     expect(find.byType(CatalogLoading), findsOneWidget);
-    expect(find.text('Clear all'), findsOneWidget);
+    expect(find.text(t.clearAll), findsOneWidget);
     pending.completeError(StateError('private details'));
     await tester.pumpAndSettle();
-    expect(find.text('The music is taking a moment'), findsOneWidget);
+    expect(find.text(t.catalogLoadFailed), findsOneWidget);
     expect(find.textContaining('private details'), findsNothing);
-    await tapVisible(tester, find.text('Try again'));
+    await tapVisible(tester, find.text(t.tryAgain));
     expect(exploreUri(tester).queryParameters['collection'], 'after-hours');
     expect(find.byType(SongTile), findsNWidgets(2));
   });
@@ -309,11 +318,11 @@ void main() {
         '/explore?genre=Jazz&q=anything',
         repository: TestRepository(() async => []),
       );
-      expect(find.text('The sample catalog is empty'), findsOneWidget);
-      expect(find.text('No tracks found'), findsNothing);
-      await tapVisible(tester, find.text('Clear all'));
+      expect(find.text(t.sampleEmpty), findsOneWidget);
+      expect(find.text(t.noResults), findsNothing);
+      await tapVisible(tester, find.text(t.clearAll));
       expect(exploreUri(tester).queryParameters, isEmpty);
-      expect(find.text('The sample catalog is empty'), findsOneWidget);
+      expect(find.text(t.sampleEmpty), findsOneWidget);
     },
   );
 
@@ -352,9 +361,9 @@ void main() {
           const Offset(0, -1800),
         );
         await tester.pumpAndSettle();
-        expect(find.text('This collection is quiet'), findsOneWidget);
+        expect(find.text(t.collectionQuiet), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await tapVisible(tester, find.text('Clear all'), scrollDelta: -300);
+        await tapVisible(tester, find.text(t.clearAll), scrollDelta: -300);
         expect(exploreUri(tester).queryParameters, isEmpty);
       },
     );

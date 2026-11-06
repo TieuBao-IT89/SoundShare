@@ -6,7 +6,8 @@ const text = (max) => z.string().trim().min(1).max(max).refine((value) => !/[\u0
 export const createTrackSchema = z.object({
   audioAssetId: trackIdSchema, artworkAssetId: trackIdSchema.nullable().optional(),
   title: text(120), artist: text(120), genre: text(100), description: z.string().trim().max(1000).refine((value) => !value.includes('\u0000')).default(""),
-}).strict();
+  visibility: z.enum(['private','public']).default('private'), rightsConfirmed: z.boolean().default(false),
+}).strict().refine(value => value.visibility !== 'public' || value.rightsConfirmed);
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: trackIdSchema }).strict();
 export const listTracksSchema = z.object({
   query: z.string().trim().max(120).refine((value) => !/[\u0000-\u001f\u007f]/.test(value)).default(""), genre: text(100).optional(),

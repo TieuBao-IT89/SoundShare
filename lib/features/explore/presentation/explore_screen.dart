@@ -5,16 +5,24 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/config/app_mode.dart';
 import '../../../core/widgets/app_scaffold.dart';
+import '../../../core/widgets/aurora_widgets.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
+import '../../../l10n/l10n.dart';
 import '../../home/application/catalog_provider.dart';
 import '../../home/domain/song.dart';
-import '../domain/discovery.dart';
 import '../application/search_provider.dart';
+import '../domain/discovery.dart';
+import 'sample_collection_tile.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({super.key, this.filters = const DiscoveryFilters()});
+  const ExploreScreen({
+    super.key,
+    this.filters = const DiscoveryFilters(),
+    this.privateLibrary = false,
+  });
   final DiscoveryFilters filters;
+  final bool privateLibrary;
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
@@ -37,7 +45,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   void _update(DiscoveryFilters filters, {bool resetView = false}) {
-    context.replace(filters.location);
+    context.replace(
+      widget.privateLibrary
+          ? filters.location.replaceFirst('/explore', '/library/search')
+          : filters.location,
+    );
     if (resetView) {
       FocusScope.of(context).unfocus();
       if (scrollController.hasClients) scrollController.jumpTo(0);
@@ -53,60 +65,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.l10n;
     final filters = widget.filters;
     final catalog = ref.watch(catalogProvider);
     return AppScaffold(
       child: ListView(
         controller: scrollController,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
           ScreenHeading(
-            eyebrow: 'EXPLORE',
-            title: 'Follow your ears.',
+            eyebrow: t.appName.toUpperCase(),
+            title: widget.privateLibrary ? t.v3LibrarySearch : t.exploreTitle,
             subtitle: ref.watch(demoModeProvider)
-                ? 'Start with a genre, a collection, or a name. All tracks here are samples.'
-                : 'Find a track in your private uploads by genre, collection or name.',
+                ? t.exploreSubtitleDemo
+                : t.exploreSubtitleReal,
           ),
-          const SizedBox(height: 22),
-          TextField(
+          const SizedBox(height: 24),
+          MysticSearchBar(
             controller: searchController,
-            textInputAction: TextInputAction.search,
-            maxLength: 120,
             onChanged: (value) => _update(filters.withQuery(value)),
-            decoration: InputDecoration(
-              labelText: 'Search music',
-              hintText: 'Title, artist, or genre',
-              counterText: '',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: filters.query.isEmpty
-                  ? null
-                  : IconButton(
-                      tooltip: 'Clear search',
-                      onPressed: () => _update(filters.withQuery('')),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-            ),
+            onClear: filters.query.isEmpty
+                ? null
+                : () => _update(filters.withQuery('')),
           ),
           if (filters.isActive) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 12,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Text(
-                  'Your choices are combined',
-                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                Text(
+                  t.combinedFilters,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 TextButton(
                   onPressed: () =>
                       _update(const DiscoveryFilters(), resetView: true),
-                  child: const Text('Clear all'),
+                  child: Text(t.clearAll),
                 ),
               ],
             ),
           ],
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
           catalog.when(
             loading: () => const CatalogLoading(),
             error: (_, _) => const CatalogError(),
@@ -122,18 +123,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     DiscoveryFilters filters, {
     List<Song>? serverMatches,
   }) {
-    if (!ref.watch(demoModeProvider) &&
-        filters.isActive &&
-        serverMatches == null) {
+    final t = context.l10n;
+    final sample = ref.watch(demoModeProvider);
+    if (!sample && filters.isActive && serverMatches == null) {
       return ref
           .watch(searchProvider(filters))
           .when(
             loading: () => const CatalogLoading(),
             error: (_, _) => EmptyState(
               icon: Icons.cloud_off_outlined,
-              title: 'Search could not be completed',
-              message: 'Your choices are kept. Try again when connected.',
-              actionLabel: 'Try again',
+              title: t.searchFailed,
+              message: t.searchFailureMessage,
+              actionLabel: t.tryAgain,
               onAction: () => ref.invalidate(searchProvider(filters)),
             ),
             data: (matches) =>
@@ -141,16 +142,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
     }
     if (songs.isEmpty) {
-      return EmptyState(
-        icon: Icons.library_music_outlined,
-        title: ref.watch(demoModeProvider)
-            ? 'The sample catalog is empty'
-            : 'Your library is empty',
-        message: ref.watch(demoModeProvider)
-            ? 'Genres and collections will have music when sample tracks are available.'
-            : 'Upload your first MP3 to discover your own collection.',
-        actionLabel: ref.watch(demoModeProvider) ? null : 'Upload a track',
-        onAction: () => context.go('/upload'),
+      return GlassCard(
+        child: EmptyState(
+          icon: Icons.library_music_outlined,
+          title: sample ? t.sampleEmpty : t.libraryEmpty,
+          message: sample ? t.homeEmptyDemo : t.uploadToDiscover,
+          actionLabel: sample ? null : t.uploadTrack,
+          onAction: () => context.go('/upload'),
+        ),
       );
     }
     final genres = catalogGenres(songs);
@@ -164,6 +163,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ))
                 i,
           ];
+    final results = _results(songs, matches, filters, collection);
+    final choices = _choices(songs, genres, filters, collection);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // A typed query brings its results into view before the browse controls.
+        if (filters.query.isNotEmpty) ...[
+          results,
+          const SizedBox(height: 32),
+          choices,
+        ] else ...[
+          choices,
+          const SizedBox(height: 28),
+          results,
+        ],
+        const SizedBox(height: 24),
+        Text(
+          sample ? t.songsDemoCaption : t.songsPrivateCaption,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  Widget _choices(
+    List<Song> songs,
+    List<String> genres,
+    DiscoveryFilters filters,
+    SampleCollection? collection,
+  ) {
+    final t = context.l10n;
+    final sample = ref.watch(demoModeProvider);
     final hasUnknownGenre =
         filters.genre != null &&
         !genres.any(
@@ -172,58 +203,70 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeading('Browse by genre'),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            ChoiceChip(
-              label: const Text('All genres'),
-              selected: filters.genre == null,
-              onSelected: (_) => _update(filters.withGenre(null)),
+        SectionHeading(t.browseGenres),
+        const SizedBox(height: 12),
+        ChoiceChip(
+          label: Text(t.allGenres),
+          selected: filters.genre == null,
+          onSelected: (_) => _update(filters.withGenre(null)),
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 760 ? 4 : 2;
+            final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (var i = 0; i < genres.length; i++)
+                  _GenreChoice(
+                    genre: genres[i],
+                    width: width,
+                    accent: switch (i % 4) {
+                      0 => AppColors.mystic,
+                      1 => AppColors.cyan,
+                      2 => AppColors.pink,
+                      _ => AppColors.violet,
+                    },
+                    selected:
+                        genres[i].toLowerCase() == filters.genre?.toLowerCase(),
+                    compact: filters.isActive,
+                    onSelected: (selected) =>
+                        _update(filters.withGenre(selected ? genres[i] : null)),
+                  ),
+              ],
+            );
+          },
+        ),
+        if (hasUnknownGenre)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: InputChip(
+              label: Text(filters.genre!, softWrap: true),
+              selected: true,
+              deleteButtonTooltipMessage: t.removeUnknownGenre,
+              onDeleted: () => _update(filters.withGenre(null)),
             ),
-            for (final genre in genres)
-              ChoiceChip(
-                label: Text(genre),
-                selected: genre.toLowerCase() == filters.genre?.toLowerCase(),
-                onSelected: (selected) =>
-                    _update(filters.withGenre(selected ? genre : null)),
-              ),
-            if (hasUnknownGenre)
-              InputChip(
-                label: Text(filters.genre!, softWrap: true),
-                selected: true,
-                deleteButtonTooltipMessage: 'Remove unavailable genre',
-                onDeleted: () => _update(filters.withGenre(null)),
-              ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        SectionHeading(
-          ref.watch(demoModeProvider)
-              ? 'Sample collections'
-              : 'Your collections',
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Small selections grouped by genre.',
-          style: TextStyle(color: AppColors.muted, fontSize: 12),
-        ),
-        const SizedBox(height: 10),
+          ),
+        const SizedBox(height: 28),
+        SectionHeading(sample ? t.collectionsDemo : t.collectionsReal),
+        const SizedBox(height: 8),
+        Text(t.collectionsHint, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 12),
         Wrap(
           spacing: 8,
-          runSpacing: 4,
+          runSpacing: 8,
           children: [
             ChoiceChip(
-              label: const Text('All collections'),
+              label: Text(t.allCollections),
               selected: filters.collectionId == null,
               onSelected: (_) => _update(filters.withCollection(null)),
             ),
             for (final item in sampleCollections)
               ChoiceChip(
                 label: Text(
-                  '${item.title} · ${songs.where(item.contains).length}',
+                  '${localizedCollectionTitle(context, item)} · ${songs.where(item.contains).length}',
                 ),
                 selected: filters.collectionId == item.id,
                 onSelected: (selected) =>
@@ -231,67 +274,141 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             if (filters.collectionId != null && collection == null)
               InputChip(
-                label: const Text('Unavailable collection'),
+                label: Text(t.unknownCollection),
                 selected: true,
-                deleteButtonTooltipMessage: 'Remove unavailable collection',
+                deleteButtonTooltipMessage: t.removeUnknownCollection,
                 onDeleted: () => _update(filters.withCollection(null)),
               ),
           ],
         ),
         if (collection != null)
           Padding(
-            padding: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: 12),
             child: Text(
-              collection.description,
-              style: const TextStyle(color: AppColors.muted, height: 1.4),
+              localizedCollectionDescription(context, collection),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.secondaryText),
             ),
           ),
-        const SizedBox(height: 26),
-        Semantics(
-          liveRegion: true,
-          child: SectionHeading(
-            filters.isActive
-                ? '${matches.length} ${matches.length == 1 ? 'track' : 'tracks'} found'
-                : ref.watch(demoModeProvider)
-                ? 'The sample catalog'
-                : 'Your tracks',
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (matches.isEmpty)
-          EmptyState(
-            icon: Icons.search_off_rounded,
-            title: filters.collectionId != null && collection == null
-                ? 'This collection is unavailable'
-                : collection != null && !songs.any(collection.contains)
-                ? 'This collection is quiet'
-                : 'No tracks found',
-            message: collection != null && !songs.any(collection.contains)
-                ? (ref.watch(demoModeProvider)
-                      ? 'There are no sample tracks in this collection yet. Try another collection or browse all tracks.'
-                      : 'There are no uploads in this collection yet. Try another collection or browse all tracks.')
-                : 'Try another genre or collection, or clear your search.',
-            actionLabel: filters.query.isNotEmpty
-                ? 'Clear search'
-                : 'Browse all tracks',
-            onAction: () => _update(
-              filters.query.isNotEmpty
-                  ? filters.withQuery('')
-                  : const DiscoveryFilters(),
-              resetView: true,
-            ),
-          )
-        else
-          for (final index in matches)
-            SongTile(song: songs[index], index: index),
-        const SizedBox(height: 18),
-        Text(
-          ref.watch(demoModeProvider)
-              ? 'Sample tracks and artists · Demo audio'
-              : 'Your uploads · Private to your account',
-          style: TextStyle(color: AppColors.muted, fontSize: 12),
-        ),
       ],
     );
   }
+
+  Widget _results(
+    List<Song> songs,
+    List<int> matches,
+    DiscoveryFilters filters,
+    SampleCollection? collection,
+  ) {
+    final t = context.l10n;
+    final sample = ref.watch(demoModeProvider);
+    final emptyCollection =
+        collection != null && !songs.any(collection.contains);
+    return AnimatedSwitcher(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 220),
+      child: Column(
+        key: ValueKey('${filters.location}|${matches.join(',')}'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            liveRegion: true,
+            child: SectionHeading(
+              filters.isActive
+                  ? t.resultsCount(matches.length)
+                  : sample
+                  ? t.catalogDemo
+                  : t.yourTracks,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (matches.isEmpty)
+            GlassCard(
+              child: EmptyState(
+                icon: Icons.search_off_rounded,
+                title: filters.collectionId != null && collection == null
+                    ? t.collectionUnavailable
+                    : emptyCollection
+                    ? t.collectionQuiet
+                    : t.noResults,
+                message: emptyCollection
+                    ? (sample ? t.collectionEmptyDemo : t.collectionEmptyReal)
+                    : t.noResultsHint,
+                actionLabel: filters.query.isNotEmpty
+                    ? t.clearSearch
+                    : t.browseAllTracks,
+                onAction: () => _update(
+                  filters.query.isNotEmpty
+                      ? filters.withQuery('')
+                      : const DiscoveryFilters(),
+                  resetView: true,
+                ),
+              ),
+            )
+          else
+            for (final index in matches)
+              SongTile(song: songs[index], index: index),
+        ],
+      ),
+    );
+  }
+}
+
+class _GenreChoice extends StatelessWidget {
+  const _GenreChoice({
+    required this.genre,
+    required this.width,
+    required this.accent,
+    required this.selected,
+    required this.compact,
+    required this.onSelected,
+  });
+  final String genre;
+  final double width;
+  final Color accent;
+  final bool selected;
+  final bool compact;
+  final ValueChanged<bool> onSelected;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: width,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          accent.withValues(alpha: selected ? .32 : .18),
+          AppColors.surface.withValues(alpha: .8),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: ChoiceChip(
+      selected: selected,
+      onSelected: onSelected,
+      showCheckmark: false,
+      backgroundColor: Colors.transparent,
+      selectedColor: Colors.transparent,
+      side: BorderSide(color: selected ? accent : AppColors.border),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: compact ? 8 : 16),
+      label: SizedBox(
+        width: width - 48,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!compact) ...[
+              Icon(Icons.graphic_eq_rounded, color: accent, size: 24),
+              const SizedBox(height: 16),
+            ],
+            Text(genre, style: Theme.of(context).textTheme.titleSmall),
+            if (selected) Icon(Icons.check_rounded, color: accent, size: 18),
+          ],
+        ),
+      ),
+    ),
+  );
 }

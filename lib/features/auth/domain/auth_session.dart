@@ -9,7 +9,7 @@ class AuthSession {
   final String? sessionId;
   factory AuthSession.fromJson(Map<String, dynamic> json) => AuthSession(
     subject: json['id'] as String,
-    name: (json['name'] as String?) ?? 'Music lover',
+    name: (json['name'] as String?) ?? 'Người yêu nhạc',
     sessionId: json['sessionId'] as String?,
   );
 }

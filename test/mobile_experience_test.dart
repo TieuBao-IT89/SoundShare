@@ -9,6 +9,8 @@ import 'package:soundshare/core/services/audio_service.dart';
 import 'package:soundshare/core/widgets/catalog_widgets.dart';
 import 'package:soundshare/features/home/domain/song.dart';
 import 'package:soundshare/features/upload/presentation/upload_screen.dart';
+import 'package:soundshare/l10n/l10n.dart';
+import 'package:soundshare/core/widgets/app_scaffold.dart';
 
 import 'support/test_app.dart';
 
@@ -58,19 +60,30 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Blue Again'), findsOneWidget);
       expect(find.text('Golden Hour'), findsNothing);
-      await tapVisible(tester, find.byTooltip('Play Blue Again'));
+      await tapVisible(tester, find.byTooltip(appCopy.playSong('Blue Again')));
       expect(container.read(currentSongIndexProvider), 3);
       expect(player.active, isTrue);
-      await tapVisible(tester, find.byTooltip('Pause track'));
+      await tapVisible(tester, find.byTooltip(appCopy.pauseTrack));
       expect(player.active, isFalse);
-      await tapVisible(tester, find.byTooltip('Like song'));
-      await tapVisible(tester, find.byTooltip('Back to browsing'));
-      await tester.tap(find.text('Library').last);
+      await tapVisible(tester, find.byTooltip(appCopy.likeSong));
+      await tapVisible(tester, find.byTooltip(appCopy.backToBrowsing));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(SoundShareBottomNavigation),
+          matching: find.text(appCopy.library),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('mini-player')), findsOneWidget);
-      expect(find.text('1 liked track'), findsOneWidget);
+      expect(find.text(appCopy.likedCount(1)), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byType(SongTile),
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       expect(find.text('Blue Again'), findsNWidgets(2));
-      await tester.tap(find.byTooltip('Resume track'));
+      await tester.tap(find.byTooltip(appCopy.resumeTrack));
       await tester.pumpAndSettle();
       expect(player.active, isTrue);
       expect(player.loads, 1, reason: 'Resume should keep the loaded source.');
@@ -82,8 +95,8 @@ void main() {
     await showApp(tester, '/explore');
     await tester.enterText(find.byType(TextField), 'no such song');
     await tester.pumpAndSettle();
-    expect(find.text('No tracks found'), findsOneWidget);
-    await tapVisible(tester, find.text('Clear search'));
+    expect(find.text(appCopy.noResults), findsOneWidget);
+    await tapVisible(tester, find.text(appCopy.clearSearch));
     expect(find.text('Slow Motion'), findsOneWidget);
   });
 
@@ -103,11 +116,11 @@ void main() {
     expect(find.byType(CatalogLoading), findsOneWidget);
     pending.completeError(StateError('internal database details'));
     await tester.pumpAndSettle();
-    expect(find.text('The music is taking a moment'), findsOneWidget);
+    expect(find.text(appCopy.catalogLoadFailed), findsOneWidget);
     expect(find.textContaining('internal database details'), findsNothing);
-    await tapVisible(tester, find.text('Try again'));
+    await tapVisible(tester, find.text(appCopy.tryAgain));
     expect(calls, 2);
-    expect(find.text('The listening room is quiet'), findsOneWidget);
+    expect(find.text(appCopy.homeEmptyTitle), findsOneWidget);
   });
 
   testWidgets('Player handles load and asynchronous play failures with retry', (
@@ -115,16 +128,16 @@ void main() {
   ) async {
     final player = TestPlayer()..failLoad = true;
     await showApp(tester, '/player', player: player);
-    await tapVisible(tester, find.byTooltip('Play track'));
-    expect(find.textContaining('Audio could not be loaded'), findsOneWidget);
+    await tapVisible(tester, find.byTooltip(appCopy.playTrack));
+    expect(find.text(appCopy.audioLoadFailed), findsOneWidget);
     expect(find.textContaining('private provider details'), findsNothing);
     player.failLoad = false;
     player.failPlay = true;
-    await tapVisible(tester, find.text('Try again'));
-    expect(find.textContaining('Audio could not be loaded'), findsOneWidget);
+    await tapVisible(tester, find.text(appCopy.tryAgain));
+    expect(find.text(appCopy.audioLoadFailed), findsOneWidget);
     player.failPlay = false;
-    await tapVisible(tester, find.text('Try again'));
-    expect(find.textContaining('Audio could not be loaded'), findsNothing);
+    await tapVisible(tester, find.text(appCopy.tryAgain));
+    expect(find.text(appCopy.audioLoadFailed), findsNothing);
     expect(player.active, isTrue);
   });
 
@@ -133,15 +146,15 @@ void main() {
     (tester) async {
       final player = TestPlayer();
       final container = await showApp(tester, '/player', player: player);
-      await tapVisible(tester, find.byTooltip('Play previous track'));
+      await tapVisible(tester, find.byTooltip(appCopy.previousTrack));
       expect(container.read(currentSongIndexProvider), 3);
-      await tapVisible(tester, find.byTooltip('Play next track'));
+      await tapVisible(tester, find.byTooltip(appCopy.nextTrack));
       expect(container.read(currentSongIndexProvider), 0);
-      await tapVisible(tester, find.text('Repeat'));
+      await tapVisible(tester, find.text(appCopy.repeat));
       expect(player.loop, LoopMode.one);
-      await tapVisible(tester, find.text('Shuffle'));
+      await tapVisible(tester, find.text(appCopy.shuffle));
       expect(player.shuffleOn, isTrue);
-      await tapVisible(tester, find.byTooltip('Play next track'));
+      await tapVisible(tester, find.byTooltip(appCopy.nextTrack));
       expect(container.read(currentSongIndexProvider), isNot(0));
     },
   );
@@ -150,11 +163,11 @@ void main() {
     tester,
   ) async {
     await showApp(tester, '/profile');
-    expect(find.text('Listening as a guest'), findsOneWidget);
+    expect(find.text(appCopy.guestName), findsOneWidget);
     expect(find.text('Alex Morgan'), findsNothing);
     expect(find.text('240'), findsNothing);
-    await tapVisible(tester, find.text('0 liked tracks'));
-    expect(find.text('Find your first favorite'), findsOneWidget);
+    await tapVisible(tester, find.text(appCopy.libraryTitle));
+    expect(find.text(appCopy.favoritesEmptyTitle), findsOneWidget);
   });
 
   testWidgets(
@@ -175,42 +188,28 @@ void main() {
       );
       Future<void> select(PlatformFile selected) async {
         picker.choose = () async => FilePickerResult([selected]);
-        await tapVisible(tester, find.text('Choose an MP3 file'));
+        await tapVisible(tester, find.text(appCopy.chooseMp3));
       }
 
       await select(PlatformFile(name: 'song.wav', size: 100));
-      expect(
-        find.text('Choose a non-empty MP3 file up to 20 MB.'),
-        findsOneWidget,
-      );
+      expect(find.text(appCopy.mp3Invalid), findsOneWidget);
       await select(PlatformFile(name: 'song.mp3', size: 20 * 1024 * 1024 + 1));
-      expect(
-        find.text('Choose a non-empty MP3 file up to 20 MB.'),
-        findsOneWidget,
-      );
+      expect(find.text(appCopy.mp3Invalid), findsOneWidget);
       picker.choose = () async => throw StateError('private filesystem');
-      await tapVisible(tester, find.text('Choose an MP3 file'));
-      expect(
-        find.text('The file could not be opened. Please choose it again.'),
-        findsOneWidget,
-      );
+      await tapVisible(tester, find.text(appCopy.chooseMp3));
+      expect(find.text(appCopy.fileOpenError), findsOneWidget);
       await select(PlatformFile(name: 'my-track.mp3', size: 100));
-      await tapVisible(tester, find.text('Preview track details'));
-      expect(find.text('Add a title for this track.'), findsOneWidget);
-      expect(find.text('Add the artist name.'), findsOneWidget);
+      await tapVisible(tester, find.text(appCopy.previewButton));
+      expect(find.text(appCopy.titleRequired), findsOneWidget);
+      expect(find.text(appCopy.artistRequired), findsOneWidget);
       await tester.enterText(find.byType(TextFormField).at(0), 'A new song');
       await tester.enterText(find.byType(TextFormField).at(1), 'An artist');
-      await tapVisible(tester, find.text('Preview track details'));
-      expect(find.text('Your local preview is ready'), findsOneWidget);
-      expect(
-        find.text(
-          'Publishing is not available in this preview. Your file has not been uploaded.',
-        ),
-        findsOneWidget,
-      );
+      await tapVisible(tester, find.text(appCopy.previewButton));
+      expect(find.text(appCopy.previewReady), findsOneWidget);
+      expect(find.text(appCopy.previewNotice), findsOneWidget);
       await tester.enterText(find.byType(TextFormField).at(0), 'Changed');
       await tester.pump();
-      expect(find.text('Your local preview is ready'), findsNothing);
+      expect(find.text(appCopy.previewReady), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -223,7 +222,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: UploadScreen(filePicker: picker)),
     );
-    await tester.tap(find.text('Choose an MP3 file'));
+    await tester.tap(find.text(appCopy.chooseMp3));
     await tester.pumpWidget(const SizedBox.shrink());
     pending.complete(
       FilePickerResult([PlatformFile(name: 'song.mp3', size: 20)]),
@@ -278,7 +277,7 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     await tester.enterText(find.byType(TextField), 'Electronic');
     await tester.pumpAndSettle();
-    await tapVisible(tester, find.byTooltip('Play Blue Again'));
+    await tapVisible(tester, find.byTooltip(appCopy.playSong('Blue Again')));
     expect(find.text('Blue Again'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

@@ -1,35 +1,138 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const background = Color(0xFF0D0D12);
-  static const surface = Color(0xFF17171F);
-  static const surfaceLight = Color(0xFF22222D);
-  static const violet = Color(0xFF9B7BFF);
-  static const mint = Color(0xFFB8F28B);
-  static const muted = Color(0xFF92919E);
-  static const error = Color(0xFFFF9A9A);
+  static const background = Color(0xFF090A10);
+  static const secondaryBackground = Color(0xFF11131D);
+  static const surface = Color(0xFF161823);
+  static const surfaceLight = Color(0xFF1B1D29);
+  static const primary = Color(0xFF8957F7);
+  static const action = Color(0xFF6742BF);
+  static const mystic = Color(0xFFB9A6F8);
+  static const cyan = Color(0xFF57D6DE);
+  static const pink = Color(0xFF3D8BEB);
+  static const indigo = Color(0xFF4840A8);
+  static const warning = Color(0xFFF5BA6A);
+  static const text = Color(0xFFF7F7FA);
+  static const secondaryText = Color(0xFF9B9EAE);
+  static const subdued = Color(0xFF737A98);
+  static const success = Color(0xFF40CF9A);
+  static const error = Color(0xFFF47187);
+  static const border = Color(0xFF2B2E3D);
+  static const violet = mystic;
+  static const mint = cyan;
+  static const muted = secondaryText;
+}
+
+abstract final class AppGradients {
+  static const primary = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.primary, AppColors.mystic, AppColors.cyan],
+  );
+  static const background = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      AppColors.background,
+      Color(0xFF0E1019),
+      AppColors.secondaryBackground,
+    ],
+  );
+  // Darker stops preserve contrast behind white action labels.
+  static const button = LinearGradient(
+    colors: [Color(0xFF6742BF), Color(0xFF6140B7), AppColors.indigo],
+  );
+  static const soft = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF222133), Color(0xFF171B29), Color(0xFF182733)],
+  );
+}
+
+abstract final class AppSpacing {
+  static const xs = 4.0,
+      sm = 8.0,
+      md = 12.0,
+      lg = 16.0,
+      xl = 20.0,
+      xxl = 24.0,
+      section = 32.0,
+      page = 48.0;
 }
 
 abstract final class AppTheme {
   static ThemeData get dark {
     const scheme = ColorScheme.dark(
-      primary: AppColors.violet,
-      onPrimary: Color(0xFF171220),
-      secondary: AppColors.mint,
-      onSecondary: Color(0xFF17210F),
+      primary: AppColors.mystic,
+      onPrimary: Colors.white,
+      secondary: AppColors.cyan,
+      onSecondary: AppColors.background,
+      tertiary: AppColors.pink,
       surface: AppColors.surface,
-      onSurface: Color(0xFFF5F3FA),
-      onSurfaceVariant: AppColors.muted,
+      onSurface: AppColors.text,
+      onSurfaceVariant: AppColors.secondaryText,
+      outline: AppColors.border,
       error: AppColors.error,
-      onError: Color(0xFF2A1010),
+      onError: AppColors.background,
     );
-    return ThemeData(
+    final base = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: scheme,
+      fontFamily: 'BeVietnamPro',
+    );
+    return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
-      fontFamily: 'Roboto',
+      canvasColor: AppColors.surface,
       visualDensity: VisualDensity.standard,
+      textTheme: base.textTheme
+          .copyWith(
+            displaySmall: const TextStyle(
+              fontSize: 32,
+              height: 1.25,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1,
+            ),
+            headlineMedium: const TextStyle(
+              fontSize: 28,
+              height: 1.3,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -.6,
+            ),
+            headlineSmall: const TextStyle(
+              fontSize: 24,
+              height: 1.35,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -.4,
+            ),
+            titleLarge: const TextStyle(
+              fontSize: 20,
+              height: 1.4,
+              fontWeight: FontWeight.w600,
+            ),
+            titleMedium: const TextStyle(
+              fontSize: 16,
+              height: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
+            bodyLarge: const TextStyle(fontSize: 16, height: 1.6),
+            bodyMedium: const TextStyle(fontSize: 14, height: 1.6),
+            bodySmall: const TextStyle(
+              fontSize: 12,
+              height: 1.5,
+              color: AppColors.secondaryText,
+            ),
+            labelLarge: const TextStyle(
+              fontSize: 14,
+              height: 1.4,
+              fontWeight: FontWeight.w600,
+            ),
+          )
+          .apply(
+            fontFamily: 'BeVietnamPro',
+            bodyColor: AppColors.text,
+            displayColor: AppColors.text,
+          ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           minimumSize: const Size(48, 48),
@@ -38,8 +141,10 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          minimumSize: const Size(48, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          backgroundColor: AppColors.action,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -47,10 +152,10 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          foregroundColor: AppColors.violet,
-          side: const BorderSide(color: AppColors.surfaceLight),
+          minimumSize: const Size(48, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          foregroundColor: AppColors.text,
+          side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -59,70 +164,108 @@ abstract final class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: const Size(48, 48),
-          foregroundColor: AppColors.violet,
+          foregroundColor: AppColors.cyan,
           tapTargetSize: MaterialTapTargetSize.padded,
         ),
       ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.border,
+        thickness: .6,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surfaceLight,
+        contentTextStyle: const TextStyle(
+          fontFamily: 'BeVietnamPro',
+          color: AppColors.text,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.background,
-        indicatorColor: AppColors.violet.withValues(alpha: 0.2),
-        height: 68,
+        backgroundColor: AppColors.secondaryBackground,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: AppColors.primary.withValues(alpha: .25),
+        height: 76,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? AppColors.violet
-                : AppColors.muted,
+                ? AppColors.cyan
+                : AppColors.secondaryText,
           ),
         ),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          final selected = states.contains(WidgetState.selected);
-          return TextStyle(
-            color: selected ? AppColors.violet : AppColors.muted,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-          );
-        }),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontFamily: 'BeVietnamPro',
+            color: states.contains(WidgetState.selected)
+                ? AppColors.text
+                : AppColors.secondaryText,
+            fontSize: 11,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+          ),
+        ),
       ),
       chipTheme: ChipThemeData(
-        selectedColor: AppColors.violet.withValues(alpha: 0.2),
-        checkmarkColor: AppColors.violet,
-        labelStyle: const TextStyle(color: Color(0xFFF5F3FA)),
-        side: const BorderSide(color: AppColors.surfaceLight),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.primary.withValues(alpha: .25),
+        checkmarkColor: AppColors.cyan,
+        labelStyle: const TextStyle(
+          fontFamily: 'BeVietnamPro',
+          color: AppColors.text,
+          fontSize: 13,
+        ),
+        side: const BorderSide(color: AppColors.border),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.violet,
+      sliderTheme: const SliderThemeData(
+        activeTrackColor: AppColors.mystic,
         inactiveTrackColor: AppColors.surfaceLight,
-        thumbColor: AppColors.violet,
-        overlayColor: AppColors.violet.withValues(alpha: 0.16),
-        trackHeight: 3,
+        thumbColor: AppColors.cyan,
+        trackHeight: 4,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.text,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontFamily: 'BeVietnamPro',
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.text,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        hintStyle: const TextStyle(color: AppColors.muted),
+        hintStyle: const TextStyle(
+          color: AppColors.secondaryText,
+          fontSize: 14,
+        ),
+        labelStyle: const TextStyle(color: AppColors.secondaryText),
+        floatingLabelStyle: const TextStyle(color: AppColors.cyan),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 16,
+          vertical: 18,
         ),
-        prefixIconColor: AppColors.muted,
-        suffixIconColor: AppColors.muted,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
+        prefixIconColor: AppColors.secondaryText,
+        suffixIconColor: AppColors.secondaryText,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.surfaceLight),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.violet, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.mystic, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
       ),
     );

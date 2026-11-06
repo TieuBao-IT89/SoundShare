@@ -21,7 +21,7 @@ export const createTrackService = ({ repository, storage, uploadService }) => {
       const page = rows.slice(0, filters.limit);
       return { items: page.map((row) => ({
         id: row.id, title: row.title, artist: row.artist, genre: row.genre, description: row.description,
-        createdAt: row.created_at, liked: row.liked, artwork: row.artwork_public_id ? storage.createAccess({
+        createdAt: row.created_at, liked: row.liked, visibility:row.visibility||'private', artwork: row.artwork_public_id ? storage.createAccess({
           public_id: row.artwork_public_id, format: row.artwork_format, resource_type: row.artwork_resource_type,
         }) : null,
       })), nextCursor: hasMore ? encodeCursor(page.at(-1)) : null };

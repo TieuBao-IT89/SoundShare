@@ -6,6 +6,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/clerk_config.dart';
 import '../../../core/services/api_client.dart';
+import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/aurora_widgets.dart';
+import '../../../core/widgets/authentication_header.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/auth_session.dart';
 import 'session_scope.dart';
 
@@ -21,6 +25,10 @@ external JSPromise<JSString> _token(JSBoolean refresh);
 external JSPromise<JSAny?> _signOut();
 @JS('soundshareAuth.open')
 external void _open(JSString mode);
+@JS('soundshareAuth.manageAccount')
+external JSBoolean _manageAccount();
+
+bool openWebAccount() => _manageAccount().toDart;
 
 class WebAuthGate extends StatefulWidget {
   const WebAuthGate({super.key, required this.child});
@@ -97,27 +105,39 @@ class _WebAuthGateState extends State<WebAuthGate> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(semanticsLabel: 'Loading sign-in'),
+      return AuthenticationScaffold(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AuthenticationHeader(compact: true),
+            const SizedBox(height: 32),
+            if (MediaQuery.disableAnimationsOf(context))
+              const Icon(Icons.hourglass_top_rounded, color: AppColors.cyan)
+            else
+              CircularProgressIndicator(
+                semanticsLabel: context.l10n.loadingSignIn,
+              ),
+            const SizedBox(height: 16),
+            Text(context.l10n.loadingSignIn),
+          ],
         ),
       );
     }
     if (failed) {
-      return Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Sign-in could not be loaded. Check your connection and retry.',
-                ),
-                TextButton(onPressed: _load, child: const Text('Try again')),
-              ],
+      return AuthenticationScaffold(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AuthenticationHeader(compact: true),
+            const SizedBox(height: 32),
+            Text(context.l10n.signInLoadFailed, textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            GradientButton(
+              onPressed: _load,
+              label: context.l10n.tryAgain,
+              icon: Icons.refresh_rounded,
             ),
-          ),
+          ],
         ),
       );
     }
@@ -148,72 +168,74 @@ class _WebAuthGateState extends State<WebAuthGate> {
 class _SignInScreen extends StatelessWidget {
   const _SignInScreen();
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(
-                    Icons.graphic_eq_rounded,
-                    color: Color(0xFF9B7BFF),
-                    size: 64,
-                  ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'SOUNDSHARE',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      letterSpacing: 2,
-                      color: Color(0xFFB8F28B),
+  Widget build(BuildContext context) => AuthenticationScaffold(
+    child: AuroraReveal(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const AuthenticationHeader(),
+          const SizedBox(height: 36),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  context.l10n.welcomeBack,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.l10n.signInSubtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.secondaryText),
+                ),
+                const SizedBox(height: 28),
+                GradientButton(
+                  onPressed: () => _open('sign-in'.toJS),
+                  label: context.l10n.signIn,
+                  icon: Icons.arrow_forward_rounded,
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => _open('sign-up'.toJS),
+                  child: Text(context.l10n.signUp),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.lock_outline_rounded,
+                      color: AppColors.cyan,
+                      size: 18,
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Your sound.\nYour space.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 36,
-                      height: 1.15,
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        context.l10n.signInPrivateNote,
+                        style: const TextStyle(
+                          color: AppColors.secondaryText,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Đăng nhập để tải MP3, nghe nhạc và lưu thư viện riêng của bạn.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(height: 1.5),
-                  ),
-                  const SizedBox(height: 32),
-                  FilledButton(
-                    onPressed: () => _open('sign-in'.toJS),
-                    child: const Text('Đăng nhập'),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () => _open('sign-up'.toJS),
-                    child: const Text('Tạo tài khoản'),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'File của bạn được giữ riêng tư. Xác minh email và khôi phục mật khẩu do Clerk xử lý.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF92919E),
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ),
+          const SizedBox(height: 24),
+          Text(
+            context.l10n.secureAccountNote,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.secondaryText,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     ),
   );

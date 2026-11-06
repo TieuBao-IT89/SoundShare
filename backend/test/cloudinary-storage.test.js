@@ -36,10 +36,14 @@ test("SDK generates unsigned stored metadata and expiring signed access separate
   const sdk = {
     url: cloudinary.url,
     utils: cloudinary.utils,
-    api: { resource: async () => ({ format: "mp3", version: 1, secure_url: "https://example.com/?signature=must-not-persist" }) },
+    api: { resource: async (_id, options) => {
+      assert.equal(options.media_metadata, true, 'Audio duration requires detailed Admin API metadata');
+      return { format: "mp3", version: 1, duration: 42, secure_url: "https://example.com/?signature=must-not-persist" };
+    } },
   };
   const storage = createCloudinaryStorage(sdk);
   const metadata = await storage.find("fixture/audio", "video");
+  assert.equal(metadata.duration, 42);
   const storedUrl = new URL(metadata.secure_url);
   assert.equal(storedUrl.search, "");
   assert.ok(storedUrl.pathname.includes("/video/authenticated/"));

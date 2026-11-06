@@ -3,13 +3,28 @@
 (() => {
   let ready;
   const listeners = new Set();
+  const navigate = (to, { windowNavigate }, replace = false) => {
+    const current = new URL(window.location.href);
+    const destination = new URL(to, current);
+    // Flutter uses hash routes. Clerk's default window navigation marks even a
+    // hash-only redirect as unloading and skips publishing the activated session.
+    const isFlutterRoute = destination.origin === current.origin
+      && destination.pathname === current.pathname
+      && destination.search === current.search
+      && (!destination.hash || destination.hash.startsWith('#/'));
+    if (!isFlutterRoute) return windowNavigate(destination);
+    if (!destination.hash) destination.hash = '#/';
+    if (destination.href === current.href) return;
+    // Native hash navigation also emits popstate, which Flutter listens to.
+    window.location[replace ? 'replace' : 'assign'](destination.href);
+  };
   const snapshot = () => {
     const session = window.Clerk?.session;
     const user = session?.user || window.Clerk?.user;
     // Clerk can publish the user before activating their session. Wait for the
     // active session, and distinguish a replacement session for the same user.
     return JSON.stringify(session?.status === 'active' && session.id && user?.id
-      ? { id: user.id, name: user.fullName || user.username || 'Music lover', sessionId: session.id }
+      ? { id: user.id, name: user.fullName || user.username || 'Người yêu nhạc', sessionId: session.id }
       : null);
   };
   window.soundshareAuth = {
@@ -30,16 +45,19 @@
         await loadScript('https://cdn.jsdelivr.net/npm/@clerk/ui@1.42.3/dist/ui.browser.js');
         await loadScript('https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6.42.2/dist/clerk.browser.js', key);
         await window.Clerk.load({
+          routerPush: (to, metadata) => navigate(to, metadata),
+          routerReplace: (to, metadata) => navigate(to, metadata, true),
+          localization: window.soundshareClerkVi,
           ui: { ClerkUI: window.__internal_ClerkUICtor },
           appearance: {
-            variables: { colorPrimary: '#9B7BFF', colorPrimaryForeground: '#171220', colorBackground: '#17171F', colorInput: '#22222D', colorForeground: '#F5F3FA', colorInputForeground: '#F5F3FA', colorMutedForeground: '#B5B3BF', fontFamily: 'Roboto, sans-serif', borderRadius: '1rem' },
+            variables: { colorPrimary: '#6742BF', colorPrimaryForeground: '#FFFFFF', colorBackground: '#11131D', colorInput: '#1B1D29', colorForeground: '#F7F7FA', colorInputForeground: '#F7F7FA', colorMutedForeground: '#9B9EAE', colorDanger: '#F47187', fontFamily: 'BeVietnamPro, sans-serif', borderRadius: '.75rem' },
             options: { showOptionalFields: true },
             elements: {
               formFieldInput: { minHeight: '48px' },
-              formFieldInputShowPasswordButton: { color: '#B5B3BF', minWidth: '48px' },
-              formButtonPrimary: { minHeight: '48px', color: '#171220' },
-              socialButtonsBlockButton: { minHeight: '48px', color: '#F5F3FA', backgroundColor: '#22222D' },
-              socialButtonsBlockButtonText: { color: '#F5F3FA' },
+              formFieldInputShowPasswordButton: { color: '#9B9EAE', minWidth: '48px' },
+              formButtonPrimary: { minHeight: '48px', color: '#FFFFFF', background: '#6742BF' },
+              socialButtonsBlockButton: { minHeight: '48px', color: '#F7F7FA', backgroundColor: '#1B1D29' },
+              socialButtonsBlockButtonText: { color: '#F7F7FA' },
               modalContent: { maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' },
             },
           },
@@ -62,6 +80,12 @@
       return token;
     },
     async signOut() { await window.Clerk.signOut(); },
+    manageAccount() {
+      const clerk = window.Clerk;
+      if (clerk?.session?.status !== 'active' || !clerk.user?.id || typeof clerk.openUserProfile !== 'function') return false;
+      clerk.openUserProfile({});
+      return true;
+    },
     open(mode) {
       const options = { fallbackRedirectUrl: window.location.origin + '/#/', forceRedirectUrl: window.location.origin + '/#/' };
       if (mode === 'sign-up') window.Clerk.openSignUp(options);

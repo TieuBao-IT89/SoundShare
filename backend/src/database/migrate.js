@@ -63,7 +63,7 @@ const runMigrations = async () => {
         console.log(`SUCCESS: ${file}`);
       } catch (error) {
         await client.query("ROLLBACK");
-        throw new Error(`Migration ${file} failed: ${error.message}`);
+        throw new Error(`Migration ${file} failed; database details omitted.`);
       }
     }
 

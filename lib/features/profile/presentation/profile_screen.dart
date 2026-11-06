@@ -7,120 +7,304 @@ import '../../../core/config/app_mode.dart';
 import '../../../core/services/api_client.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/widgets/app_scaffold.dart';
+import '../../../core/widgets/aurora_widgets.dart';
 import '../../../core/widgets/catalog_widgets.dart';
+import '../../../core/widgets/section_heading.dart';
+import '../../../l10n/l10n.dart';
+import '../../auth/presentation/account_management.dart';
 import '../../home/application/catalog_provider.dart';
+import '../../community/presentation/public_profile_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _profile(
-      context,
-      ref,
-      name: ref.watch(demoModeProvider)
-          ? null
-          : ref.watch(authSessionProvider)?.name,
-    );
-  }
+    final t = context.l10n;
+    final demo = ref.watch(demoModeProvider);
+    if (!demo) return const PublicProfileScreen();
+    final session = demo ? null : ref.watch(authSessionProvider);
+    final name = demo ? t.guestName : (session?.name ?? t.accountName);
+    final catalog = ref.watch(catalogProvider);
+    final count = catalog.asData?.value.length;
+    final likes = count == null
+        ? null
+        : ref.watch(likedSongIndicesProvider).length;
 
-  Widget _profile(BuildContext context, WidgetRef ref, {String? name}) {
-    final likes = ref.watch(likedSongIndicesProvider).length;
     return AppScaffold(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
-        children: [
-          const ScreenHeading(
-            eyebrow: 'YOUR CORNER',
-            title: 'A little more you.',
-            subtitle: 'Make room for the music you come back to.',
-          ),
-          const SizedBox(height: 32),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: CircleAvatar(
-              radius: 38,
-              backgroundColor: AppColors.surfaceLight,
-              child: Icon(
-                Icons.person_outline_rounded,
-                size: 36,
-                color: AppColors.violet,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final roomy = constraints.maxWidth >= 680;
+          final identity = GlassCard(
+            gradient: AppGradients.soft,
+            padding: const EdgeInsets.all(26),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppGradients.primary,
+                  ),
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.surface,
+                    child: session == null || name.trim().isEmpty
+                        ? const Icon(
+                            Icons.person_outline_rounded,
+                            size: 38,
+                            color: AppColors.text,
+                          )
+                        : Text(
+                            String.fromCharCode(name.trim().runes.first)
+                                .toUpperCase(),
+                            style: Theme.of(context).textTheme.headlineLarge,
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  demo ? t.profileDemoNote : t.profilePrivateNote,
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: AppColors.secondaryText, height: 1.6),
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 24,
+                  runSpacing: 18,
+                  children: [
+                    _MusicCount(
+                      count: count,
+                      label: demo ? t.sampleCatalog : t.yourUploads,
+                    ),
+                    _MusicCount(count: likes, label: t.likedTracks),
+                  ],
+                ),
+                if (demo) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    t.demoBadge,
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(color: AppColors.cyan, letterSpacing: 1.2),
+                  ),
+                ],
+              ],
+            ),
+          );
+          final actions = Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SectionHeading(t.yourMusic),
+              const SizedBox(height: 14),
+              GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                child: Column(
+                  children: [
+                    _ProfileAction(
+                      icon: Icons.library_music_outlined,
+                      title: t.libraryTitle,
+                      subtitle: t.profileLibraryHint,
+                      onTap: () => context.go('/library'),
+                    ),
+                    const Divider(height: 1),
+                    _ProfileAction(
+                      icon: Icons.cloud_upload_outlined,
+                      title: t.uploadMusic,
+                      subtitle: t.profileUploadHint,
+                      onTap: () => context.push('/upload'),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 24),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.lock_outline_rounded,
+                      color: AppColors.cyan,
+                      size: 24,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      t.profilePrivacyTitle,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      demo ? t.demoLibraryNote : t.profilePrivacyMessage,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.secondaryText,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!demo) ...[
+                const SizedBox(height: 28),
+                SectionHeading(t.accountSection),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Icons.verified_user_outlined,
+                    color: AppColors.secondaryText,
+                  ),
+                  title: Text(t.accountProvider),
+                  subtitle: Text(
+                    t.accountProviderNote,
+                    style: const TextStyle(
+                      color: AppColors.secondaryText,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (session != null) ...[
+                  const AccountManagementButton(),
+                  const SizedBox(height: 12),
+                ],
+                const _SignOutButton(),
+              ],
+            ],
+          );
+
+          return ListView(
+            padding: EdgeInsets.fromLTRB(
+              roomy ? 36 : 20,
+              28,
+              roomy ? 36 : 20,
+              32,
             ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            name ?? 'Listening as a guest',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            name == null
-                ? 'You are exploring the sample catalog. Your likes stay in this session.'
-                : 'Your uploads and likes are saved to your private account.',
-            style: const TextStyle(color: AppColors.muted, height: 1.5),
-          ),
-          const SizedBox(height: 26),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(
-              Icons.favorite_border_rounded,
-              color: AppColors.violet,
-            ),
-            title: Text('$likes liked ${likes == 1 ? 'track' : 'tracks'}'),
-            subtitle: const Text('Open your listening shelf'),
-            trailing: const Icon(Icons.arrow_forward_rounded),
-            onTap: () => context.go('/library'),
-          ),
-          const Divider(height: 32),
-          const Text(
-            'Your artist profile',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Upload your own MP3s and artwork from Home. Your music stays private; public profiles and followers are not enabled.',
-            style: TextStyle(color: AppColors.muted, height: 1.5),
-          ),
-          const SizedBox(height: 28),
-          FilledButton(
-            onPressed: () => context.go('/explore'),
-            child: const Text(
-              'Find your next favorite',
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 32),
-          if (!ref.watch(demoModeProvider)) const _SignOutButton(),
-          const Text(
-            'SOUNDSHARE',
-            style: TextStyle(
-              color: AppColors.mint,
-              fontSize: 11,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Independent sounds. A place to listen.',
-            style: TextStyle(color: AppColors.muted),
-          ),
-        ],
+            children: [
+              ScreenHeading(
+                eyebrow: t.profileEyebrow,
+                title: t.profileTitle,
+                subtitle: t.profileSubtitle,
+              ),
+              const SizedBox(height: 28),
+              if (constraints.maxWidth >= 900 &&
+                  MediaQuery.textScalerOf(context).scale(14) <= 22)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 4, child: AuroraReveal(child: identity)),
+                    const SizedBox(width: 28),
+                    Expanded(
+                      flex: 5,
+                      child: AuroraReveal(delay: 70, child: actions),
+                    ),
+                  ],
+                )
+              else ...[
+                AuroraReveal(child: identity),
+                const SizedBox(height: 28),
+                actions,
+              ],
+              const SizedBox(height: 36),
+              Row(
+                children: [
+                  const AuroraLogo(size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      t.brandTagline,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppColors.secondaryText),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
+class _MusicCount extends StatelessWidget {
+  const _MusicCount({required this.count, required this.label});
+  final int? count;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        count?.toString() ?? '—',
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(fontWeight: FontWeight.w700),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: AppColors.secondaryText),
+      ),
+    ],
+  );
+}
+
+class _ProfileAction extends StatelessWidget {
+  const _ProfileAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+    leading: Icon(icon, color: AppColors.mystic),
+    title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+    subtitle: Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        subtitle,
+        style: const TextStyle(color: AppColors.secondaryText, height: 1.5),
+      ),
+    ),
+    trailing: const Icon(
+      Icons.arrow_forward_rounded,
+      size: 20,
+      color: AppColors.secondaryText,
+    ),
+    onTap: onTap,
+  );
+}
+
 class _SignOutButton extends ConsumerStatefulWidget {
   const _SignOutButton();
+
   @override
   ConsumerState<_SignOutButton> createState() => _SignOutButtonState();
 }
 
 class _SignOutButtonState extends ConsumerState<_SignOutButton> {
   bool busy = false;
+
   @override
-  Widget build(BuildContext context) => OutlinedButton(
+  Widget build(BuildContext context) => OutlinedButton.icon(
     onPressed: busy
         ? null
         : () async {
@@ -129,21 +313,21 @@ class _SignOutButtonState extends ConsumerState<_SignOutButton> {
               try {
                 await ref.read(audioPlayerProvider).pause();
               } catch (_) {
-                /* The session still needs to close. */
+                // The session still needs to close if playback cannot pause.
               }
               await ref.read(signOutProvider)();
             } catch (_) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Sign out failed. Please retry.'),
-                  ),
+                  SnackBar(content: Text(context.l10n.signOutFailed)),
                 );
               }
             } finally {
               if (mounted) setState(() => busy = false);
             }
           },
-    child: Text(busy ? 'Signing out…' : 'Đăng xuất'),
+    icon: const Icon(Icons.logout_rounded, size: 20),
+    label: Text(busy ? context.l10n.signingOut : context.l10n.signOut),
+    style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
   );
 }

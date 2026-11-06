@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_theme.dart';
+import 'aurora_widgets.dart';
 
 class SectionHeading extends StatelessWidget {
   const SectionHeading(
@@ -69,7 +70,15 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 42, color: AppColors.muted),
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: AppGradients.soft,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Icon(icon, size: 36, color: AppColors.cyan),
+            ),
             const SizedBox(height: 14),
             Text(
               title,
@@ -84,7 +93,7 @@ class EmptyState extends StatelessWidget {
             ),
             if (actionLabel != null) ...[
               const SizedBox(height: 12),
-              TextButton(onPressed: onAction, child: Text(actionLabel!)),
+              GradientButton(onPressed: onAction, label: actionLabel!),
             ],
           ],
         ),

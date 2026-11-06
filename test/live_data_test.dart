@@ -16,6 +16,7 @@ import 'package:soundshare/features/home/application/catalog_provider.dart';
 import 'package:soundshare/features/home/data/api_song_repository.dart';
 import 'package:soundshare/features/home/domain/track_draft.dart';
 import 'package:soundshare/features/upload/presentation/upload_screen.dart';
+import 'package:soundshare/l10n/l10n.dart';
 
 import 'support/test_app.dart';
 
@@ -27,6 +28,61 @@ Future<String> fixtureToken({bool refresh = false}) async =>
     refresh ? 'fresh-fixture' : 'old-fixture';
 
 void main() {
+  testWidgets(
+    'Clerk name edits update UI without resetting session data or client',
+    (tester) async {
+      var clients = 0;
+      var verifications = 0;
+      ProviderContainer? identity;
+      Widget account(String name) => ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          home: SessionScope(
+            key: const ValueKey('same-active-session'),
+            session: AuthSession(
+              subject: 'one',
+              name: name,
+              sessionId: 'session-one',
+            ),
+            token: fixtureToken,
+            signOut: () async {},
+            createClient: (token) {
+              clients++;
+              return ApiClient(
+                token: token,
+                client: MockClient((_) async {
+                  verifications++;
+                  return ok({'id': 'one'});
+                }),
+              );
+            },
+            child: Consumer(
+              builder: (context, ref, _) {
+                identity = ProviderScope.containerOf(context);
+                return Text(
+                  '${ref.watch(authSessionProvider)!.name}:${ref.watch(likedSongIndicesProvider).length}',
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(account('Tên cũ'));
+      await tester.pumpAndSettle();
+      final original = identity!;
+      original.read(likedSongIndicesProvider.notifier).state = {0, 1};
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(account('Tên mới'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tên mới:2'), findsOneWidget);
+      expect(identity, same(original));
+      expect(clients, 1);
+      expect(verifications, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
   test(
     'API refreshes a rejected token once and never returns provider details',
     () async {
@@ -194,6 +250,8 @@ void main() {
             'artist': 'Me',
             'genre': 'Jazz',
             'description': '',
+            'visibility': 'private',
+            'rightsConfirmed': false,
           });
           return ok({'id': 'track-id'}, 201);
         }),
@@ -212,6 +270,74 @@ void main() {
       );
       expect(requests.length, 3);
       api.close();
+    },
+  );
+
+  test(
+    'Metadata retry reuses confirmed assets after a lost response',
+    () async {
+      var uploads = 0;
+      var commits = 0;
+      final ids = <String>[];
+      final api = ApiClient(
+        token: fixtureToken,
+        client: MockClient((request) async {
+          if (request.url.path.contains('/uploads/')) {
+            uploads++;
+            return ok({'id': 'confirmed-audio'}, 201);
+          }
+          commits++;
+          ids.add(jsonDecode(request.body)['audioAssetId'] as String);
+          if (commits == 1) throw http.ClientException('Lost fixture response');
+          return ok({'id': 'same-track'}, 200);
+        }),
+      );
+      addTearDown(api.close);
+      final repository = ApiSongRepository(api);
+      final draft = TrackDraft(
+        title: 'Bản thu',
+        artist: 'Tôi',
+        genre: 'Ambient',
+        description: '',
+        audioName: 'own.mp3',
+        audioBytes: Uint8List.fromList([1, 2, 3]),
+      );
+      await expectLater(repository.upload(draft), throwsA(isA<ApiException>()));
+      await repository.upload(draft);
+      expect(uploads, 1);
+      expect(commits, 2);
+      expect(ids, ['confirmed-audio', 'confirmed-audio']);
+    },
+  );
+
+  test(
+    'Publishing requires a chosen profile before transferring files',
+    () async {
+      final api = ApiClient(
+        token: fixtureToken,
+        client: MockClient((request) async {
+          expect(request.url.path, endsWith('/users/me'));
+          return ok({'username': null});
+        }),
+      );
+      addTearDown(api.close);
+      await expectLater(
+        ApiSongRepository(api).upload(
+          TrackDraft(
+            title: 'Bản thu',
+            artist: 'Tôi',
+            genre: 'Ambient',
+            description: '',
+            audioName: 'own.mp3',
+            audioBytes: Uint8List(3),
+            visibility: 'public',
+            rightsConfirmed: true,
+          ),
+        ),
+        throwsA(
+          isA<ApiException>().having((e) => e.code, 'code', 'PROFILE_REQUIRED'),
+        ),
+      );
     },
   );
 
@@ -255,20 +381,22 @@ void main() {
       );
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      await tester.tap(find.text('Sign out'));
+      await tester.ensureVisible(find.text(appCopy.signOut));
+      await tester.tap(find.text(appCopy.signOut));
       await tester.pump();
       expect(signOuts, 1);
       await tester.pump(const Duration(seconds: 26));
       await tester.pumpAndSettle();
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(find.textContaining('took too long'), findsOneWidget);
+      expect(find.text(appCopy.sessionTimeout), findsOneWidget);
       expect(find.text('Private library content'), findsNothing);
       pendingToken.complete('late-fixture');
       await tester.pumpAndSettle();
       expect(find.text('Private library content'), findsNothing);
-      expect(find.textContaining('took too long'), findsOneWidget);
+      expect(find.text(appCopy.sessionTimeout), findsOneWidget);
       stalled = false;
-      await tester.tap(find.text('Try again'));
+      await tester.ensureVisible(find.text(appCopy.tryAgain));
+      await tester.tap(find.text(appCopy.tryAgain));
       await tester.pumpAndSettle();
       expect(find.text('Private library content'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -308,9 +436,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Private library content'), findsNothing);
-      expect(find.textContaining('sign in again'), findsOneWidget);
+      expect(find.text(appCopy.sessionInvalid), findsOneWidget);
       allow = true;
-      await tester.tap(find.text('Try again'));
+      await tester.tap(find.text(appCopy.tryAgain));
       await tester.pumpAndSettle();
       expect(find.text('Private library content'), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -390,15 +518,15 @@ void main() {
           ),
         ),
       );
-      await tapVisible(tester, find.text('Choose an MP3 file'));
+      await tapVisible(tester, find.text(appCopy.chooseMp3));
       await tester.enterText(find.byType(TextFormField).at(0), 'My song');
       await tester.enterText(find.byType(TextFormField).at(1), 'Me');
-      await tapVisible(tester, find.text('Save to my library'));
-      expect(find.text('Saved to your private library.'), findsNothing);
-      expect(find.text('Your local preview is ready'), findsNothing);
+      await tapVisible(tester, find.text(appCopy.uploadButton));
+      expect(find.text(appCopy.uploadSaved), findsNothing);
+      expect(find.text(appCopy.previewReady), findsNothing);
       fail = false;
-      await tapVisible(tester, find.text('Save to my library'));
-      expect(find.text('Saved to your private library.'), findsOneWidget);
+      await tapVisible(tester, find.text(appCopy.uploadButton));
+      expect(find.text(appCopy.uploadSaved), findsOneWidget);
     },
   );
 }
