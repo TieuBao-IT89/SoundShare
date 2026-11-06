@@ -1,4 +1,8 @@
-# SoundShare — NOCTURNE · Mystic Aurora 2.0
+# SoundShare — OBSIDIAN PULSE V4
+
+V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#0F1220, surface #181C2C/#23283B, brand #8B5CF6/#4F46E5, blue/cyan #38BDF8/#67E8F9; chữ #F8FAFC/#A8B0C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
+
+Mobile dưới 768 px dùng bottom navigation/mini player; tablet 768–1099 px dùng rail 80 px; desktop từ 1100 px dùng sidebar 224 px, topbar search/avatar/upload và playback dock. Queue mở drawer khi hẹp hoặc panel 310 px từ 1360 px. Dock/player/queue cùng AudioPlayer và progress, không tạo state phát riêng. Drawer chỉ phản ứng ở route/tab đang hiển thị và giữ trạng thái khi đổi breakpoint. Các quy tắc và chức năng V3 bên dưới tiếp tục được áp dụng trong V4.
 
 Một tạp chí âm nhạc về những người đang sáng tạo: artwork mở đầu câu chuyện, typography dẫn đường, danh sách và hồ sơ nối người nghe với người đăng. NOCTURNE mở rộng thư viện riêng thành cộng đồng có chủ đích chia sẻ. Giữ Flutter, Riverpod, GoRouter, Clerk → Express → Neon/Cloudinary và cùng AudioPlayer. [Kiểm kê và nguồn nghiên cứu V3](docs/ui/nocturne-v3-audit.md).
 
@@ -6,12 +10,12 @@ Một tạp chí âm nhạc về những người đang sáng tạo: artwork m�
 
 | Token | Màu | Vai trò |
 |---|---|---|
-| Nền chính / phụ | `#090A10` / `#11131D` | Nền gần đen trung tính |
-| Bề mặt / nâng | `#161823` / `#1B1D29` | Input và vùng chọn |
-| Electric Violet / Lavender | `#8957F7` / `#B9A6F8` | Nhận diện và điểm nhấn |
-| Aurora Blue / Cyan | `#3D8BEB` / `#57D6DE` | Progress, màu phụ |
-| Chữ chính / phụ | `#F7F7FA` / `#9B9EAE` | Nội dung và mô tả |
-| Muted | `#737A98` | Trang trí, không dùng làm chữ nhỏ trên surface |
+| Nền chính / phụ | `#080A12` / `#0F1220` | Nền gần đen trung tính |
+| Bề mặt / nâng | `#181C2C` / `#23283B` | Input và vùng chọn |
+| Electric Violet / Lavender | `#8B5CF6` / `#B9A6F8` | Nhận diện và điểm nhấn |
+| Aurora Blue / Cyan | `#38BDF8` / `#67E8F9` | Progress, màu phụ |
+| Chữ chính / phụ | `#F8FAFC` / `#A8B0C4` | Nội dung và mô tả |
+| Muted | `#737D95` | Trang trí, không dùng làm chữ nhỏ trên surface |
 | Thành công / cảnh báo / lỗi | `#40CF9A` / `#F5BA6A` / `#F47187` | Phản hồi có nhãn |
 
 Nền trung tính không có glow mặc định. Nút chính dùng tím đậm `#6742BF` để giữ tương phản chữ trắng; gradient dành cho logo, nút phát và ambient artwork. Home có một hero ảnh lớn, các danh sách có divider, creator là hàng thông tin và tương tác, không bọc mọi nội dung trong card. Tên component Aurora/Glass được giữ để tương thích mã cũ; card mặc định nay là surface đặc không viền. Không thêm blur hoặc package animation.
@@ -22,8 +26,8 @@ Be Vietnam Pro được đóng gói tại `assets/fonts`, kèm giấy phép OFL;
 
 - Hệ khoảng cách 4/8 px; padding trang 20–24, khoảng giữa section 32; radius 12–24.
 - Điện thoại dùng năm tab **Trang chủ · Khám phá · Tìm kiếm · Thư viện · Cá nhân**. `StatefulShellRoute.indexedStack` giữ nội dung và vị trí cuộn; session và player ở ngoài shell. Khi chữ lớn, nhãn có thêm chiều cao.
-- Từ 900 px dùng thanh bên 240 px và nội dung giới hạn 1180 px; form, banner và nhóm nội dung chia cột theo chiều rộng có sẵn. Không kéo giãn bố cục điện thoại ra toàn desktop.
-- Mini player nằm trong vùng layout riêng phía trên navigation, hoặc cuối vùng nội dung desktop. Không đè lên danh sách. Upload và Đang phát là luồng riêng.
+- Từ 768 px dùng rail 80 px, từ 1100 px sidebar 224 px; nội dung giới hạn 1560 px. Topbar có tìm kiếm, avatar và đăng nhạc. Các nhóm bài chia cột theo chiều rộng vùng nội dung, thu về một cột khi chữ lớn.
+- Mini player nằm trên navigation mobile. Desktop/tablet có dock riêng; volume được giới hạn chiều cao 48 px để không giãn dock. Đang phát desktop dùng shell nhưng không lặp dock; queue dùng cùng danh sách/state, không tạo player khác. Upload là luồng riêng.
 - Các thành phần chung: AuroraBackground, AuroraLogo, GlassCard, GradientButton, GradientIconButton, MysticSearchBar, LoadingSkeleton, ScreenHeading/SectionHeading, EmptyState, SongTile, SoundShareBottomNavigation, FloatingMiniPlayer, MusicProgressSlider và AuthenticationHeader.
 - Không tạo Album/Playlist/Artist card không có nguồn dữ liệu. V3 có playlist lưu server và gợi ý theo thể loại đã thích rồi bài mới nhất, kèm nhãn giải thích. Bộ sưu tập demo cũ vẫn được đánh dấu mẫu.
 
@@ -39,7 +43,7 @@ Be Vietnam Pro được đóng gói tại `assets/fonts`, kèm giấy phép OFL;
 | Mini player | Artwork, tên bài/nghệ sĩ, phát/tạm dừng/bài tiếp và progress thật; chạm mở trình phát, giữ cùng provider/audio instance |
 | Thư viện | Upload riêng, thích/lưu và playlist có lưu server; tìm thư viện riêng được giữ; không chèn mẫu vào tài khoản thật |
 | Tải nhạc | MP3 20 MB/artwork 5 MB; public/private mặc định private, xác nhận quyền khi public; Web đo byte bằng XHR, hủy transport thật; khi xác nhận metadata thì chờ server, không mô phỏng thành công |
-| Cá nhân | Hồ sơ SoundShare do người dùng chọn username; tên/bio/avatar/cover, follow, bài công khai và playlist; quản lý credential bằng Clerk; demo giữ nhãn dữ liệu mẫu |
+| Cá nhân | Hồ sơ SoundShare do người dùng chọn username; tên/bio/avatar/cover, follow, bài công khai và playlist. Menu “Tài khoản” ở góc phải cover của chính mình chứa Quản lý tài khoản và Đăng xuất; hàng thao tác giữ Chỉnh sửa hồ sơ, Quản lý bài hát và Chia sẻ. Không đặt nút Tải nhạc lên trong hồ sơ; thao tác này nằm ở sidebar/topbar/Thư viện. Credential vẫn do Clerk quản lý; demo giữ nhãn dữ liệu mẫu |
 
 V3 bổ sung Home editorial, discovery/trending có cửa sổ thời gian, tìm cộng đồng, public profile, follower/following, sửa hồ sơ, playlist, queue, thích/lưu và quản lý bài. Thư viện riêng vẫn có tìm kiếm tại `/library/search`. Không thêm Cài đặt/thông báo hoặc block không có nghiệp vụ thật. Luồng chi tiết và giới hạn nghiệm thu nằm trong PRD mục V3 và báo cáo V3.
 

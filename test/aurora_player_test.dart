@@ -43,11 +43,19 @@ void main() {
         addTearDown(audio.positions.close);
         await container.read(playbackActionsProvider).play(0);
         await tester.pumpAndSettle();
-        final mini = tester.widget<MusicProgressIndicator>(
-          find.byType(MusicProgressIndicator),
-        );
-        expect(mini.position, const Duration(seconds: 65));
-        expect(mini.duration, const Duration(minutes: 3));
+        if (viewport.size.width >= 768) {
+          final dock = tester.widget<MusicProgressSlider>(
+            find.byType(MusicProgressSlider),
+          );
+          expect(dock.position, const Duration(seconds: 65));
+          expect(dock.duration, const Duration(minutes: 3));
+        } else {
+          final mini = tester.widget<MusicProgressIndicator>(
+            find.byType(MusicProgressIndicator),
+          );
+          expect(mini.position, const Duration(seconds: 65));
+          expect(mini.duration, const Duration(minutes: 3));
+        }
         expect(audio.loads, 1);
 
         await tester.tap(find.text('Slow Motion').last);
@@ -61,10 +69,23 @@ void main() {
         expect(find.text('1:30'), findsOneWidget);
 
         await tapVisible(tester, find.byTooltip(appCopy.backToBrowsing));
-        final updatedMini = tester.widget<MusicProgressIndicator>(
-          find.byType(MusicProgressIndicator),
-        );
-        expect(updatedMini.position, const Duration(seconds: 90));
+        if (viewport.size.width >= 768) {
+          expect(
+            tester
+                .widget<MusicProgressSlider>(find.byType(MusicProgressSlider))
+                .position,
+            const Duration(seconds: 90),
+          );
+        } else {
+          expect(
+            tester
+                .widget<MusicProgressIndicator>(
+                  find.byType(MusicProgressIndicator),
+                )
+                .position,
+            const Duration(seconds: 90),
+          );
+        }
         expect(audio.active, isTrue);
         expect(audio.loads, 1);
         expect(tester.takeException(), isNull);

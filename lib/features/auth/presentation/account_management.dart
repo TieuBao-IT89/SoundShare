@@ -24,37 +24,8 @@ class _AccountManagementButtonState extends State<AccountManagementButton> {
     try {
       if (widget.onOpen case final callback?) {
         await callback();
-      } else if (kIsWeb) {
-        if (!openWebAccount()) throw StateError('Account UI unavailable');
       } else {
-        final auth = ClerkAuth.of(context, listen: false);
-        final title = context.l10n.manageAccount;
-        await Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (_) => ClerkAuth(
-              authState: auth,
-              child: Scaffold(
-                appBar: AppBar(title: Text(title)),
-                body: AuroraBackground(
-                  child: SafeArea(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600),
-                        child: const SingleChildScrollView(
-                          padding: EdgeInsets.all(24),
-                          child: ClerkErrorListener(
-                            child: ClerkUserButton(additionalActions: []),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        await openAccountManagement(context);
       }
     } catch (_) {
       if (mounted) {
@@ -72,5 +43,42 @@ class _AccountManagementButtonState extends State<AccountManagementButton> {
     onPressed: busy ? null : _open,
     icon: const Icon(Icons.manage_accounts_outlined),
     label: Text(context.l10n.manageAccount),
+  );
+}
+
+/// Shared launcher for the account button and profile menu. Clerk continues
+/// to own credential edits; the caller handles loading and localized errors.
+Future<void> openAccountManagement(BuildContext context) async {
+  if (kIsWeb) {
+    if (!openWebAccount()) throw StateError('Account UI unavailable');
+    return;
+  }
+  final auth = ClerkAuth.of(context, listen: false);
+  final title = context.l10n.manageAccount;
+  await Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => ClerkAuth(
+        authState: auth,
+        child: Scaffold(
+          appBar: AppBar(title: Text(title)),
+          body: AuroraBackground(
+            child: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: const SingleChildScrollView(
+                    padding: EdgeInsets.all(24),
+                    child: ClerkErrorListener(
+                      child: ClerkUserButton(additionalActions: []),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
 }

@@ -6,13 +6,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/song.dart';
 import '../application/community_providers.dart';
 import '../data/community_repository.dart';
 import 'community_widgets.dart';
+import 'music_components.dart';
+import 'search_suggestions.dart';
 
 class CommunitySearchScreen extends ConsumerStatefulWidget {
   const CommunitySearchScreen({super.key, this.initialQuery = ''});
@@ -82,12 +83,16 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
         padding: const EdgeInsets.all(24),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         children: [
-          ScreenHeading(
-            eyebrow: t.search,
-            title: t.v3SearchIntro,
-            subtitle: t.v3SearchDescription,
+          Text(t.search, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          Text(
+            t.v4SearchIntro,
+            style: const TextStyle(
+              color: AppColors.secondaryText,
+              fontSize: 13,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           TextField(
             controller: controller,
             onChanged: change,
@@ -111,24 +116,18 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final item in [
-                ('all', t.v3All),
-                ('songs', t.v3Songs),
-                ('users', t.v3Accounts),
-                ('playlists', t.v3Playlists),
-              ])
-                ChoiceChip(
-                  label: Text(item.$2),
-                  selected: type == item.$1,
-                  onSelected: (_) => setState(() {
-                    type = item.$1;
-                    offset = 0;
-                  }),
-                ),
+          ContentTabs(
+            items: [
+              ('all', t.v3All),
+              ('songs', t.v3Songs),
+              ('users', t.v3Accounts),
+              ('playlists', t.v3Playlists),
             ],
+            selected: type,
+            onSelected: (value) => setState(() {
+              type = value;
+              offset = 0;
+            }),
           ),
           const SizedBox(height: 24),
           if (result == null) ...[
@@ -149,6 +148,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
                 fontSize: 12,
               ),
             ),
+            const SearchSuggestions(),
           ] else
             CommunityAsync(
               value: result,

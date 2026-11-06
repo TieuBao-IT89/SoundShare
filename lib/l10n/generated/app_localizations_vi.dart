@@ -1543,4 +1543,70 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get v3Likes => 'lượt thích';
+
+  @override
+  String get v4Greeting => 'Hôm nay, nghe gì?';
+
+  @override
+  String get v4Featured => 'Tâm điểm hôm nay';
+
+  @override
+  String get v4HomeIntro => 'Bản thu độc lập. Kết nối qua âm nhạc.';
+
+  @override
+  String get v4QuickAccess => 'Không gian của bạn';
+
+  @override
+  String get v4SeeAll => 'Xem tất cả';
+
+  @override
+  String get v4Volume => 'Âm lượng';
+
+  @override
+  String get v4CloseQueue => 'Đóng danh sách phát';
+
+  @override
+  String get v4OpenPlayer => 'Mở trình phát nhạc';
+
+  @override
+  String get v4ExploreIntro => 'Âm nhạc và những người tạo nên nó';
+
+  @override
+  String get v4Community => 'CỘNG ĐỒNG ÂM NHẠC';
+
+  @override
+  String get v4PlayAll => 'Phát tất cả';
+
+  @override
+  String get v4ShufflePlay => 'Phát ngẫu nhiên';
+
+  @override
+  String get v4PlaylistPage =>
+      'Các thao tác phát áp dụng cho trang bài hát đang hiển thị.';
+
+  @override
+  String get v4ProfileCover => 'Không gian âm nhạc của người sáng tạo';
+
+  @override
+  String get v4SearchIntro => 'Tìm âm nhạc. Gặp người cùng gu.';
+
+  @override
+  String get v4Browse => 'Bắt đầu khám phá';
+
+  @override
+  String get v4Charts => 'Bảng xếp hạng';
+
+  @override
+  String get v4Tracks => 'Bản thu';
+
+  @override
+  String get v4ListenNext => 'Tiếp theo trong danh sách';
+
+  @override
+  String get v4EmptyTitle => 'Một không gian cho bản thu tiếp theo';
+
+  @override
+  String v4FeaturedPosition(int position, int total) {
+    return 'Nội dung nổi bật $position/$total';
+  }
 }

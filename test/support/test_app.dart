@@ -21,6 +21,16 @@ class TestPlayer extends Fake implements AudioPlayer {
   AudioSource? source;
   LoopMode loop = LoopMode.off;
   bool shuffleOn = false;
+  double volumeValue = 1;
+  @override
+  double get volume => volumeValue;
+  @override
+  Stream<double> get volumeStream => Stream.value(volumeValue);
+  @override
+  Future<void> setVolume(double value) async {
+    volumeValue = value;
+  }
+
   @override
   bool get playing => active;
   @override

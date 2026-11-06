@@ -116,13 +116,6 @@ class ProfileScreen extends ConsumerWidget {
                       subtitle: t.profileLibraryHint,
                       onTap: () => context.go('/library'),
                     ),
-                    const Divider(height: 1),
-                    _ProfileAction(
-                      icon: Icons.cloud_upload_outlined,
-                      title: t.uploadMusic,
-                      subtitle: t.profileUploadHint,
-                      onTap: () => context.push('/upload'),
-                    ),
                   ],
                 ),
               ),

@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
 import '../application/community_providers.dart';
 import 'community_widgets.dart';
+import 'music_components.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key, this.initialGenre});
@@ -28,6 +28,15 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant DiscoverScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialGenre != widget.initialGenre) {
+      genre = widget.initialGenre;
+      offset = 0;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.l10n;
     final query = (
@@ -36,102 +45,100 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       period: genre == null ? period : null,
       genre: genre,
     );
-    final songs = ref.watch(communitySongsProvider(query));
-    final creators = ref.watch(
-      communityCreatorsProvider((mode, creatorOffset)),
+    const freshKey = (
+      path: '/discover/new-releases',
+      offset: 0,
+      period: null as String?,
+      genre: null as String?,
     );
     return AppScaffold(
       child: ListView(
         key: const PageStorageKey('discovery-hub'),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         children: [
-          ScreenHeading(
-            eyebrow: t.explore,
-            title: t.v3DiscoverTitle,
-            subtitle: t.v3DiscoverSubtitle,
-            action: IconButton(
-              tooltip: t.search,
-              onPressed: () => context.go('/search'),
-              icon: const Icon(Icons.search_rounded),
-            ),
-          ),
-          const SizedBox(height: 32),
-          SectionHeading(t.v3Genres),
-          const SizedBox(height: 16),
-          CommunityAsync(
-            value: ref.watch(communityGenresProvider),
-            retry: () => ref.invalidate(communityGenresProvider),
-            data: (items) => Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                ChoiceChip(
-                  label: Text(t.allGenres),
-                  selected: genre == null,
-                  onSelected: (_) => setState(() {
-                    genre = null;
-                    offset = 0;
-                  }),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  t.explore,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                for (var i = 0; i < items.length; i++)
-                  ChoiceChip(
-                    label: Text(items[i]),
-                    avatar: Icon(
-                      i.isEven
-                          ? Icons.album_outlined
-                          : Icons.graphic_eq_rounded,
-                      size: 18,
-                      color: i.isEven ? AppColors.cyan : AppColors.mystic,
-                    ),
-                    selected: genre == items[i],
-                    onSelected: (_) => setState(() {
-                      genre = items[i];
-                      offset = 0;
-                    }),
-                  ),
-              ],
+              ),
+              IconButton(
+                tooltip: t.search,
+                onPressed: () => context.go('/search'),
+                icon: const Icon(Icons.search_rounded),
+              ),
+            ],
+          ),
+          Text(
+            t.v4ExploreIntro,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.secondaryText,
             ),
           ),
-          const SizedBox(height: 40),
-          SectionHeading(genre ?? t.v3Trending),
+          const SizedBox(height: 20),
+          CommunityAsync(
+            value: ref.watch(communitySongsProvider(freshKey)),
+            retry: () => ref.invalidate(communitySongsProvider(freshKey)),
+            data: (page) => page.items.isEmpty
+                ? const SizedBox.shrink()
+                : FeaturedMusic(songs: page.items),
+          ),
+          const SizedBox(height: 24),
+          SectionHeading(genre ?? t.v4Charts),
           const SizedBox(height: 12),
           if (genre == null) ...[
+            ContentTabs(
+              items: [
+                ('today', t.v3Today),
+                ('week', t.v3Week),
+                ('month', t.v3Month),
+                ('all', t.v3AllTime),
+              ],
+              selected: period,
+              onSelected: (value) => setState(() {
+                period = value;
+                offset = 0;
+              }),
+            ),
+            const SizedBox(height: 8),
             Text(
               t.v3TrendingNote,
               style: const TextStyle(
                 color: AppColors.secondaryText,
-                fontSize: 12,
+                fontSize: 11,
               ),
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final item in [
-                  ('today', t.v3Today),
-                  ('week', t.v3Week),
-                  ('month', t.v3Month),
-                  ('all', t.v3AllTime),
-                ])
-                  ChoiceChip(
-                    label: Text(item.$2),
-                    selected: period == item.$1,
-                    onSelected: (_) => setState(() {
-                      period = item.$1;
-                      offset = 0;
-                    }),
-                  ),
-              ],
+          ] else
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  genre = null;
+                  offset = 0;
+                }),
+                icon: const Icon(Icons.close_rounded),
+                label: Text(t.allGenres),
+              ),
             ),
-          ],
           CommunityAsync(
-            value: songs,
+            value: ref.watch(communitySongsProvider(query)),
             retry: () => ref.invalidate(communitySongsProvider(query)),
             data: (page) => Column(
               children: [
                 if (page.items.isEmpty) const CommunityEmpty(),
-                for (var i = 0; i < page.items.length; i++)
+                if (genre == null && offset == 0 && page.items.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: ChartSpotlight(songs: page.items.take(3).toList()),
+                  ),
+                for (
+                  var i = genre == null && offset == 0 ? 3 : 0;
+                  i < page.items.length;
+                  i++
+                )
                   CommunitySongRow(
                     song: page.items[i],
                     queue: page.items,
@@ -147,39 +154,34 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 40),
-          SectionHeading(mode == 'emerging' ? t.v3NewCreators : t.v3Creators),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final item in [
-                ('featured', t.v3Featured),
-                ('new', t.v3Newest),
-                ('popular', t.v3Popular),
-                ('growing', t.v3Growing),
-                ('emerging', t.v3NewCreators),
-              ])
-                ChoiceChip(
-                  label: Text(item.$2),
-                  selected: mode == item.$1,
-                  onSelected: (_) => setState(() {
-                    mode = item.$1;
-                    creatorOffset = 0;
-                  }),
-                ),
+          const SizedBox(height: 28),
+          SectionHeading(t.v3Creators),
+          const SizedBox(height: 12),
+          ContentTabs(
+            items: [
+              ('featured', t.v3Featured),
+              ('new', t.v3Newest),
+              ('popular', t.v3Popular),
+              ('growing', t.v3Growing),
             ],
+            selected: mode,
+            onSelected: (value) => setState(() {
+              mode = value;
+              creatorOffset = 0;
+            }),
           ),
+          const SizedBox(height: 16),
           CommunityAsync(
-            value: creators,
+            value: ref.watch(communityCreatorsProvider((mode, creatorOffset))),
             retry: () => ref.invalidate(
               communityCreatorsProvider((mode, creatorOffset)),
             ),
             data: (page) => Column(
               children: [
-                if (page.items.isEmpty) const CommunityEmpty(),
-                for (final profile in page.items) CreatorRow(profile: profile),
+                if (page.items.isEmpty)
+                  const CommunityEmpty()
+                else
+                  CreatorRail(profiles: page.items),
                 CommunityPager(
                   offset: creatorOffset,
                   next: page.nextOffset,
@@ -187,6 +189,46 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 28),
+          SectionHeading(t.v3NewReleases),
+          const SizedBox(height: 12),
+          CommunityAsync(
+            value: ref.watch(communitySongsProvider(freshKey)),
+            retry: () => ref.invalidate(communitySongsProvider(freshKey)),
+            data: (page) => page.items.isEmpty
+                ? const CommunityEmpty()
+                : SongArtworkRail(songs: page.items.take(8).toList()),
+          ),
+          const SizedBox(height: 24),
+          SectionHeading(t.v3Genres),
+          const SizedBox(height: 16),
+          CommunityAsync(
+            value: ref.watch(communityGenresProvider),
+            retry: () => ref.invalidate(communityGenresProvider),
+            data: (items) => items.isEmpty
+                ? const CommunityEmpty()
+                : GenreTiles(
+                    genres: items,
+                    selected: genre,
+                    onSelect: (value) => context.go(
+                      Uri(
+                        path: '/explore',
+                        queryParameters: {'genre': value},
+                      ).toString(),
+                    ),
+                  ),
+          ),
+          const SizedBox(height: 28),
+          SectionHeading(t.v3NewCreators),
+          const SizedBox(height: 16),
+          CommunityAsync(
+            value: ref.watch(communityCreatorsProvider(('emerging', 0))),
+            retry: () =>
+                ref.invalidate(communityCreatorsProvider(('emerging', 0))),
+            data: (page) => page.items.isEmpty
+                ? const CommunityEmpty()
+                : CreatorRail(profiles: page.items),
           ),
         ],
       ),

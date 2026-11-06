@@ -2877,6 +2877,132 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'lượt thích'**
   String get v3Likes;
+
+  /// No description provided for @v4Greeting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hôm nay, nghe gì?'**
+  String get v4Greeting;
+
+  /// No description provided for @v4Featured.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tâm điểm hôm nay'**
+  String get v4Featured;
+
+  /// No description provided for @v4HomeIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản thu độc lập. Kết nối qua âm nhạc.'**
+  String get v4HomeIntro;
+
+  /// No description provided for @v4QuickAccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gian của bạn'**
+  String get v4QuickAccess;
+
+  /// No description provided for @v4SeeAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem tất cả'**
+  String get v4SeeAll;
+
+  /// No description provided for @v4Volume.
+  ///
+  /// In vi, this message translates to:
+  /// **'Âm lượng'**
+  String get v4Volume;
+
+  /// No description provided for @v4CloseQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đóng danh sách phát'**
+  String get v4CloseQueue;
+
+  /// No description provided for @v4OpenPlayer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở trình phát nhạc'**
+  String get v4OpenPlayer;
+
+  /// No description provided for @v4ExploreIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Âm nhạc và những người tạo nên nó'**
+  String get v4ExploreIntro;
+
+  /// No description provided for @v4Community.
+  ///
+  /// In vi, this message translates to:
+  /// **'CỘNG ĐỒNG ÂM NHẠC'**
+  String get v4Community;
+
+  /// No description provided for @v4PlayAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phát tất cả'**
+  String get v4PlayAll;
+
+  /// No description provided for @v4ShufflePlay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phát ngẫu nhiên'**
+  String get v4ShufflePlay;
+
+  /// No description provided for @v4PlaylistPage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các thao tác phát áp dụng cho trang bài hát đang hiển thị.'**
+  String get v4PlaylistPage;
+
+  /// No description provided for @v4ProfileCover.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gian âm nhạc của người sáng tạo'**
+  String get v4ProfileCover;
+
+  /// No description provided for @v4SearchIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm âm nhạc. Gặp người cùng gu.'**
+  String get v4SearchIntro;
+
+  /// No description provided for @v4Browse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu khám phá'**
+  String get v4Browse;
+
+  /// No description provided for @v4Charts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảng xếp hạng'**
+  String get v4Charts;
+
+  /// No description provided for @v4Tracks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản thu'**
+  String get v4Tracks;
+
+  /// No description provided for @v4ListenNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp theo trong danh sách'**
+  String get v4ListenNext;
+
+  /// No description provided for @v4EmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một không gian cho bản thu tiếp theo'**
+  String get v4EmptyTitle;
+
+  /// No description provided for @v4FeaturedPosition.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung nổi bật {position}/{total}'**
+  String v4FeaturedPosition(int position, int total);
 }
 
 class _AppLocalizationsDelegate

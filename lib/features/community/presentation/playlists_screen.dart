@@ -1,14 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_scaffold.dart';
+import '../../../core/services/audio_service.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/application/catalog_provider.dart';
 import '../../home/domain/song.dart';
 import '../application/community_providers.dart';
 import '../data/community_repository.dart';
 import 'community_widgets.dart';
+import 'playlist_preview.dart';
 
 class PlaylistsScreen extends ConsumerStatefulWidget {
   const PlaylistsScreen({super.key});
@@ -101,14 +105,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
             data: (data) => Column(
               children: [
                 if ((data['items'] as List).isEmpty) const CommunityEmpty(),
-                for (final item in data['items'] as List)
-                  ListTile(
-                    leading: const Icon(Icons.queue_music_rounded),
-                    title: Text(item['title'] as String),
-                    subtitle: Text(
-                      '${item['songCount']} ${t.v3Songs} · ${item['visibility'] == 'public' ? t.v3Public : t.v3Private}',
-                    ),
-                    onTap: () => context.push('/playlists/${item['id']}'),
+                if ((data['items'] as List).isNotEmpty)
+                  PlaylistGrid(
+                    items: (data['items'] as List).cast<Map<String, dynamic>>(),
                   ),
                 CommunityPager(
                   offset: offset,
@@ -134,6 +133,33 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
   int offset = 0;
   bool busy = false;
+  Future<void> playAll({bool shuffle = false}) async {
+    setState(() => busy = true);
+    try {
+      final songs = await ref
+          .read(communityRepositoryProvider)
+          .playlistQueue(widget.id);
+      if (!mounted || songs.isEmpty) return;
+      final actions = ref.read(playbackActionsProvider);
+      if (ref.read(shuffleEnabledProvider) != shuffle) {
+        await actions.toggleShuffle();
+      }
+      if (!mounted) return;
+      if (ref.read(shuffleEnabledProvider) != shuffle) {
+        throw StateError('Playback setting unavailable');
+      }
+      await actions.playFrom(
+        songs,
+        shuffle ? Random().nextInt(songs.length) : 0,
+      );
+      if (mounted) context.push('/player');
+    } catch (error) {
+      if (mounted) communityError(context, error);
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   Future<void> change(Future<void> Function() action) async {
     setState(() => busy = true);
     try {
@@ -196,6 +222,27 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               ),
               if ((data['description'] as String?)?.isNotEmpty == true)
                 Text(data['description'] as String),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  FilledButton.icon(
+                    onPressed: busy || page.items.isEmpty
+                        ? null
+                        : () => playAll(),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(t.v4PlayAll),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: busy || page.items.isEmpty
+                        ? null
+                        : () => playAll(shuffle: true),
+                    icon: const Icon(Icons.shuffle_rounded),
+                    label: Text(t.v4ShufflePlay),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               if (data['isSelf'] == true)
                 Wrap(
