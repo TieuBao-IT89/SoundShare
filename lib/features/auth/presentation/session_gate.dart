@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme/app_theme.dart';
 import '../../../core/services/api_client.dart';
+import '../../../core/widgets/aurora_widgets.dart';
+import '../../../core/widgets/authentication_header.dart';
+import '../../../l10n/l10n.dart';
 
 final verifiedSessionProvider = FutureProvider<void>((ref) async {
   await ref
@@ -21,63 +25,69 @@ class SessionGate extends ConsumerWidget {
       .watch(verifiedSessionProvider)
       .when(
         data: (_) => child,
-        loading: () => Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(
-                        semanticsLabel: 'Opening your library',
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Verifying your session and opening your library…',
-                        textAlign: TextAlign.center,
-                      ),
-                      TextButton(
-                        onPressed: () => _signOut(context, ref),
-                        child: const Text('Sign out'),
-                      ),
-                    ],
-                  ),
+        loading: () => AuthenticationScaffold(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AuthenticationHeader(compact: true),
+              const SizedBox(height: 32),
+              if (MediaQuery.disableAnimationsOf(context))
+                const Icon(Icons.hourglass_top_rounded, color: AppColors.cyan)
+              else
+                CircularProgressIndicator(
+                  semanticsLabel: context.l10n.openingLibrary,
                 ),
+              const SizedBox(height: 20),
+              Text(context.l10n.verifyingSession, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => _signOut(context, ref),
+                child: Text(context.l10n.signOut),
               ),
-            ),
+            ],
           ),
         ),
-        error: (error, _) => Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
+        error: (error, _) => AuthenticationScaffold(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AuthenticationHeader(compact: true),
+              const SizedBox(height: 28),
+              GlassCard(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Icon(
+                      Icons.wifi_off_rounded,
+                      color: AppColors.error,
+                      size: 30,
+                    ),
+                    const SizedBox(height: 16),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
                         error is ApiException
                             ? error.message
-                            : 'Your library could not be opened.',
+                            : context.l10n.libraryOpenFailed,
                         textAlign: TextAlign.center,
                       ),
-                      TextButton(
-                        onPressed: () =>
-                            ref.invalidate(verifiedSessionProvider),
-                        child: const Text('Try again'),
-                      ),
-                      TextButton(
-                        onPressed: () => _signOut(context, ref),
-                        child: const Text('Sign out'),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                    GradientButton(
+                      onPressed: () => ref.invalidate(verifiedSessionProvider),
+                      label: context.l10n.tryAgain,
+                      icon: Icons.refresh_rounded,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => _signOut(context, ref),
+                      child: Text(context.l10n.signOut),
+                    ),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
       );
@@ -87,11 +97,8 @@ class SessionGate extends ConsumerWidget {
       await ref.read(signOutProvider)().timeout(const Duration(seconds: 15));
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sign out could not be completed. Try again.'),
-          ),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.signOutFailed)));
       }
     }
   }

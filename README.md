@@ -2,19 +2,26 @@
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
-SoundShare là ứng dụng Flutter mã nguồn mở giúp khám phá và nghe nhạc. Bản Web hiện có luồng đăng ký/đăng nhập Clerk và thư viện riêng từ MP3, artwork do chính người dùng tải lên. Flutter gọi Express; Express quản lý metadata trong Neon và file private trên Cloudinary.
+SoundShare là ứng dụng Flutter để nghe, khám phá và chia sẻ bản thu độc lập. V3 **NOCTURNE** bổ sung hồ sơ `@username`, follow, khám phá/trending, playlist và chia sẻ public/private trên nền thư viện riêng hiện có. Flutter gọi Express; Clerk xác thực, Neon giữ metadata và Cloudinary giữ file authenticated. Các bài cũ tiếp tục riêng tư.
+
+Xem [hướng dẫn NOCTURNE V3](docs/nocturne-v3.md), [kiểm kê/nguồn thiết kế](docs/ui/nocturne-v3-audit.md) và [kết quả kiểm tra V3](docs/ui/nocturne-v3-review.md). Cần chạy migration 004 và khởi động lại backend khi nâng cấp; tài liệu Mystic Aurora bên dưới là lịch sử nghiệm thu trước V3.
+
+Giao diện **NOCTURNE** dùng tiếng Việt, nền gần đen, điểm nhấn violet/cyan, font Be Vietnam Pro và bố cục thích ứng với điện thoại/desktop. [Design system](DESIGN.md) mô tả bản hiện tại; [kiểm kê Mystic Aurora](docs/ui/mystic-aurora-inventory.md), [checklist](docs/ui/mystic-aurora-checklist.md) và [báo cáo cũ](docs/ui/mystic-aurora-review.md) được giữ làm lịch sử.
 
 ## Tính năng
 
 - Giao diện nghe nhạc nền tối, thích ứng với màn hình, có màn hình khởi động và thanh điều hướng dưới.
-- Trang chủ, tìm kiếm và thư viện lấy bài hát của tài khoản đã xác minh qua REST API.
+- Trang chủ biên tập, khám phá theo thể loại, trending theo khoảng thời gian, tìm bài hát/tài khoản/playlist qua REST API. Nội dung cộng đồng chỉ lấy bài public/active; thư viện riêng vẫn được giữ.
+- Hồ sơ SoundShare có @username duy nhất, tìm kiếm không phân biệt hoa/thường, follow/unfollow và danh sách người theo dõi có phân trang.
 - Trình phát nhạc hỗ trợ phát trực tuyến, tua bài, yêu thích, phát ngẫu nhiên, lặp lại và chuyển bài.
 - Upload MP3 tối đa 20 MB, artwork JPG/PNG/WebP tối đa 5 MB; chỉ báo lưu thành công sau khi file và metadata được backend xác nhận.
 - Lượt thích lưu trong Neon theo tài khoản. Đăng xuất dừng audio và giải phóng dữ liệu phiên; tài khoản mới bắt đầu với thư viện rỗng.
+- Playlist, thích/lưu, hàng đợi dùng chung player, tiến trình nghe và feed người theo dõi. Ranking thử nghiệm chỉ dùng tương tác thực, có ngưỡng nghe và dedupe.
+- Cá nhân cho sửa username, tên hiển thị, bio, avatar và cover trong SoundShare; credential vẫn do Clerk quản lý. Bài tải lên mặc định private, cần xác nhận quyền nội dung và chọn username trước khi public. Sửa/xóa chỉ dành cho owner; báo cáo nội dung lưu server, moderation qua CLI của người vận hành.
 
 ## Công nghệ
 
-Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Web dùng ClerkJS 6 và UI của Clerk; SDK quản lý đăng ký, email verification, khôi phục mật khẩu và phiên. Đã xác minh đăng nhập bằng tài khoản thật, upload MP3/artwork và lưu bài vào Neon development. Playback, yêu thích, đăng ký mới và native vẫn cần nghiệm thu riêng.
+Flutter và Dart · Riverpod · GoRouter · just_audio. Backend: Node.js + Express REST API · Neon PostgreSQL · Clerk · Cloudinary. Web dùng ClerkJS 6 và UI của Clerk; SDK quản lý đăng ký, email verification, khôi phục mật khẩu và phiên. Đã xác minh đăng nhập thật, upload MP3/artwork, lưu hồ sơ qua F5, tìm @username/follow giữa hai tài khoản, phát bài công khai khi chuyển tab và ghi nhận lượt nghe hợp lệ vào Neon development/ranking. Xem báo cáo V3 để phân biệt kiểm thử tự động, nghiệm thu thật và các bước còn mở; native chưa được nghiệm thu.
 
 ## Ảnh chụp màn hình
 
@@ -30,7 +37,7 @@ Xem [báo cáo issue #5 với dữ liệu demo](docs/ui/issue-5-review.md) và [
 
 1. Cài Flutter và Node.js 22+, chạy `flutter pub get` tại thư mục gốc và `npm ci` tại `backend/`.
 2. Cấu hình `backend/.env` theo `backend/.env.example` với Clerk, Cloudinary và Neon **development**. Trong Clerk Sessions → Customize session token thêm `"aud": "soundshare-api"`; đặt `CLERK_AUTHORIZED_PARTIES=http://localhost:3000` tại backend.
-3. Chạy `npm run migrate` tại `backend/`. Migration mới `003_private_tracks.sql` bổ sung thư viện và lượt thích riêng; không xóa bảng/dữ liệu cũ.
+3. Chạy `npm run migrate` tại `backend/`. Migration 003 bổ sung thư viện riêng; 004 mở rộng hồ sơ và cộng đồng. Không tự công khai hoặc xóa dữ liệu cũ.
 4. Từ thư mục gốc, chạy:
 
    ```powershell
@@ -39,13 +46,15 @@ Xem [báo cáo issue #5 với dữ liệu demo](docs/ui/issue-5-review.md) và [
    .\scripts\run-web.ps1 -FlutterExecutable 'C:\path\to\flutter\bin\flutter.bat'
    ```
 
-5. Mở `http://localhost:3000`, đăng ký/xác minh email rồi tải MP3 của bạn tại Upload. Library → All uploads hiển thị bài đã lưu; thích bài để thêm vào Liked tracks.
+5. Mở `http://localhost:3000`, đăng ký/xác minh email rồi chọn **Tải nhạc lên**. **Thư viện → Nhạc đã tải lên** hiển thị bài đã lưu; chạm trái tim để thêm vào **Yêu thích**.
 
 Script chỉ xuất publishable key và API URL vào `.local/web-config.json` đã gitignore; không đưa `.env` backend vào build. Express chỉ phục vụ `build/web`. Secret/database URL luôn ở backend. Xem [cấu hình, kiểm tra và xử lý lỗi Clerk](docs/auth-real-data.md).
 
 Sau đăng nhập, ứng dụng chờ phiên Clerk active và xác minh qua `/api/v1/auth/me` trong tối đa 25 giây; có thể thử lại hoặc đăng xuất khi lỗi. Neon chỉ có hồ sơ `users` sau khi endpoint này trả `200`. Nếu gặp `401` với log `token-audience-missing`, cần sửa claim session trên Clerk; kết nối Neon thành công hoặc chạy lại migration không thay thế bước xác thực này.
 
 Để xem giao diện mẫu có chủ ý: `flutter run -d chrome --dart-define=DEMO_MODE=true`. Thiếu Clerk key trong chế độ thật sẽ hiển thị lỗi cấu hình, không tự chuyển sang dữ liệu giả.
+
+Nội dung giao diện nằm trong `lib/l10n/app_vi.arb`; sau khi sửa copy, chạy `flutter gen-l10n`. Font và bản dịch Clerk Web được đóng gói cục bộ, kèm giấy phép trong `assets/fonts/` và `web/`. Không thêm package animation. V3 mở rộng API và schema bằng migration version hóa; các endpoint riêng trước đó vẫn hoạt động.
 
 ## Chạy Android trên Windows
 
@@ -68,6 +77,7 @@ Bạn cũng có thể chạy `flutter run -d <device-id>` sau khi xem các thi�
 dart format .
 flutter analyze
 flutter test
+node --test test/web/*.cjs
 ```
 
 Backend mục tiêu giao tiếp với Neon qua Express REST API; ứng dụng Flutter không kết nối trực tiếp Neon. Khi triển khai, giữ connection string và secret ở backend thông qua biến môi trường/secret manager. Không commit thông tin bí mật.
@@ -267,7 +277,17 @@ npm run test:smoke
 
 Test PostgreSQL thực chỉ chạy khi `TEST_DATABASE_URL` trỏ tới database test riêng, khác `DATABASE_URL`; nếu chưa có thì test migration sẽ báo `SKIP`. Test này áp dụng migration từ schema rỗng trong transaction, kiểm tra default/ràng buộc và chạy lại migration `002` không mất metadata, sau đó rollback toàn bộ.
 
-Kết quả xác minh ngày **05/11/2026**: `npm test` có **56 kiểm tra đạt, 0 lỗi, 1 bỏ qua** do chưa có `TEST_DATABASE_URL`; `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Flutter có **57 test đạt**, analyzer sạch và build Web release thành công. Phiên người dùng thật đã nhận `200 /auth/me`, upload audio/artwork và tạo track trả `201`; truy vấn chỉ đọc Neon xác nhận hồ sơ, hai media asset và bài đã lưu. Playback, yêu thích, xóa file và phiên hết hạn bằng tài khoản thật chưa được nghiệm thu. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
+Kiểm tra Mystic Aurora ngày **06/11/2026**: **89 Flutter test đạt**, **3 kiểm thử tiến trình đạt trên Chrome**, **9 test Web bridge đạt** và analyzer sạch. Đã sửa lỗi giới hạn số nguyên làm đồng hồ/thanh tua bằng 0 khi biên dịch Web và lỗi Clerk chuyển hash khiến đăng nhập phải F5. Đã kiểm tra keyboard ở màn hình hẹp/ngang, Reduce Motion, ảnh đến muộn/lỗi và cập nhật tên không khởi tạo lại phiên. Release Web cho chế độ tài khoản thật và demo đều build thành công. Backend chạy lại có **56 test đạt, 1 integration test bỏ qua**. Xem [báo cáo và ảnh](docs/ui/mystic-aurora-review.md), gồm kiểm tra đăng nhập giả lập trên Chrome và cách xử lý CanvasKit của runner Chrome trên Windows; máy chưa có Android SDK nên chưa nghiệm thu APK/emulator.
+
+Các lệnh kiểm thử client từ thư mục gốc:
+
+```powershell
+flutter test
+flutter test --platform chrome test/music_progress_test.dart
+node --test test/web/*.cjs
+```
+
+Kết quả tích hợp trước redesign ngày **05/11/2026**: `npm run test:smoke` có **15 kiểm tra đạt, 0 lỗi** với cấu hình development, gồm auth gate catalog và schema migration 003. Phiên người dùng thật đã nhận `200 /auth/me`, upload audio/artwork và tạo track trả `201`; truy vấn chỉ đọc Neon xác nhận hồ sơ, hai media asset và bài đã lưu. Playback, yêu thích, xóa file và phiên hết hạn bằng tài khoản thật chưa được nghiệm thu. Các lệnh `curl` ở phần upload/xóa dùng cho bước kiểm tra có xác thực trên môi trường development với file do bạn có quyền sử dụng; giữ session token trong biến môi trường terminal.
 
 ### API thư viện riêng
 

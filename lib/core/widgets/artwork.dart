@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../../l10n/l10n.dart';
 
 class Artwork extends StatelessWidget {
   const Artwork({
@@ -21,7 +22,7 @@ class Artwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     image: true,
-    label: semanticLabel ?? 'Album artwork',
+    label: semanticLabel ?? context.l10n.albumArtwork,
     child: ExcludeSemantics(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),

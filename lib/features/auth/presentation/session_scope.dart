@@ -25,20 +25,45 @@ class SessionScope extends StatefulWidget {
 }
 
 class _SessionScopeState extends State<SessionScope> {
+  late final tokenOverride = tokenSourceProvider.overrideWithValue(
+    ({bool refresh = false}) => widget.token(refresh: refresh),
+  );
+  late final signOutOverride = signOutProvider.overrideWithValue(
+    () => widget.signOut(),
+  );
+  late final clientOverride = apiClientProvider.overrideWith((ref) {
+    final client =
+        widget.createClient?.call(widget.token) ??
+        ApiClient(token: widget.token);
+    ref.onDispose(client.close);
+    return client;
+  });
   late final container = ProviderContainer(
     overrides: [
       authSessionProvider.overrideWithValue(widget.session),
-      tokenSourceProvider.overrideWithValue(widget.token),
-      signOutProvider.overrideWithValue(widget.signOut),
-      apiClientProvider.overrideWith((ref) {
-        final client =
-            widget.createClient?.call(widget.token) ??
-            ApiClient(token: widget.token);
-        ref.onDispose(client.close);
-        return client;
-      }),
+      tokenOverride,
+      signOutOverride,
+      clientOverride,
     ],
   );
+
+  @override
+  void didUpdateWidget(covariant SessionScope oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.session.subject == widget.session.subject &&
+        oldWidget.session.sessionId == widget.session.sessionId &&
+        oldWidget.session.name != widget.session.name) {
+      // Clerk profile edits can change a display name in an existing session.
+      // Refresh identity copy without recreating its player/catalog container.
+      container.updateOverrides([
+        authSessionProvider.overrideWithValue(widget.session),
+        tokenOverride,
+        signOutOverride,
+        clientOverride,
+      ]);
+    }
+  }
+
   @override
   void dispose() {
     container.dispose();

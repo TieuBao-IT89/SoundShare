@@ -12,6 +12,14 @@ abstract class SongRepository {
   }
 
   Future<String> playback(Song song) async => song.audioUrl;
+  Future<Map<String, dynamic>> playbackInfo(Song song) async => {
+    'url': await playback(song),
+  };
+  Future<bool> heartbeat(
+    String sessionId,
+    int positionMs,
+    bool playing,
+  ) async => false;
   Future<void> favorite(Song song, bool liked) async {}
   Future<void> upload(TrackDraft draft) async =>
       throw UnsupportedError('Upload is unavailable in demo mode.');
