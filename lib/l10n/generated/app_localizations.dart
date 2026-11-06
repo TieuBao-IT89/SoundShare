@@ -1132,6 +1132,30 @@ abstract class AppLocalizations {
   /// **'Đăng nhập'**
   String get signIn;
 
+  /// No description provided for @authTagline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Âm nhạc kết nối cảm xúc.'**
+  String get authTagline;
+
+  /// No description provided for @authHeadline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không gian âm nhạc của riêng bạn.'**
+  String get authHeadline;
+
+  /// No description provided for @authDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá, chia sẻ và kết nối cùng những người yêu âm nhạc.'**
+  String get authDescription;
+
+  /// No description provided for @authContinue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng nhập hoặc tạo tài khoản'**
+  String get authContinue;
+
   /// No description provided for @signUp.
   ///
   /// In vi, this message translates to:
@@ -1201,7 +1225,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyingSession.
   ///
   /// In vi, this message translates to:
-  /// **'Đang xác minh tài khoản và mở thư viện của bạn…'**
+  /// **'Đang kết nối tài khoản của bạn…'**
   String get verifyingSession;
 
   /// No description provided for @libraryOpenFailed.
@@ -2419,14 +2443,104 @@ abstract class AppLocalizations {
   /// No description provided for @v3ForYou.
   ///
   /// In vi, this message translates to:
-  /// **'Gợi ý để bắt đầu'**
+  /// **'Dành riêng cho bạn'**
   String get v3ForYou;
 
   /// No description provided for @v3RecommendationNote.
   ///
   /// In vi, this message translates to:
-  /// **'Ưu tiên thể loại bạn đã thích, sau đó là bản thu mới. Chưa có lượt thích? Bắt đầu với những bài mới nhất.'**
+  /// **'Khám phá những bản thu công khai trong cộng đồng SoundShare.'**
   String get v3RecommendationNote;
+
+  /// No description provided for @recommendationPersonalized.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gợi ý từ lịch sử nghe, bài đã thích/lưu và tài khoản bạn theo dõi, có xét thói quen nghe theo thời điểm.'**
+  String get recommendationPersonalized;
+
+  /// No description provided for @recommendationNewListener.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu với các bản thu mới. Nghe, thích, lưu và theo dõi để gợi ý dần phù hợp với bạn.'**
+  String get recommendationNewListener;
+
+  /// No description provided for @recommendationListeningTimeGenre.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn hay nghe {genre} {daypart}'**
+  String recommendationListeningTimeGenre(String genre, String daypart);
+
+  /// No description provided for @recommendationListeningTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ thói quen nghe theo thời điểm'**
+  String get recommendationListeningTime;
+
+  /// No description provided for @recommendationAtNight.
+  ///
+  /// In vi, this message translates to:
+  /// **'ban đêm'**
+  String get recommendationAtNight;
+
+  /// No description provided for @recommendationInMorning.
+  ///
+  /// In vi, this message translates to:
+  /// **'buổi sáng'**
+  String get recommendationInMorning;
+
+  /// No description provided for @recommendationInAfternoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'buổi chiều'**
+  String get recommendationInAfternoon;
+
+  /// No description provided for @recommendationInEvening.
+  ///
+  /// In vi, this message translates to:
+  /// **'buổi tối'**
+  String get recommendationInEvening;
+
+  /// No description provided for @recommendationLikedGenre.
+  ///
+  /// In vi, this message translates to:
+  /// **'{genre} từ những bài bạn thích'**
+  String recommendationLikedGenre(String genre);
+
+  /// No description provided for @recommendationLikedGenreFallback.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cùng thể loại bài bạn thích'**
+  String get recommendationLikedGenreFallback;
+
+  /// No description provided for @recommendationListeningHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ những bài bạn đã nghe'**
+  String get recommendationListeningHistory;
+
+  /// No description provided for @recommendationFollowing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ người bạn theo dõi'**
+  String get recommendationFollowing;
+
+  /// No description provided for @recommendationSavedGenre.
+  ///
+  /// In vi, this message translates to:
+  /// **'{genre} từ những bài bạn lưu'**
+  String recommendationSavedGenre(String genre);
+
+  /// No description provided for @recommendationSavedGenreFallback.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cùng thể loại bài bạn lưu'**
+  String get recommendationSavedGenreFallback;
+
+  /// No description provided for @recommendationNewRelease.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản thu mới để bạn khám phá'**
+  String get recommendationNewRelease;
 
   /// No description provided for @v3SearchHint.
   ///

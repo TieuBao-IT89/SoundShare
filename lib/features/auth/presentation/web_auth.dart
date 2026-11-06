@@ -23,8 +23,8 @@ external void _unwatch(JSFunction listener);
 external JSPromise<JSString> _token(JSBoolean refresh);
 @JS('soundshareAuth.signOut')
 external JSPromise<JSAny?> _signOut();
-@JS('soundshareAuth.open')
-external void _open(JSString mode);
+@JS('soundshareAuth.enter')
+external void _enter(JSString mode);
 @JS('soundshareAuth.manageAccount')
 external JSBoolean _manageAccount();
 
@@ -165,78 +165,43 @@ class _WebAuthGateState extends State<WebAuthGate> {
   }
 }
 
-class _SignInScreen extends StatelessWidget {
+class _SignInScreen extends StatefulWidget {
   const _SignInScreen();
   @override
+  State<_SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<_SignInScreen> {
+  bool failed = false;
+  void enter() {
+    try {
+      _enter('welcome'.toJS);
+    } catch (_) {
+      if (mounted) setState(() => failed = true);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) enter();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) => AuthenticationScaffold(
-    child: AuroraReveal(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const AuthenticationHeader(),
-          const SizedBox(height: 36),
-          GlassCard(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  context.l10n.welcomeBack,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.signInSubtitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.secondaryText),
-                ),
-                const SizedBox(height: 28),
-                GradientButton(
-                  onPressed: () => _open('sign-in'.toJS),
-                  label: context.l10n.signIn,
-                  icon: Icons.arrow_forward_rounded,
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: () => _open('sign-up'.toJS),
-                  child: Text(context.l10n.signUp),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.lock_outline_rounded,
-                      color: AppColors.cyan,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        context.l10n.signInPrivateNote,
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            context.l10n.secureAccountNote,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AuthenticationHeader(compact: true),
+        const SizedBox(height: 28),
+        Text(
+          failed ? context.l10n.signInLoadFailed : context.l10n.loadingSignIn,
+        ),
+        const SizedBox(height: 20),
+        TextButton(onPressed: enter, child: Text(context.l10n.signIn)),
+      ],
     ),
   );
 }

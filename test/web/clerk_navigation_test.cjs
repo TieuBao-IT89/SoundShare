@@ -96,6 +96,38 @@ test('root sign-out navigation stays within Flutter', async () => {
   assert.equal(f.hashNavigations[0].method, 'assign');
 });
 
+test('dedicated auth mode links stay in the document and preserve hash ownership', async () => {
+  const f = await fixture('http://localhost:3000/auth.html?mode=sign-in');
+  let synchronized = 0;
+  f.window.soundshareAuthPage = { sync() { synchronized++; } };
+  f.window.history = { pushState(_, __, to) { f.window.location.href = to; } };
+  await f.options.routerPush('/auth.html?mode=sign-up', f.metadata);
+  assert.equal(synchronized, 1);
+  assert.equal(f.window.location.href, 'http://localhost:3000/auth.html?mode=sign-up');
+  await f.options.routerPush('/auth.html?mode=sign-up#verify-email-address', f.metadata);
+  assert.equal(synchronized, 1);
+  assert.equal(f.events.length, 1);
+  assert.deepEqual(f.fullNavigations, []);
+});
+
+test('first-visit auth intent is consumed once and cannot introduce an external return URL', async () => {
+  const f = await fixture();
+  let value = JSON.stringify({ mode: 'sign-up', return: 'http://localhost:3000/#/u/creator' });
+  f.window.sessionStorage = { getItem: () => value, removeItem: () => { value = null; } };
+  f.bridge.enter('welcome');
+  let destination = new URL(f.window.location.href);
+  assert.equal(destination.pathname, '/auth.html');
+  assert.equal(destination.searchParams.get('mode'), 'sign-up');
+  assert.equal(destination.searchParams.get('return'), 'http://localhost:3000/#/u/creator');
+  assert.equal(value, null);
+  f.window.location.href = 'http://localhost:3000/#/';
+  value = JSON.stringify({ mode: 'sign-up', return: 'https://evil.invalid/' });
+  f.bridge.enter('welcome');
+  destination = new URL(f.window.location.href);
+  assert.equal(destination.searchParams.get('return'), 'http://localhost:3000/#/');
+  assert.equal(destination.searchParams.get('mode'), 'welcome');
+});
+
 test('external URLs, Clerk callbacks and document changes keep full navigation', async () => {
   for (const destination of [
     'https://fixture.clerk.accounts.dev/v1/client/touch?redirect_url=fixture',

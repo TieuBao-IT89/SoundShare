@@ -47,6 +47,14 @@ export const discoverSchema = pageSchema.extend({
     .default("featured"),
   genre: text(100).optional(),
 });
+export const homeSchema = z
+  .object({
+    utcOffsetMinutes: z
+      .union([z.number(), z.string().regex(/^-?\d{1,3}$/)])
+      .pipe(z.coerce.number().int().min(-720).max(840))
+      .default(420),
+  })
+  .strict();
 export const profileSchema = z
   .object({
     username: usernameSchema,

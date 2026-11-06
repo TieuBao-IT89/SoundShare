@@ -1,0 +1,214 @@
+{
+  "date": "2026-11-06",
+  "fixture": "Isolated PGlite PostgreSQL, server-verified RSA JWTs, simulated Clerk SDK, synthetic artwork and 20-second audio; no live services. Recommendation clock fixed at 23:30 Vietnam for reproducibility.",
+  "releaseBundleSha256": "341909bed6419a3befc9a11f77066b5b5c7921e1901bf23547f58239c111f077",
+  "automatedChecks": {
+    "flutterAnalyze": "No issues found",
+    "flutterTestsPassed": 182,
+    "backendFullSuitePassed": 73,
+    "backendFullSuiteSkipped": 1,
+    "backendSkipReason": "TEST_DATABASE_URL for isolated TCP PostgreSQL is not configured.",
+    "additionalDecayRegressionPassed": 1,
+    "webReleaseBuild": "passed"
+  },
+  "screenshots": [
+    "for-you-personalized-390.png",
+    "for-you-personalized-1280.png",
+    "for-you-cold-390.png",
+    "for-you-cold-1280.png"
+  ],
+  "browserCases": [
+    {
+      "mode": "personalized",
+      "width": 390,
+      "checks": [
+        "Real API returned personalized with device offset and visible Vietnamese explanation at 390px",
+        "Recommended artwork opens the shared player; real synthetic audio advances and continues on creator profile",
+        "No failed API responses or uncaught browser exceptions"
+      ],
+      "apiFailures": [],
+      "exceptions": [],
+      "consoleErrors": [],
+      "utcOffsets": [
+        "420"
+      ],
+      "visibleRecommendation": {
+        "note": "Gợi ý từ lịch sử nghe, bài đã thích/lưu và tài khoản bạn theo dõi, có xét thói quen nghe theo thời điểm.",
+        "noteBounds": {
+          "x": 24,
+          "y": 0,
+          "width": 342,
+          "height": 772
+        },
+        "reason": "Bạn hay nghe Ambient ban đêm",
+        "reasonBounds": {
+          "x": 24,
+          "y": 240,
+          "width": 168,
+          "height": 358.1875
+        }
+      },
+      "playback": {
+        "initialAudio": [
+          {
+            "paused": false,
+            "position": 2.938542,
+            "duration": 20,
+            "error": null
+          }
+        ],
+        "laterAudio": [
+          {
+            "paused": false,
+            "position": 4.786946,
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "mode": "personalized",
+      "width": 1280,
+      "checks": [
+        "Real API returned personalized with device offset and visible Vietnamese explanation at 1280px",
+        "Recommended artwork opens the shared player; real synthetic audio advances and continues on creator profile",
+        "No failed API responses or uncaught browser exceptions"
+      ],
+      "apiFailures": [],
+      "exceptions": [],
+      "consoleErrors": [],
+      "utcOffsets": [
+        "420"
+      ],
+      "visibleRecommendation": {
+        "note": "Gợi ý từ lịch sử nghe, bài đã thích/lưu và tài khoản bạn theo dõi, có xét thói quen nghe theo thời điểm.",
+        "noteBounds": {
+          "x": 248,
+          "y": 76,
+          "width": 1008,
+          "height": 884
+        },
+        "reason": "Bạn hay nghe Ambient ban đêm",
+        "reasonBounds": {
+          "x": 248,
+          "y": 240,
+          "width": 168,
+          "height": 358.1875
+        }
+      },
+      "playback": {
+        "initialAudio": [
+          {
+            "paused": false,
+            "position": 2.846328,
+            "duration": 20,
+            "error": null
+          }
+        ],
+        "laterAudio": [
+          {
+            "paused": false,
+            "position": 4.768978,
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "mode": "cold",
+      "width": 390,
+      "checks": [
+        "Real API returned new-releases with device offset and visible Vietnamese explanation at 390px",
+        "Recommended artwork opens the shared player; real synthetic audio advances and continues on creator profile",
+        "No failed API responses or uncaught browser exceptions"
+      ],
+      "apiFailures": [],
+      "exceptions": [],
+      "consoleErrors": [],
+      "utcOffsets": [
+        "420"
+      ],
+      "visibleRecommendation": {
+        "note": "Bắt đầu với các bản thu mới. Nghe, thích, lưu và theo dõi để gợi ý dần phù hợp với bạn.",
+        "noteBounds": {
+          "x": 24,
+          "y": 0,
+          "width": 342,
+          "height": 772
+        },
+        "reason": "Bản thu mới để bạn khám phá",
+        "reasonBounds": {
+          "x": 24,
+          "y": 240,
+          "width": 168,
+          "height": 358.1875
+        }
+      },
+      "playback": {
+        "initialAudio": [
+          {
+            "paused": false,
+            "position": 2.784108,
+            "duration": 20,
+            "error": null
+          }
+        ],
+        "laterAudio": [
+          {
+            "paused": false,
+            "position": 4.648813,
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "mode": "cold",
+      "width": 1280,
+      "checks": [
+        "Real API returned new-releases with device offset and visible Vietnamese explanation at 1280px",
+        "Recommended artwork opens the shared player; real synthetic audio advances and continues on creator profile",
+        "No failed API responses or uncaught browser exceptions"
+      ],
+      "apiFailures": [],
+      "exceptions": [],
+      "consoleErrors": [],
+      "utcOffsets": [
+        "420"
+      ],
+      "visibleRecommendation": {
+        "note": "Bắt đầu với các bản thu mới. Nghe, thích, lưu và theo dõi để gợi ý dần phù hợp với bạn.",
+        "noteBounds": {
+          "x": 248,
+          "y": 76,
+          "width": 1008,
+          "height": 884
+        },
+        "reason": "Bản thu mới để bạn khám phá",
+        "reasonBounds": {
+          "x": 248,
+          "y": 240,
+          "width": 168,
+          "height": 358.1875
+        }
+      },
+      "playback": {
+        "initialAudio": [
+          {
+            "paused": false,
+            "position": 2.172202,
+            "duration": 20,
+            "error": null
+          }
+        ],
+        "laterAudio": [
+          {
+            "paused": false,
+            "position": 4.245475,
+            "error": null
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,4 +1,6 @@
 import { HttpError } from "../utils/http-error.js";
+import { recommendationQuery } from "./recommendation-query.js";
+import { recommendationContext } from "../utils/listening-context.js";
 
 const missing = () =>
   new HttpError(404, "RESOURCE_NOT_FOUND", "Content is unavailable.");
@@ -20,6 +22,7 @@ const TRACK = `t.*,u.username,u.display_name,u.id AS uploader_id,
   EXISTS(SELECT 1 FROM track_likes l JOIN users me ON me.id=l.user_id WHERE me.clerk_user_id=$1 AND l.track_id=t.id) AS liked,
   EXISTS(SELECT 1 FROM saved_tracks s JOIN users me ON me.id=s.user_id WHERE me.clerk_user_id=$1 AND s.track_id=t.id) AS saved`;
 const TRACK_FROM = `FROM private_tracks t JOIN users u ON u.clerk_user_id=t.clerk_user_id LEFT JOIN media_assets a ON a.id=t.artwork_asset_id`;
+const RECOMMENDATIONS = recommendationQuery({ TRACK, TRACK_FROM, PUBLIC, ACCESS });
 
 export const createCommunityRepository = (pool) => {
   const one = async (sql, params, client = pool) =>
@@ -211,7 +214,6 @@ export const createCommunityRepository = (pool) => {
         offset,
         username,
         feed = false,
-        recommended = false,
         recent = false,
         saved = false,
         liked = false,
@@ -245,9 +247,6 @@ export const createCommunityRepository = (pool) => {
         where.push(
           "EXISTS(SELECT 1 FROM playback_sessions ps JOIN users me ON me.id=ps.user_id WHERE me.clerk_user_id=$1 AND ps.track_id=t.id AND ps.credited_ms>0)",
         );
-      const preference = recommended
-        ? `CASE WHEN EXISTS(SELECT 1 FROM track_likes l JOIN users me ON me.id=l.user_id JOIN private_tracks lt ON lt.id=l.track_id WHERE me.clerk_user_id=$1 AND lower(lt.genre)=lower(t.genre)) THEN 0 ELSE 1 END,`
-        : "";
       const order = recent
         ? "(SELECT max(ps.started_at) FROM playback_sessions ps JOIN users me ON me.id=ps.user_id WHERE me.clerk_user_id=$1 AND ps.track_id=t.id) DESC,"
         : "";
@@ -255,10 +254,17 @@ export const createCommunityRepository = (pool) => {
         ? `,(SELECT ps.last_position_ms FROM playback_sessions ps JOIN users me ON me.id=ps.user_id WHERE me.clerk_user_id=$1 AND ps.track_id=t.id ORDER BY ps.started_at DESC,ps.id LIMIT 1) AS resume_position_ms`
         : "";
       return rows(
-        `SELECT ${TRACK}${resume} ${TRACK_FROM} WHERE ${where.join(" AND ")} ORDER BY ${preference}${order}t.created_at DESC,t.id DESC LIMIT ${bind(limit + 1)} OFFSET ${bind(offset)}`,
+        `SELECT ${TRACK}${resume} ${TRACK_FROM} WHERE ${where.join(" AND ")} ORDER BY ${order}t.created_at DESC,t.id DESC LIMIT ${bind(limit + 1)} OFFSET ${bind(offset)}`,
         params,
       );
     },
+    recommendations: (owner, { utcOffsetMinutes = 420, at = new Date() } = {}) =>
+      rows(RECOMMENDATIONS, [
+        owner,
+        at,
+        utcOffsetMinutes,
+        recommendationContext(at, utcOffsetMinutes).daypart,
+      ]),
     genres: (owner) =>
       rows(
         `SELECT t.genre,count(*) AS song_count ${TRACK_FROM} WHERE ${PUBLIC} GROUP BY t.genre ORDER BY lower(t.genre)`,

@@ -1,6 +1,6 @@
 # SoundShare — OBSIDIAN PULSE V4
 
-V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#0F1220, surface #181C2C/#23283B, brand #8B5CF6/#4F46E5, blue/cyan #38BDF8/#67E8F9; chữ #F8FAFC/#A8B0C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
+V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#10121D, surface #171A29/#23283B, brand #8957F7/#6D4DD7, blue/cyan #3D8BEB/#57D6DE; chữ #F7F7FA/#AAB1C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
 
 Mobile dưới 768 px dùng bottom navigation/mini player; tablet 768–1099 px dùng rail 80 px; desktop từ 1100 px dùng sidebar 224 px, topbar search/avatar/upload và playback dock. Queue mở drawer khi hẹp hoặc panel 310 px từ 1360 px. Dock/player/queue cùng AudioPlayer và progress, không tạo state phát riêng. Drawer chỉ phản ứng ở route/tab đang hiển thị và giữ trạng thái khi đổi breakpoint. Các quy tắc và chức năng V3 bên dưới tiếp tục được áp dụng trong V4.
 
@@ -10,12 +10,12 @@ Một tạp chí âm nhạc về những người đang sáng tạo: artwork m�
 
 | Token | Màu | Vai trò |
 |---|---|---|
-| Nền chính / phụ | `#080A12` / `#0F1220` | Nền gần đen trung tính |
-| Bề mặt / nâng | `#181C2C` / `#23283B` | Input và vùng chọn |
-| Electric Violet / Lavender | `#8B5CF6` / `#B9A6F8` | Nhận diện và điểm nhấn |
-| Aurora Blue / Cyan | `#38BDF8` / `#67E8F9` | Progress, màu phụ |
-| Chữ chính / phụ | `#F8FAFC` / `#A8B0C4` | Nội dung và mô tả |
-| Muted | `#737D95` | Trang trí, không dùng làm chữ nhỏ trên surface |
+| Nền chính / phụ | `#080A12` / `#10121D` | Nền gần đen trung tính |
+| Bề mặt / nâng | `#171A29` / `#23283B` | Input và vùng chọn |
+| Electric Violet / Lavender | `#8957F7` / `#B9A6F8` | Nhận diện và điểm nhấn |
+| Aurora Blue / Cyan | `#3D8BEB` / `#57D6DE` | Progress, màu phụ |
+| Chữ chính / phụ | `#F7F7FA` / `#AAB1C4` | Nội dung và mô tả |
+| Muted | `#8089A3` | Trang trí, không dùng làm chữ nhỏ trên surface |
 | Thành công / cảnh báo / lỗi | `#40CF9A` / `#F5BA6A` / `#F47187` | Phản hồi có nhãn |
 
 Nền trung tính không có glow mặc định. Nút chính dùng tím đậm `#6742BF` để giữ tương phản chữ trắng; gradient dành cho logo, nút phát và ambient artwork. Home có một hero ảnh lớn, các danh sách có divider, creator là hàng thông tin và tương tác, không bọc mọi nội dung trong card. Tên component Aurora/Glass được giữ để tương thích mã cũ; card mặc định nay là surface đặc không viền. Không thêm blur hoặc package animation.
@@ -37,7 +37,7 @@ Be Vietnam Pro được đóng gói tại `assets/fonts`, kèm giấy phép OFL;
 |---|---|
 | Khởi động | Sóng âm gradient, SoundShare, “Âm nhạc kết nối cảm xúc”; fade/scale ngắn, timer 900 ms, không chờ animation để khôi phục Clerk |
 | Xác thực | Header thương hiệu và thẻ Aurora, “Chào mừng trở lại”, nút đăng nhập/tạo tài khoản; Clerk giữ form, OAuth, email/MFA và khôi phục mật khẩu |
-| Trang chủ | Typography editorial, một hero artwork, tiếp tục nghe từ tiến trình thật, gợi ý minh bạch, bài mới, feed theo dõi và ranking 7 ngày; chỉ hiển thị nhóm có dữ liệu |
+| Trang chủ | Typography editorial, một hero artwork, tiếp tục nghe từ tiến trình thật, Dành riêng cho bạn dựa trên dữ liệu nghe/thích/lưu/follow và khung giờ, bài mới, feed theo dõi và ranking 7 ngày; chỉ hiển thị nhóm có dữ liệu |
 | Khám phá / Tìm kiếm | Discovery hub có thể loại, ranking theo ngày/7/30 ngày/tất cả và các chế độ creator. Tìm cộng đồng debounce 300 ms, ưu tiên @username, tab và phân trang. Tìm thư viện riêng vẫn tại /library/search |
 | Đang phát | Glow lấy sắc màu từ ảnh bìa, fallback Aurora khi ảnh lỗi/trung tính; tên bài/nghệ sĩ, yêu thích, tiến trình và thời gian từ audio thật; nút phát gradient, shuffle/repeat có trạng thái |
 | Mini player | Artwork, tên bài/nghệ sĩ, phát/tạm dừng/bài tiếp và progress thật; chạm mở trình phát, giữ cùng provider/audio instance |
@@ -46,6 +46,8 @@ Be Vietnam Pro được đóng gói tại `assets/fonts`, kèm giấy phép OFL;
 | Cá nhân | Hồ sơ SoundShare do người dùng chọn username; tên/bio/avatar/cover, follow, bài công khai và playlist. Menu “Tài khoản” ở góc phải cover của chính mình chứa Quản lý tài khoản và Đăng xuất; hàng thao tác giữ Chỉnh sửa hồ sơ, Quản lý bài hát và Chia sẻ. Không đặt nút Tải nhạc lên trong hồ sơ; thao tác này nằm ở sidebar/topbar/Thư viện. Credential vẫn do Clerk quản lý; demo giữ nhãn dữ liệu mẫu |
 
 V3 bổ sung Home editorial, discovery/trending có cửa sổ thời gian, tìm cộng đồng, public profile, follower/following, sửa hồ sơ, playlist, queue, thích/lưu và quản lý bài. Thư viện riêng vẫn có tìm kiếm tại `/library/search`. Không thêm Cài đặt/thông báo hoặc block không có nghiệp vụ thật. Luồng chi tiết và giới hạn nghiệm thu nằm trong PRD mục V3 và báo cáo V3.
+
+**Dành riêng cho bạn:** artwork vẫn dẫn nội dung; một dòng lý do dưới metadata giải thích thể loại đã thích/lưu, lịch sử nghe, khung giờ thường nghe hoặc creator đang theo dõi. Lý do chỉ nằm trong rail gợi ý, không nhân lên ở danh sách bài mới/feed follow. Mô tả phân biệt gợi ý cá nhân hóa và bài mới khi chưa có tín hiệu phù hợp. Không thêm nhãn “AI” hay hiệu ứng trang trí cho baseline chấm điểm. Khoảng cao dành cho lý do có tính font scaling; giữ thao tác phát và AudioPlayer hiện có. [Chi tiết](docs/personalized-recommendations.md).
 
 ## Ngôn ngữ và authentication
 
@@ -68,3 +70,13 @@ SongTile thu nhỏ 0,98 khi nhấn, nhả khi hủy hoặc bắt đầu cuộn, 
 Vùng chạm tối thiểu 48×48; icon có nhãn, tab có selected/tap semantics; text có thể xuống dòng, form cuộn khi có bàn phím, artwork lỗi có fallback. Kiểm thử bao phủ 320/390/430 px với chữ 2×, desktop 1280 px, loading/error/empty, tìm kiếm/bộ lọc, player/mini dùng chung tiến trình, upload lỗi/retry và session gate.
 
 Kết quả chạy và giới hạn thiết bị được ghi riêng trong [báo cáo Mystic Aurora](docs/ui/mystic-aurora-review.md). Các báo cáo [issue #5](docs/ui/issue-5-review.md), [issue #7](docs/ui/issue-7-review.md) là lịch sử giao diện trước redesign; ảnh và palette trong các báo cáo đó không mô tả giao diện hiện tại.
+
+## Authentication ? OBSIDIAN WAVE V5
+
+Welcome Web d?ng visual b?a ??a/s?ng ?m SVG t? thi?t k?; headline l?ch tr?i, typography Be Vietnam Pro v? ambient t?nh. Desktop t? 1000 px chia kho?ng 58/42%, form t?i ?a 420 px; tablet/mobile m?t c?t, v?ng form cu?n t? nhi?n. Header mobile c?a form r?t g?n; kh?ng gi? hero Welcome sau form. CTA ch?nh n?i b?t, CTA t?o t?i kho?n th? c?p; kh?ng th?m li?n k?t ph?p l? ch?a c? URL th?t.
+
+Trang static `auth.html` nh?ng Clerk b?ng mount/unmount ch?nh th?c. Mode ch?n b?ng query, hash d?nh ri?ng cho c?c b??c Clerk. M?i l?n mount c? container ri?ng ?? Clerk t? d?n DOM; kh?ng remount khi ch? ??i hash c?a OTP/recovery/MFA. Form ch? hi?n th? provider/tr??ng b?t bu?c trong Dashboard, ?n c?c tr??ng t?n/h? t?y ch?n. T?n c?ng khai SoundShare ti?p t?c ch?n sau ??ng nh?p.
+
+Focus ring lavender, input n?n xanh ?en, l?i t?i tr??ng do Clerk qu?n l?; n?t v? input t?i thi?u 48 px. Motion 240?260 ms, action xu?t hi?n l?ch nh? theo th? t?; t?t delay/animation v?i prefers-reduced-motion. Skip control chuy?n focus b?ng JavaScript, kh?ng chi?m hash c?a Clerk. Flutter d?ng c?ng Header/BrandPanel/AuthenticationScaffold cho welcome native, loading v? l?i/session; GlobalKey gi? form khi ??i breakpoint, timeout/retry/sign-out hi?n c? gi? nguy?n.
+
+[B?o c?o V5 v? Before/After](docs/ui/obsidian-wave-v5-review.md). OTP/OAuth/MFA v? native thi?t b? th?t c?n c?n nghi?m thu b?ng t?i kho?n/thi?t b? do ng??i d?ng ch? ??ng d?ng; kh?ng coi vi?c form render l? b?ng ch?ng ??ng nh?p ho?n t?t.

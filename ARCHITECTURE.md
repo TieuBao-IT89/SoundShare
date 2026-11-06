@@ -2,6 +2,8 @@
 
 > **Cập nhật V3 (06/11/2026):** các mục “chưa chọn provider/backend mục tiêu” bên dưới là tài liệu kiến trúc ban đầu. Source hiện dùng Clerk, Express REST, Neon và Cloudinary authenticated. Module community gồm route/controller/service/repository riêng, schema 004 và DTO không lộ identity riêng tư. Flutter feature `community` dùng Riverpod/GoRouter hiện có và cùng AudioPlayer; không nối Neon trực tiếp. Hợp đồng hiện hành ở [PRD V3](PRD.md#v3--nocturne-hợp-đồng-cộng-đồng), [kiểm kê](docs/ui/nocturne-v3-audit.md) và [vận hành](docs/nocturne-v3.md).
 
+> **Gợi ý cá nhân hóa:** repository lấy tín hiệu riêng của người gọi và ứng viên public có giới hạn từ Neon; service `recommendation.service.js` chấm điểm và tạo reason DTO; Flutter hiển thị kết quả tại Home. Migration 005 chỉ thêm index. Không có provider AI hoặc kho dữ liệu mới; xem [contract và thuật toán](docs/personalized-recommendations.md).
+
 > Tài liệu mô tả kiến trúc tổng thể của SoundShare, trách nhiệm của từng thành phần, luồng dữ liệu và nguyên tắc tổ chức source code.
 >
 > **Trạng thái:** Architecture đề xuất cho hệ thống mục tiêu. Những thành phần chưa được triển khai hoặc xác minh phải được đánh dấu tương ứng.

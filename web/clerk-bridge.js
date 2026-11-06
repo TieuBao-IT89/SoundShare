@@ -6,6 +6,16 @@
   const navigate = (to, { windowNavigate }, replace = false) => {
     const current = new URL(window.location.href);
     const destination = new URL(to, current);
+    // The dedicated auth document uses Clerk's supported hash routing. Mode
+    // links change only its query; handle those in place without an unload.
+    if (current.pathname.endsWith('/auth.html') && destination.origin === current.origin && destination.pathname === current.pathname && destination.search !== current.search && window.soundshareAuthPage) {
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', destination.href);
+      return Promise.resolve().then(() => window.soundshareAuthPage.sync());
+    }
+    if (current.pathname.endsWith('/auth.html') && destination.origin === current.origin && destination.pathname === current.pathname && destination.search === current.search) {
+      if (destination.href !== current.href) window.location[replace ? 'replace' : 'assign'](destination.href);
+      return;
+    }
     // Flutter uses hash routes. Clerk's default window navigation marks even a
     // hash-only redirect as unloading and skips publishing the activated session.
     const isFlutterRoute = destination.origin === current.origin
@@ -31,6 +41,8 @@
     initialize(key) {
       if (!ready) ready = (async () => {
         if (!/^pk_(test|live)_[A-Za-z0-9_=-]+$/.test(key)) throw new Error('Sign-in configuration is unavailable.');
+        // Public build configuration only; passwords, OTPs and tokens are never stored here.
+        try { window.sessionStorage?.setItem('soundshare.clerk.publishableKey', key); } catch (_) { /* Handled by the auth entry page. */ }
         const loadScript = (source, publishableKey) => new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.src = source;
@@ -50,8 +62,8 @@
           localization: window.soundshareClerkVi,
           ui: { ClerkUI: window.__internal_ClerkUICtor },
           appearance: {
-            variables: { colorPrimary: '#6742BF', colorPrimaryForeground: '#FFFFFF', colorBackground: '#11131D', colorInput: '#1B1D29', colorForeground: '#F7F7FA', colorInputForeground: '#F7F7FA', colorMutedForeground: '#9B9EAE', colorDanger: '#F47187', fontFamily: 'BeVietnamPro, sans-serif', borderRadius: '.75rem' },
-            options: { showOptionalFields: true },
+            variables: { colorPrimary: '#6D4DD7', colorPrimaryForeground: '#FFFFFF', colorBackground: '#10121D', colorInput: '#171A29', colorForeground: '#F7F7FA', colorInputForeground: '#F7F7FA', colorMutedForeground: '#AAB1C4', colorDanger: '#F47187', fontFamily: 'BeVietnamPro, sans-serif', fontSize: '14px', borderRadius: '.625rem' },
+            options: { showOptionalFields: false },
             elements: {
               formFieldInput: { minHeight: '48px' },
               formFieldInputShowPasswordButton: { color: '#9B9EAE', minWidth: '48px' },
@@ -86,10 +98,27 @@
       clerk.openUserProfile({});
       return true;
     },
+    enter(mode = 'welcome') {
+      const current = new URL(window.location.href);
+      const url = new URL('auth.html', document.baseURI || current.href);
+      url.searchParams.set('mode', ['sign-in', 'sign-up'].includes(mode) ? mode : 'welcome');
+      url.searchParams.set('return', current.href);
+      try {
+        const pending = JSON.parse(window.sessionStorage?.getItem('soundshare.auth.entry') || 'null');
+        window.sessionStorage?.removeItem('soundshare.auth.entry');
+        if (pending && ['welcome', 'sign-in', 'sign-up'].includes(pending.mode)) {
+          const target = new URL(pending.return, current);
+          const base = new URL('./', url);
+          if (target.origin === base.origin && [base.pathname, base.pathname + 'index.html'].includes(target.pathname) && (!target.hash || target.hash.startsWith('#/'))) {
+            url.searchParams.set('mode', pending.mode);
+            url.searchParams.set('return', target.href);
+          }
+        }
+      } catch (_) { /* Invalid UI hints never affect session or token state. */ }
+      window.location.replace(url.href);
+    },
     open(mode) {
-      const options = { fallbackRedirectUrl: window.location.origin + '/#/', forceRedirectUrl: window.location.origin + '/#/' };
-      if (mode === 'sign-up') window.Clerk.openSignUp(options);
-      else window.Clerk.openSignIn(options);
+      window.soundshareAuth.enter(mode);
     },
   };
 })();

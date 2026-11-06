@@ -565,6 +565,8 @@ PRD này là bản định hướng ban đầu dựa trên cấu trúc ứng d�
 
 ## V3 — NOCTURNE: hợp đồng cộng đồng
 
+**Authentication UI V5:** welcome và embedded Clerk Web nằm tại static `auth.html?mode=welcome|sign-in|sign-up`, hash của document này thuộc Clerk. Sau session active quay lại route Flutter cùng origin đã kiểm tra; `/auth/me`, audience, authorized parties và API authorization giữ nguyên. Public build key và UI intent có thể đi qua sessionStorage, không lưu credential/OTP/token ngoài SDK. Lần đầu mở bookmark auth sẽ nạp cấu hình qua Flutter và trở lại đúng mode/deep link; storage bị chặn có lỗi an toàn thay vì vòng lặp. Native beta giữ `ClerkAuthentication` và chọn mode trong SDK, không giả lập các bước bằng form riêng. Xem [hợp đồng UI và QA V5](docs/ui/obsidian-wave-v5-review.md).
+
 Phần này mở rộng các mô tả “chỉ có thư viện riêng” trước đó. Luồng bắt buộc vẫn là Flutter → Express → Neon; Clerk xác minh identity và Cloudinary giữ file private. Mọi endpoint dưới `/api/v1` trong bảng sau **yêu cầu Bearer Clerk đã xác minh**, kể cả đọc nội dung có visibility public. Health là endpoint công khai không cần token. Không có anonymous listening trong phiên bản này.
 
 Migration `004_social_music.sql` mở rộng `users` và `private_tracks`, thêm follows, likes/saves, playback sessions/events, playlist_tracks, reports và deletion/cleanup receipts. Các bài cũ giữ `visibility=private`; public profile chỉ được liệt kê khi có username hợp lệ. `users` là mapping ổn định giữa UUID ứng dụng và Clerk sub; email/sub không nằm trong public response. Username do SoundShare quản lý, không suy ra từ email/Clerk ID.
@@ -582,7 +584,7 @@ Response giữ `{success:true,data:...}`; lỗi `{success:false,error:{code,mess
 | POST / DELETE `/users/:id/follow` | UUID public profile; không body/query; 204 idempotent, không self-follow, unique pair |
 | GET `/users/:id/followers` / `following` | Public DTO phân trang; không xuất hồ sơ ẩn/chưa chọn username |
 | GET `/community/search` | `q,type=all|songs|users|playlists,genre?,limit,offset`; trả ba page `users,songs,playlists`; bắt đầu @ chỉ ưu tiên tài khoản, không trả private song/playlist |
-| GET `/discover/home` | newReleases, following, recommended, recent, popular (ranking 7 ngày), mỗi nhóm tối đa 8; reason `liked-genres-then-newest` |
+| GET `/discover/home` | Query strict `utcOffsetMinutes` nguyên −720…840, mặc định 420; newReleases, following, recommended, recent, popular (ranking 7 ngày), mỗi nhóm tối đa 8. Metadata `recommendation {version:'taste-v1',strategy:'personalized'|'new-releases',daypart,utcOffsetMinutes,experimental:true}`; reason `listening-preferences-v1` hoặc `new-releases`. Item recommended thêm reason code/genre/daypart an toàn; xem hợp đồng chi tiết bên dưới |
 | GET `/discover/trending` | `period=today|week|month|all,limit,offset`; same-window score/validPlayCount/uniqueListeners/likeCount/saveCount/totalPlayCount; nhãn experimental |
 | GET `/discover/featured-creators` | `mode=featured|new|popular|growing|emerging,limit,offset`; chỉ creator có public active track |
 | GET `/discover/new-releases` | q/genre và phân trang trên bài public active |
@@ -609,3 +611,9 @@ Giới hạn một process: API chung 600/15 phút/IP để đủ heartbeat 15 g
 Lỗi mới chính: 400 VALIDATION_ERROR/CANNOT_FOLLOW_SELF/RIGHTS_REQUIRED; 401 UNAUTHORIZED; 404 RESOURCE_NOT_FOUND (gộp absent/private/hidden để tránh lộ nội dung); 409 USERNAME_TAKEN/PROFILE_REQUIRED/RESOURCE_BUSY; 429 RATE_LIMITED; 502 STORAGE_UNAVAILABLE/AUDIO_DURATION_UNAVAILABLE; 503 COMMUNITY_UNAVAILABLE. Client dùng bản dịch an toàn, không hiện raw SQL/provider error.
 
 Moderation report không tự gỡ nội dung. Operator CLI tin cậy có hide/restore/dismiss trong transaction, lưu resolution/reviewed_at; không có endpoint client để tự cấp role. Hidden bị loại khỏi discovery/search/playback và owner không PATCH unhide. URL ký đã cấp còn dùng đến hết hạn. Xem [vận hành, cleanup và giới hạn](docs/nocturne-v3.md).
+
+### Gợi ý cá nhân hóa — taste-v1
+
+**Dành riêng cho bạn** thay cơ chế chỉ ưu tiên thể loại đã thích bằng chấm điểm ở backend từ valid play 90 ngày, thích/lưu, thể loại, creator đang theo dõi và thói quen khung giờ. Baseline thử nghiệm có trọng số 0,30/0,25/0,10/0,15/0,20, decay lịch sử, dedupe theo bài/ngày và giới hạn ứng viên; chưa dùng mô hình ML huấn luyện hoặc provider AI mới. Không tính mở player là sở thích. Chỉ trả bài public/active từ hồ sơ active có username; dữ liệu private của chính người nghe có thể đóng góp sở thích nhưng không xuất hiện trong recommended.
+
+Nếu không có tín hiệu phù hợp, hiển thị bài mới công khai với nhãn rõ ràng. Lý do mỗi bài có code `listening-time|liked-genre|listening-history|following|saved-genre|new-release`, genre/daypart tùy chọn; không trả lịch sử nguồn hoặc identity riêng tư. Response thiếu metadata vẫn được Flutter hiển thị bằng mô tả khám phá chung; phải triển khai backend hỗ trợ query offset trước client mới. Cần migration index `005_recommendation_indexes.sql`; home thêm rate limit discovery chung 60/phút/người dùng, cache response `no-store`, lỗi giữ 400/401/429/503 và error envelope V3. [Thuật toán, giới hạn và contract đầy đủ](docs/personalized-recommendations.md).

@@ -1,5 +1,7 @@
 # Web: tài khoản và thư viện riêng
 
+**Cập nhật V5:** Web dùng trang `auth.html` và Clerk embedded thay modal; Flutter giữ gate `/auth/me`. [Hướng dẫn và QA OBSIDIAN WAVE](ui/obsidian-wave-v5-review.md) mô tả hash routing, public config bootstrap, các form thật đã kiểm tra và những bước OTP/OAuth/MFA còn cần tài khoản. Các mục nghiệm thu cũ bên dưới là lịch sử, không tự xác nhận luồng mới.
+
 Phạm vi là Chrome, đăng ký/đăng nhập Clerk và MP3/artwork do chính chủ tài khoản tải lên. Mặc định không seed bài mẫu. Đăng ký, xác minh email, quên mật khẩu, OAuth và duy trì phiên do UI/SDK Clerk xử lý. Express không nhận mật khẩu.
 
 ## Cấu hình và chạy
