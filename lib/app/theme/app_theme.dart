@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:clerk_flutter/clerk_flutter.dart';
 
 abstract final class AppColors {
   static const background = Color(0xFF080A12);
-  static const secondaryBackground = Color(0xFF0F1220);
-  static const surface = Color(0xFF181C2C);
+  static const secondaryBackground = Color(0xFF10121D);
+  static const surface = Color(0xFF171A29);
   static const surfaceLight = Color(0xFF23283B);
-  static const primary = Color(0xFF8B5CF6);
+  static const primary = Color(0xFF8957F7);
   static const action = Color(0xFF6742BF);
   static const mystic = Color(0xFFB9A6F8);
-  static const cyan = Color(0xFF67E8F9);
-  static const pink = Color(0xFF38BDF8);
-  static const indigo = Color(0xFF4F46E5);
+  static const cyan = Color(0xFF57D6DE);
+  static const pink = Color(0xFF3D8BEB);
+  static const indigo = Color(0xFF6D4DD7);
   static const warning = Color(0xFFF5BA6A);
-  static const text = Color(0xFFF8FAFC);
-  static const secondaryText = Color(0xFFA8B0C4);
-  static const subdued = Color(0xFF737D95);
+  static const text = Color(0xFFF7F7FA);
+  static const secondaryText = Color(0xFFAAB1C4);
+  static const subdued = Color(0xFF8089A3);
   static const success = Color(0xFF40CF9A);
   static const error = Color(0xFFF47187);
   static const border = Color(0xFF2B2E3D);
@@ -82,6 +83,20 @@ abstract final class AppTheme {
       fontFamily: 'BeVietnamPro',
     );
     return base.copyWith(
+      extensions: [
+        ClerkThemeExtension(
+          colors: const ClerkThemeColors(
+            background: AppColors.secondaryBackground,
+            altBackground: AppColors.surface,
+            borderSide: AppColors.border,
+            text: AppColors.text,
+            icon: AppColors.secondaryText,
+            lightweightText: AppColors.secondaryText,
+            error: AppColors.error,
+            accent: AppColors.mystic,
+          ),
+        ),
+      ],
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.surface,
       visualDensity: VisualDensity.standard,

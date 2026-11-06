@@ -1,0 +1,424 @@
+{
+  "date": "2026-11-06",
+  "scope": "Real Clerk UI, read-only, no credentials/OAuth/OTP submitted; new owned Chrome profile.",
+  "viewports": [
+    320,
+    390,
+    430,
+    768,
+    1024,
+    1280,
+    1440
+  ],
+  "beforeAfterViewports": [
+    390,
+    430,
+    1280
+  ],
+  "flutterTestsPassed": 197,
+  "javascriptTestsPassed": 20,
+  "analyze": "No issues found",
+  "releaseWebBuild": "passed; isolated build/auth-v5-web",
+  "releaseArtifactSha256": {
+    "auth.html": "572052a3c835a9d5770b710373b1a38e83fe9b1690cc921c8bce6659a9433b24",
+    "auth-page.js": "c0442cd97bda5c0616135cc723ba9e54fcca1c57d36598a75a34f9591b3075ed",
+    "clerk-bridge.js": "8638c2c4933f75b5f84681ddf9553f632b383bca6e00644873de25d003bda5c2",
+    "clerk-vi.js": "e1c720ef8640f2ee5db96801f3305a709bacafc563a4ffdbe3ae35a78046e9ac",
+    "soundshare.css": "3bc17c5b74551a75f310ea35a6427ddf715e35721afb1b929dcb6f9bedffb363",
+    "obsidian-wave.svg": "f1ed41eab44eca194a4ca662d117eda606b74c6d8698e0d580a1e336dcf910ae",
+    "main.dart.js": "9c5d8f732be86d316a708a5ce5a5f87b37858dd13f7eccd25d66662092bad4db"
+  },
+  "checks": [
+    {
+      "width": 320,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 320,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 274
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 320,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 274
+        },
+        {
+          "type": "password",
+          "width": 274
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 390,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 390,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 344
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 390,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 344
+        },
+        {
+          "type": "password",
+          "width": 344
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 430,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 430,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 384
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 430,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 384
+        },
+        {
+          "type": "password",
+          "width": 384
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 768,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 768,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 522
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 768,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 522
+        },
+        {
+          "type": "password",
+          "width": 522
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1024,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 1024,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 350.34375
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1024,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 350.34375
+        },
+        {
+          "type": "password",
+          "width": 350.34375
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1280,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 1280,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 422
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1280,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 422
+        },
+        {
+          "type": "password",
+          "width": 422
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1440,
+      "mode": "welcome",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [],
+      "google": false
+    },
+    {
+      "width": 1440,
+      "mode": "sign-in",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 422
+        },
+        {
+          "type": "password",
+          "width": 224
+        }
+      ],
+      "google": true
+    },
+    {
+      "width": 1440,
+      "mode": "sign-up",
+      "overflow": false,
+      "csp": [],
+      "modal": false,
+      "sdk": "6.42.2",
+      "inputs": [
+        {
+          "type": "text",
+          "width": 422
+        },
+        {
+          "type": "password",
+          "width": 422
+        }
+      ],
+      "google": true
+    }
+  ],
+  "interactions": [
+    {
+      "interactions": "Live Clerk SignUp to SignIn, browser back/forward, F5, skip focus without hash changes, 48px input and reduced motion",
+      "passed": true
+    },
+    {
+      "interactions": "Actual release Flutter signed-out gate enters auth.html and preserves protected profile deep link",
+      "passed": true
+    },
+    {
+      "interactions": "First auth bookmark with no stored configuration bootstraps Flutter and returns to signup with protected deep link intact",
+      "passed": true
+    }
+  ],
+  "exceptions": [],
+  "failures": [],
+  "screenshots": [
+    "welcome-320.png",
+    "sign-in-320.png",
+    "sign-up-320.png",
+    "welcome-390.png",
+    "sign-in-390.png",
+    "sign-up-390.png",
+    "welcome-430.png",
+    "sign-in-430.png",
+    "sign-up-430.png",
+    "welcome-768.png",
+    "sign-in-768.png",
+    "sign-up-768.png",
+    "welcome-1024.png",
+    "sign-in-1024.png",
+    "sign-up-1024.png",
+    "welcome-1280.png",
+    "sign-in-1280.png",
+    "sign-up-1280.png",
+    "welcome-1440.png",
+    "sign-in-1440.png",
+    "sign-up-1440.png",
+    "before-welcome-390.png",
+    "before-sign-in-390.png",
+    "before-sign-up-390.png",
+    "before-welcome-430.png",
+    "before-sign-in-430.png",
+    "before-sign-up-430.png",
+    "before-welcome-1280.png",
+    "before-sign-in-1280.png",
+    "before-sign-up-1280.png"
+  ],
+  "notVerified": [
+    "Actual credentials/session after OTP or OAuth",
+    "Email verification/resend/expired code",
+    "Password recovery completion",
+    "MFA",
+    "Native device/assistive technologies"
+  ]
+}

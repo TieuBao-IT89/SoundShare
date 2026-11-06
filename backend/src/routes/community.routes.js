@@ -5,6 +5,7 @@ import {
   pageSchema,
   searchSchema,
   discoverSchema,
+  homeSchema,
   profileSchema,
   usernameSchema,
   songPatchSchema,
@@ -90,8 +91,9 @@ export const createCommunityRouter = ({ service: s, requireAuth }) => {
     );
   router.get(
     "/discover/home",
-    validate(),
-    controller((owner) => s.home(owner)),
+    limited,
+    validate(homeSchema),
+    controller((owner, input) => s.home(owner, input)),
   );
   router.get(
     "/discover/trending",

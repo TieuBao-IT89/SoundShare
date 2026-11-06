@@ -1064,7 +1064,7 @@ window.soundshareClerkVi = {
         "subtitle": "Nhập số điện thoại của bạn để nhận mã xác minh trên {{provider}}.",
         "title": "Đăng nhập vào {{applicationName}} với {{provider}}"
       },
-      "subtitle": "Đăng nhập để tiếp tục hành trình âm nhạc",
+      "subtitle": "Đăng nhập để tiếp tục hành trình âm nhạc.",
       "title": "Chào mừng trở lại",
       "titleCombined": "Tiếp tục đến {{applicationName}}",
       "subtitleCombined": "Đăng nhập hoặc tạo tài khoản để tiếp tục"
@@ -1097,7 +1097,7 @@ window.soundshareClerkVi = {
       "formTitle": "Mã xác minh",
       "resendButton": "Không nhận được mã? Gửi lại",
       "subtitle": "Nhập mã xác minh đã gửi đến email của bạn",
-      "title": "Xác minh email"
+      "title": "Xác minh email của bạn"
     },
     "emailLink": {
       "clientMismatch": {
@@ -1169,7 +1169,7 @@ window.soundshareClerkVi = {
         "subtitle": "Nhập số điện thoại của bạn để nhận mã xác minh trên {{provider}}.",
         "title": "Đăng ký vào {{applicationName}} với {{provider}}"
       },
-      "subtitle": "Bắt đầu không gian âm nhạc của riêng bạn",
+      "subtitle": "Bắt đầu hành trình âm nhạc của riêng bạn.",
       "subtitleCombined": "Chào mừng! Vui lòng điền các chi tiết để bắt đầu.",
       "title": "Tạo tài khoản SoundShare",
       "titleCombined": "Tạo tài khoản của bạn"

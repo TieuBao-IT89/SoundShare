@@ -25,7 +25,7 @@ test("web CSP allows Clerk device checks on nonstandard ports and keeps executab
 test("Clerk bridge loads Core 3 UI, shares initialization, refreshes tokens and emits only identity", async () => {
   const scripts = []; const notifications = []; const tokenOptions = [];
   let listener; let loadOptions; let modal; let signedOut = false;
-  const window = { location: { origin: "http://localhost:3000" }, __internal_ClerkUICtor: {}, Clerk: {
+  const window = { location: { origin: "http://localhost:3000", href: "http://localhost:3000/#/", replace: (url) => { modal = new URL(url); } }, __internal_ClerkUICtor: {}, Clerk: {
     user: { id: "user_fixture", fullName: "Fixture", emailAddress: "private-sentinel", secret: "private-sentinel" },
     load: async (options) => { loadOptions = options; }, addListener: (callback) => { listener = callback; },
     session: { id: "sess_fixture", status: "active", getToken: async (options) => { tokenOptions.push(options.skipCache); return "token-fixture"; } },
@@ -33,20 +33,21 @@ test("Clerk bridge loads Core 3 UI, shares initialization, refreshes tokens and 
     openSignUp: (options) => { modal = ["up", options]; },
   } };
   const document = { createElement: () => ({ dataset: {} }), head: { appendChild: (script) => { scripts.push(script); queueMicrotask(script.onload); } } };
-  vm.runInNewContext(await readFile(new URL("../../web/clerk-bridge.js", import.meta.url), "utf8"), { window, document });
+  vm.runInNewContext(await readFile(new URL("../../web/clerk-bridge.js", import.meta.url), "utf8"), { window, document, URL });
   const bridge = window.soundshareAuth;
   const [first, second] = await Promise.all([bridge.initialize("pk_test_fixture"), bridge.initialize("pk_test_fixture")]);
   assert.equal(first, second); assert.equal(scripts.length, 2);
   assert.match(scripts[0].src, /@clerk\/ui@1\./); assert.match(scripts[1].src, /@clerk\/clerk-js@6\./);
   assert.equal(loadOptions.ui.ClerkUI, window.__internal_ClerkUICtor);
   assert.ok(loadOptions.appearance.variables.colorForeground); // Core 3 variable; deprecated names are ignored.
+  assert.equal(loadOptions.appearance.options.showOptionalFields, false);
   assert.ok(!first.includes("private-sentinel"));
   assert.deepEqual(JSON.parse(first), { id: "user_fixture", name: "Fixture", sessionId: "sess_fixture" });
   const watch = (value) => notifications.push(value); bridge.watch(watch); listener();
   assert.equal(notifications.length, 2); bridge.unwatch(watch); listener(); assert.equal(notifications.length, 2);
   assert.equal(await bridge.token(false), "token-fixture"); await bridge.token(true); assert.deepEqual(tokenOptions, [false, true]);
-  bridge.open("sign-up"); assert.equal(modal[0], "up"); assert.equal(modal[1].forceRedirectUrl, "http://localhost:3000/#/");
-  bridge.open("sign-in"); assert.equal(modal[0], "in"); await bridge.signOut(); assert.ok(signedOut);
+  bridge.open("sign-up"); assert.equal(modal.pathname, "/auth.html"); assert.equal(modal.searchParams.get('mode'), "sign-up"); assert.equal(modal.searchParams.get('return'), "http://localhost:3000/#/");
+  bridge.open("sign-in"); assert.equal(modal.searchParams.get('mode'), "sign-in"); await bridge.signOut(); assert.ok(signedOut);
   window.Clerk.session = null; await assert.rejects(bridge.token(false), /Sign in again/);
 });
 

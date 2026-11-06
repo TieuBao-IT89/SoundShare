@@ -50,6 +50,7 @@ class CompletingPlayer extends TestPlayer {
 class CommunityFixture {
   bool following = false;
   bool failFollow = false;
+  Map<String, dynamic> homeExtras = {};
   final requests = <http.Request>[];
   Map<String, dynamic> get profile => {
     'id': creatorId,
@@ -118,6 +119,7 @@ class CommunityFixture {
           'following': following ? [song] : [],
           'recent': [],
           'recommended': [song],
+          ...homeExtras,
         };
       } else if (path.endsWith('/genres')) {
         data = [

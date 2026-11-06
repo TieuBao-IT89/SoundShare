@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../home/domain/song.dart';
 import '../data/community_repository.dart';
 import 'community_widgets.dart';
+import 'recommendation_copy.dart';
 
 class FeaturedMusic extends ConsumerStatefulWidget {
   const FeaturedMusic({super.key, required this.songs});
@@ -159,11 +160,22 @@ class _FeaturedMusicState extends ConsumerState<FeaturedMusic> {
 }
 
 class SongArtworkRail extends ConsumerWidget {
-  const SongArtworkRail({super.key, required this.songs});
+  const SongArtworkRail({
+    super.key,
+    required this.songs,
+    this.showRecommendationReasons = false,
+  });
   final List<Song> songs;
+  final bool showRecommendationReasons;
   @override
   Widget build(BuildContext context, WidgetRef ref) => SizedBox(
-    height: 220 + MediaQuery.textScalerOf(context).scale(60) * 1.4,
+    height:
+        220 +
+        MediaQuery.textScalerOf(context).scale(60) * 1.4 +
+        (showRecommendationReasons &&
+                songs.any((song) => song.recommendationReason != null)
+            ? 8 + MediaQuery.textScalerOf(context).scale(11) * 1.4 * 3
+            : 0),
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
       itemCount: songs.length,
@@ -245,6 +257,30 @@ class SongArtworkRail extends ConsumerWidget {
                   style: const TextStyle(
                     color: AppColors.secondaryText,
                     fontSize: 12,
+                  ),
+                ),
+              ),
+            if (showRecommendationReasons &&
+                songs[i].recommendationReason != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Tooltip(
+                  message: recommendationReasonLabel(
+                    context.l10n,
+                    songs[i].recommendationReason!,
+                  ),
+                  child: Text(
+                    recommendationReasonLabel(
+                      context.l10n,
+                      songs[i].recommendationReason!,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.secondaryText,
+                      fontSize: 11,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ),

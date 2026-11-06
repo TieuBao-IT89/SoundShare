@@ -64,8 +64,18 @@ class CommunityRepository {
     await api.request(enabled ? 'POST' : 'DELETE', '/users/${user.id}/follow');
   }
 
-  Future<Map<String, dynamic>> home() async =>
-      Map<String, dynamic>.from(await api.request('GET', '/discover/home'));
+  Future<Map<String, dynamic>> home({int? utcOffsetMinutes}) async {
+    final offset = (utcOffsetMinutes ?? DateTime.now().timeZoneOffset.inMinutes)
+        .clamp(-720, 840);
+    return Map<String, dynamic>.from(
+      await api.request(
+        'GET',
+        '/discover/home',
+        query: {'utcOffsetMinutes': '$offset'},
+      ),
+    );
+  }
+
   Future<List<String>> genres() async =>
       ((await api.request('GET', '/genres')) as List)
           .map((item) => item['name'] as String)

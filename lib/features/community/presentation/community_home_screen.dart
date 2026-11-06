@@ -7,10 +7,12 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
+import '../../home/domain/music_recommendation.dart';
 import '../../home/domain/song.dart';
 import '../application/community_providers.dart';
 import 'community_widgets.dart';
 import 'music_components.dart';
+import 'recommendation_copy.dart';
 
 class CommunityHomeScreen extends ConsumerStatefulWidget {
   const CommunityHomeScreen({super.key});
@@ -155,7 +157,10 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        t.v3RecommendationNote,
+                        recommendationDescription(
+                          t,
+                          HomeRecommendation.tryParse(data['recommendation']),
+                        ),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.secondaryText,
@@ -165,7 +170,10 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                   if (selected.isEmpty)
                     const CommunityEmpty()
                   else
-                    SongArtworkRail(songs: selected),
+                    SongArtworkRail(
+                      songs: selected,
+                      showRecommendationReasons: feed == 'recommended',
+                    ),
                   if (fresh.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     SectionHeading(

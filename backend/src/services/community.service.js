@@ -1,9 +1,14 @@
 import { HttpError } from "../utils/http-error.js";
+import {
+  rankRecommendations,
+  recommendationContext,
+} from "./recommendation.service.js";
 
 export const createCommunityService = ({
   repository: r,
   storage,
   cleanupService,
+  now = () => new Date(),
 }) => {
   const missing = () =>
     new HttpError(404, "RESOURCE_NOT_FOUND", "Content is unavailable.");
@@ -54,6 +59,9 @@ export const createCommunityService = ({
     likeCount: Number(row.like_count || 0),
     saveCount: Number(row.save_count || 0),
     score: Number(row.score || 0),
+    ...(row.recommendation_reason
+      ? { recommendationReason: row.recommendation_reason }
+      : {}),
   });
   const playlist = (row) => ({
     id: row.id,
@@ -137,23 +145,32 @@ export const createCommunityService = ({
           name: row.genre,
           songCount: Number(row.song_count),
         })),
-      home: async (owner) => {
+      home: async (owner, { utcOffsetMinutes = 420 } = {}) => {
         const filters = { limit: 8, offset: 0 };
-        const [fresh, following, recommended, recent, popular] =
+        const at = now();
+        const [fresh, following, candidates, recent, popular] =
           await Promise.all([
             r.tracks(owner, filters),
             r.tracks(owner, { ...filters, feed: true }),
-            r.tracks(owner, { ...filters, recommended: true }),
+            r.recommendations(owner, { utcOffsetMinutes, at }),
             r.tracks(owner, { ...filters, recent: true }),
             r.trending(owner, { ...filters, period: "week" }),
           ]);
+        const recommendations = rankRecommendations(
+          candidates,
+          recommendationContext(at, utcOffsetMinutes),
+        );
         return {
           newReleases: fresh.slice(0, 8).map(song),
           following: following.slice(0, 8).map(song),
-          recommended: recommended.slice(0, 8).map(song),
+          recommended: recommendations.items.map(song),
           recent: recent.slice(0, 8).map(song),
           popular: popular.slice(0, 8).map(song),
-          recommendationReason: "liked-genres-then-newest",
+          recommendation: recommendations.metadata,
+          recommendationReason:
+            recommendations.metadata.strategy === "personalized"
+              ? "listening-preferences-v1"
+              : "new-releases",
         };
       },
       search: async (owner, filters) => {

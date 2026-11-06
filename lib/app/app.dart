@@ -9,6 +9,7 @@ import '../core/config/app_mode.dart';
 import '../features/auth/presentation/web_auth_stub.dart'
     if (dart.library.js_interop) '../features/auth/presentation/web_auth.dart';
 import '../features/auth/presentation/session_scope.dart';
+import '../features/auth/presentation/native_auth_screen.dart';
 import '../features/auth/domain/auth_session.dart';
 import '../features/home/application/catalog_provider.dart';
 import '../features/explore/domain/discovery.dart';
@@ -29,7 +30,6 @@ import '../features/community/application/community_providers.dart';
 import '../features/community/presentation/queue_screen.dart';
 import '../l10n/l10n.dart';
 import '../core/widgets/aurora_widgets.dart';
-import '../core/widgets/authentication_header.dart';
 import 'theme/app_theme.dart';
 
 GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
@@ -245,16 +245,7 @@ class SoundShareApp extends ConsumerWidget {
           signOut: authState.signOut,
           child: appContent,
         ),
-        signedOutBuilder: (context, _) => const AuthenticationScaffold(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AuthenticationHeader(),
-              SizedBox(height: 28),
-              ClerkErrorListener(child: ClerkAuthentication()),
-            ],
-          ),
-        ),
+        signedOutBuilder: (context, _) => const NativeAuthScreen(),
       );
     },
   );

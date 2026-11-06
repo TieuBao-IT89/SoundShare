@@ -1,3 +1,5 @@
+import 'music_recommendation.dart';
+
 class Song {
   const Song({
     this.id,
@@ -11,6 +13,7 @@ class Song {
     this.validPlays = 0,
     this.likeCount = 0,
     this.resumePositionMs = 0,
+    this.recommendationReason,
     required this.title,
     required this.artist,
     required this.artwork,
@@ -27,6 +30,7 @@ class Song {
   final String? username, uploaderId;
   final String visibility, description;
   final int validPlays, likeCount, resumePositionMs;
+  final SongRecommendationReason? recommendationReason;
   String get identity => id ?? '$title|$artist';
 
   factory Song.fromJson(Map<String, dynamic> data) => Song(
@@ -47,6 +51,9 @@ class Song {
     validPlays: (data['validPlayCount'] as num? ?? 0).toInt(),
     likeCount: (data['likeCount'] as num? ?? 0).toInt(),
     resumePositionMs: (data['resumePositionMs'] as num? ?? 0).toInt(),
+    recommendationReason: SongRecommendationReason.tryParse(
+      data['recommendationReason'],
+    ),
   );
   final String artist;
   final String artwork;

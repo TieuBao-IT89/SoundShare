@@ -2,6 +2,8 @@
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
+**OBSIDIAN WAVE V5** bổ sung welcome và trang xác thực toàn màn hình: desktop split layout, mobile một cột, visual sóng âm tự thiết kế. Clerk SignIn/SignUp được nhúng tại `auth.html`, giữ các bước xác minh/khôi phục/MFA do Clerk quản lý và tách hash khỏi Flutter. Không thay backend/token policy. [Audit V5](docs/ui/obsidian-wave-v5-audit.md) và [QA/Before–After, giới hạn nghiệm thu](docs/ui/obsidian-wave-v5-review.md).
+
 Bản giao diện **OBSIDIAN PULSE V4** tổ chức lại Trang chủ/Khám phá quanh artwork thật, thêm topbar và playback dock trên desktop, queue dạng panel/drawer, hồ sơ có cover và thư viện/playlist mới. Player tiếp tục dùng chung AudioPlayer; “Phát tất cả”/“Phát ngẫu nhiên” đọc đủ trang playlist trước khi đổi queue. Không có migration hoặc thay đổi API cho V4. Xem [audit V4](docs/ui/obsidian-pulse-v4-audit.md) và [báo cáo kiểm tra V4](docs/ui/obsidian-pulse-v4-review.md).
 
 SoundShare là ứng dụng Flutter để nghe, khám phá và chia sẻ bản thu độc lập. V3 **NOCTURNE** bổ sung hồ sơ `@username`, follow, khám phá/trending, playlist và chia sẻ public/private trên nền thư viện riêng hiện có. Flutter gọi Express; Clerk xác thực, Neon giữ metadata và Cloudinary giữ file authenticated. Các bài cũ tiếp tục riêng tư.
@@ -12,6 +14,7 @@ Giao diện **NOCTURNE** dùng tiếng Việt, nền gần đen, điểm nhấn 
 
 ## Tính năng
 
+- **Dành riêng cho bạn:** gợi ý theo lịch sử nghe hợp lệ, thích/lưu, thể loại, creator đang theo dõi và thói quen khung giờ; có lý do và trạng thái tài khoản mới rõ ràng. Baseline chấm điểm ở backend, chưa huấn luyện mô hình ML. Cần migration index 005; xem [hướng dẫn và giới hạn](docs/personalized-recommendations.md).
 - Giao diện nghe nhạc nền tối, thích ứng với màn hình, có màn hình khởi động và thanh điều hướng dưới.
 - Trang chủ biên tập, khám phá theo thể loại, trending theo khoảng thời gian, tìm bài hát/tài khoản/playlist qua REST API. Nội dung cộng đồng chỉ lấy bài public/active; thư viện riêng vẫn được giữ.
 - Hồ sơ SoundShare có @username duy nhất, tìm kiếm không phân biệt hoa/thường, follow/unfollow và danh sách người theo dõi có phân trang.

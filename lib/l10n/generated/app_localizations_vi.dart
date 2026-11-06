@@ -573,6 +573,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get signIn => 'Đăng nhập';
 
   @override
+  String get authTagline => 'Âm nhạc kết nối cảm xúc.';
+
+  @override
+  String get authHeadline => 'Không gian âm nhạc của riêng bạn.';
+
+  @override
+  String get authDescription =>
+      'Khám phá, chia sẻ và kết nối cùng những người yêu âm nhạc.';
+
+  @override
+  String get authContinue => 'Đăng nhập hoặc tạo tài khoản';
+
+  @override
   String get signUp => 'Tạo tài khoản';
 
   @override
@@ -609,8 +622,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get openingLibrary => 'Đang mở thư viện';
 
   @override
-  String get verifyingSession =>
-      'Đang xác minh tài khoản và mở thư viện của bạn…';
+  String get verifyingSession => 'Đang kết nối tài khoản của bạn…';
 
   @override
   String get libraryOpenFailed => 'Chưa mở được thư viện. Hãy thử lại.';
@@ -1300,11 +1312,64 @@ class AppLocalizationsVi extends AppLocalizations {
   String get v3FollowingFeed => 'Từ người bạn theo dõi';
 
   @override
-  String get v3ForYou => 'Gợi ý để bắt đầu';
+  String get v3ForYou => 'Dành riêng cho bạn';
 
   @override
   String get v3RecommendationNote =>
-      'Ưu tiên thể loại bạn đã thích, sau đó là bản thu mới. Chưa có lượt thích? Bắt đầu với những bài mới nhất.';
+      'Khám phá những bản thu công khai trong cộng đồng SoundShare.';
+
+  @override
+  String get recommendationPersonalized =>
+      'Gợi ý từ lịch sử nghe, bài đã thích/lưu và tài khoản bạn theo dõi, có xét thói quen nghe theo thời điểm.';
+
+  @override
+  String get recommendationNewListener =>
+      'Bắt đầu với các bản thu mới. Nghe, thích, lưu và theo dõi để gợi ý dần phù hợp với bạn.';
+
+  @override
+  String recommendationListeningTimeGenre(String genre, String daypart) {
+    return 'Bạn hay nghe $genre $daypart';
+  }
+
+  @override
+  String get recommendationListeningTime => 'Từ thói quen nghe theo thời điểm';
+
+  @override
+  String get recommendationAtNight => 'ban đêm';
+
+  @override
+  String get recommendationInMorning => 'buổi sáng';
+
+  @override
+  String get recommendationInAfternoon => 'buổi chiều';
+
+  @override
+  String get recommendationInEvening => 'buổi tối';
+
+  @override
+  String recommendationLikedGenre(String genre) {
+    return '$genre từ những bài bạn thích';
+  }
+
+  @override
+  String get recommendationLikedGenreFallback => 'Cùng thể loại bài bạn thích';
+
+  @override
+  String get recommendationListeningHistory => 'Từ những bài bạn đã nghe';
+
+  @override
+  String get recommendationFollowing => 'Từ người bạn theo dõi';
+
+  @override
+  String recommendationSavedGenre(String genre) {
+    return '$genre từ những bài bạn lưu';
+  }
+
+  @override
+  String get recommendationSavedGenreFallback => 'Cùng thể loại bài bạn lưu';
+
+  @override
+  String get recommendationNewRelease => 'Bản thu mới để bạn khám phá';
 
   @override
   String get v3SearchHint => 'Bài hát, nghệ sĩ hoặc @username';
