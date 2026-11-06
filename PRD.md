@@ -9,6 +9,8 @@ Cơ sở dữ liệu: Neon PostgreSQL
 Authentication: Clerk, dịch vụ xác thực độc lập
 Cloud Storage: Cloudinary, dịch vụ lưu trữ file độc lập
 
+V4 — OBSIDIAN PULSE (presentation trên nền V3): năm khu vực chính giữ nguyên. Dưới 768 px dùng bottom navigation/mini player; 768–1099 px dùng rail; từ 1100 px dùng sidebar 224 px và topbar tìm kiếm/tài khoản/đăng nhạc. Dock dùng cùng AudioPlayer, có tiến trình, volume trên màn hình đủ rộng và queue đóng/mở; queue là panel từ 1360 px, drawer trên tablet. Player desktop chia artwork và controls thành hai cột khi đủ không gian. Home có featured tối đa ba bài thật và rail gợi ý; Discovery có Top 3 theo bộ lọc hiện tại, creator và genre từ API. Playlist phát tất cả/ngẫu nhiên phải đọc toàn bộ các trang được server cấp quyền trước khi thay queue; lỗi trang bất kỳ không phát một danh sách thiếu. Backend, authentication, visibility, ranking và schema không đổi. Chi tiết nghiệm thu nằm trong docs/ui/obsidian-pulse-v4-review.md.
+
 1. Tổng quan sản phẩm
    SoundShare là ứng dụng âm nhạc hướng đến trải nghiệm khám phá, nghe và chia sẻ âm nhạc. Ứng dụng tập trung đưa việc nghe nhạc từ một hoạt động cá nhân thành trải nghiệm có thể khám phá và chia sẻ với người khác.
 

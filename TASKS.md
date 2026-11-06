@@ -7,6 +7,17 @@
 
 ---
 
+## OBSIDIAN PULSE V4 — cập nhật 06/11/2026
+
+Trạng thái V4 căn cứ vào [audit](docs/ui/obsidian-pulse-v4-audit.md), [báo cáo QA](docs/ui/obsidian-pulse-v4-review.md) và [điều chỉnh menu tài khoản](docs/ui/profile-account-menu-review.md).
+
+- [x] Design system V4, Home/Discovery/Search/Profile/Library/Upload và shell thích ứng mobile/tablet/desktop.
+- [x] Dock, mini player, Now Playing và queue dùng chung AudioPlayer; playlist đọc đủ trang trước khi thay hàng đợi.
+- [x] Menu tài khoản trên hồ sơ của mình dùng launcher Clerk và luồng đăng xuất hiện có; kiểm tra loading, retry và lỗi an toàn.
+- [x] Bổ sung widget tests, công cụ QA và ảnh browser từ fixture biệt lập; cập nhật README/DESIGN/PRD.
+- [x] Kiểm tra lại trước PR: Dart format không đổi 33 file, Flutter analyze sạch, 174/174 Flutter tests và 12/12 JavaScript tests đạt.
+- [ ] Nghiệm thu Android/iOS thật, screen reader và hiệu năng trên thiết bị tầm trung; chạy lại Clerk/Cloudinary thật cho V4.
+
 ## NOCTURNE V3 — cập nhật 06/11/2026
 
 Phần theo dõi bên dưới là backlog lịch sử. Trạng thái V3 căn cứ vào [audit](docs/ui/nocturne-v3-audit.md), [hướng dẫn vận hành](docs/nocturne-v3.md) và [báo cáo kiểm tra](docs/ui/nocturne-v3-review.md).

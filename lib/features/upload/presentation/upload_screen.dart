@@ -11,7 +11,6 @@ import '../../../app/theme/app_theme.dart';
 import '../../../core/services/api_client.dart';
 import '../../../core/services/upload_control.dart';
 import '../../../core/widgets/aurora_widgets.dart';
-import '../../../core/widgets/catalog_widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/track_draft.dart';
 
@@ -235,13 +234,18 @@ class _UploadScreenState extends State<UploadScreen> {
                           32,
                         ),
                         children: [
-                          AuroraReveal(
-                            child: ScreenHeading(
-                              eyebrow: t.uploadEyebrow,
-                              title: t.uploadTitle,
-                              subtitle: widget.onUpload == null
-                                  ? t.uploadDemoSubtitle
-                                  : t.uploadSubtitle,
+                          Text(
+                            t.uploadTitle,
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.onUpload == null
+                                ? t.uploadDemoSubtitle
+                                : t.uploadSubtitle,
+                            style: const TextStyle(
+                              color: AppColors.secondaryText,
+                              fontSize: 13,
                             ),
                           ),
                           const SizedBox(height: 28),
@@ -544,7 +548,8 @@ class _UploadScreenState extends State<UploadScreen> {
 
   Widget _detailsSection() {
     final t = context.l10n;
-    return GlassCard(
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

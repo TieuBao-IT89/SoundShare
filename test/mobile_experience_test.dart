@@ -150,9 +150,9 @@ void main() {
       expect(container.read(currentSongIndexProvider), 3);
       await tapVisible(tester, find.byTooltip(appCopy.nextTrack));
       expect(container.read(currentSongIndexProvider), 0);
-      await tapVisible(tester, find.text(appCopy.repeat));
+      await tapVisible(tester, find.byTooltip(appCopy.repeat));
       expect(player.loop, LoopMode.one);
-      await tapVisible(tester, find.text(appCopy.shuffle));
+      await tapVisible(tester, find.byTooltip(appCopy.shuffle));
       expect(player.shuffleOn, isTrue);
       await tapVisible(tester, find.byTooltip(appCopy.nextTrack));
       expect(container.read(currentSongIndexProvider), isNot(0));

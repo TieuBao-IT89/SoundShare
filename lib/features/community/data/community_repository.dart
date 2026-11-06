@@ -143,6 +143,26 @@ class CommunityRepository {
           query: _page(offset),
         ),
       );
+
+  /// Resolve every authorized page before replacing playback. A failed page
+  /// leaves the existing queue intact; repeated offsets fail instead of looping.
+  Future<List<Song>> playlistQueue(String id) async {
+    final songs = <Song>[];
+    final seen = <String>{};
+    var offset = 0;
+    while (true) {
+      final data = await playlist(id, offset);
+      final page = CommunityPage.fromJson(data['tracks'], Song.fromJson);
+      for (final song in page.items) {
+        if (seen.add(song.identity)) songs.add(song);
+      }
+      final next = page.nextOffset;
+      if (next == null) return songs;
+      if (next <= offset) throw StateError('Invalid playlist pagination');
+      offset = next;
+    }
+  }
+
   Future<String> createPlaylist(String title, bool isPublic) async =>
       (await api.request(
             'POST',

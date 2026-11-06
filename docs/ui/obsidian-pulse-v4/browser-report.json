@@ -1,0 +1,150 @@
+{
+  "date": "2026-11-06",
+  "fixture": "Isolated PostgreSQL; synthetic audio/artwork; simulated Clerk SDK with server-verified RSA JWTs",
+  "scope": "Isolated QA data only. Functional flow and viewport captures use separate browser/database sessions.",
+  "releaseBundleSha256": "b5bd8cc174b4d6586a0b7d7e2522d8b1b4daa36b6e3a434b823a72e1bdb93aa9",
+  "flutterTests": 171,
+  "javascriptTests": 12,
+  "analyze": "No issues found",
+  "webReleaseBuild": "passed",
+  "viewports": [
+    320,
+    390,
+    430,
+    768,
+    1024,
+    1280,
+    1440
+  ],
+  "functionalChecks": [
+    "Search @username opens the correct profile; follow persists after reload",
+    "Creating a playlist through the actual dialog persists it in isolated PostgreSQL",
+    "Real 20-second synthetic audio plays across navigation and records a valid play via heartbeat",
+    "No failed API responses or uncaught browser exceptions"
+  ],
+  "viewportChecks": {
+    "320": [
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "390": [
+      "Seeded playlist plays through the actual Play all action",
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "430": [
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "768": [
+      "Queue opens/closes at 768px without a second audio player",
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "1024": [
+      "Queue opens/closes at 1024px without a second audio player",
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "1280": [
+      "Queue opens/closes at 1280px without a second audio player",
+      "Actual dock volume changes at 1280px",
+      "Global search submits @username at 1280px",
+      "No failed API responses or uncaught browser exceptions"
+    ],
+    "1440": [
+      "Queue opens/closes at 1440px without a second audio player",
+      "Actual dock volume changes at 1440px",
+      "Global search submits @username at 1440px",
+      "Seeded playlist plays through the actual Play all action",
+      "No failed API responses or uncaught browser exceptions"
+    ]
+  },
+  "screenshots": [
+    "discover-1024.png",
+    "discover-1280.png",
+    "discover-1440.png",
+    "discover-320.png",
+    "discover-390.png",
+    "discover-430.png",
+    "discover-768.png",
+    "discover-creators-1440.png",
+    "discover-creators-390.png",
+    "discover-genres-1440.png",
+    "discover-genres-390.png",
+    "home-1024.png",
+    "home-1280.png",
+    "home-1440.png",
+    "home-320.png",
+    "home-390.png",
+    "home-430.png",
+    "home-768.png",
+    "home-playing-1024.png",
+    "home-playing-1280.png",
+    "home-playing-1440.png",
+    "home-playing-320.png",
+    "home-playing-390.png",
+    "home-playing-430.png",
+    "home-playing-768.png",
+    "home-releases-1440.png",
+    "home-releases-390.png",
+    "library-1024.png",
+    "library-1280.png",
+    "library-1440.png",
+    "library-320.png",
+    "library-390.png",
+    "library-430.png",
+    "library-768.png",
+    "player-1024.png",
+    "player-1280.png",
+    "player-1440.png",
+    "player-320.png",
+    "player-390.png",
+    "player-430.png",
+    "player-768.png",
+    "playlist-1440.png",
+    "playlist-390.png",
+    "playlist-after-play-1440.png",
+    "playlist-after-play-390.png",
+    "playlist-created-390.png",
+    "playlist-dialog-390.png",
+    "profile-1024.png",
+    "profile-1280.png",
+    "profile-1440.png",
+    "profile-320.png",
+    "profile-390.png",
+    "profile-430.png",
+    "profile-768.png",
+    "profile-mini-player-390.png",
+    "public-profile-390.png",
+    "queue-1024.png",
+    "queue-1280.png",
+    "queue-1440.png",
+    "queue-768.png",
+    "search-1024.png",
+    "search-1280.png",
+    "search-1440.png",
+    "search-320.png",
+    "search-390.png",
+    "search-430.png",
+    "search-768.png",
+    "upload-1024.png",
+    "upload-1280.png",
+    "upload-1440.png",
+    "upload-320.png",
+    "upload-390.png",
+    "upload-430.png",
+    "upload-768.png",
+    "username-search-390.png"
+  ],
+  "artworkPixelCheck": [
+    "320px: decoded artwork present (3138 ring pixels)",
+    "390px: decoded artwork present (4892 ring pixels)",
+    "430px: decoded artwork present (5439 ring pixels)",
+    "768px: decoded artwork present (5381 ring pixels)",
+    "1024px: decoded artwork present (7023 ring pixels)",
+    "1280px: decoded artwork present (8611 ring pixels)",
+    "1440px: decoded artwork present (8881 ring pixels)"
+  ],
+  "apiFailures": [],
+  "uncaughtBrowserExceptions": [],
+  "limits": [
+    "No new real Clerk OTP or Cloudinary upload/delete acceptance in V4",
+    "No physical Android/iOS or native FPS audit"
+  ]
+}

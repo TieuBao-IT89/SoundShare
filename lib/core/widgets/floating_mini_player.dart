@@ -33,18 +33,18 @@ class FloatingMiniPlayer extends ConsumerWidget {
             key: const ValueKey('mini-player'),
             decoration: BoxDecoration(
               color: AppColors.surface.withValues(alpha: .97),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.border),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.violet.withValues(alpha: .12),
-                  blurRadius: 24,
+                  color: Colors.black.withValues(alpha: .16),
+                  blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -58,7 +58,7 @@ class FloatingMiniPlayer extends ConsumerWidget {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () => context.push('/player'),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(12),
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
                                 child: Row(

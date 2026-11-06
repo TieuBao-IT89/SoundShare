@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
-import '../../../core/config/api_config.dart';
-import '../../../core/services/api_client.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import '../../../core/widgets/artwork.dart';
 import '../../../l10n/l10n.dart';
-import '../../auth/presentation/account_management.dart';
 import '../application/community_providers.dart';
 import '../data/community_repository.dart';
 import 'community_widgets.dart';
+import 'profile_header.dart';
+import 'playlist_preview.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   const PublicProfileScreen({super.key, this.username});
@@ -54,121 +50,7 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
       key: PageStorageKey('profile-${p.id}'),
       padding: const EdgeInsets.all(24),
       children: [
-        if (p.cover.isNotEmpty)
-          LayoutBuilder(
-            builder: (context, bounds) => Artwork(
-              url: p.cover,
-              size: bounds.maxWidth,
-              height: 200,
-              radius: 8,
-            ),
-          ),
-        const SizedBox(height: 24),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Artwork(url: p.avatar, size: 96, radius: 50),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          p.displayName.isEmpty
-              ? ref.watch(authSessionProvider)?.name ?? t.accountName
-              : p.displayName,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        if (p.username != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              '@${p.username}',
-              style: const TextStyle(color: AppColors.mystic, fontSize: 16),
-            ),
-          ),
-        if (p.bio.isNotEmpty)
-          Text(p.bio, style: const TextStyle(color: AppColors.secondaryText)),
-        const SizedBox(height: 16),
-        if (p.username != null)
-          Wrap(
-            spacing: 20,
-            children: [
-              TextButton(
-                onPressed: () => context.push('/connections/${p.id}/followers'),
-                child: Text('${p.followers} ${t.v3Followers}'),
-              ),
-              TextButton(
-                onPressed: () => context.push('/connections/${p.id}/following'),
-                child: Text('${p.followingCount} ${t.v3Following}'),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text('${p.songs} ${t.v3Songs}'),
-              ),
-            ],
-          ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            if (p.isSelf)
-              FilledButton.icon(
-                onPressed: () => context.push('/profile/edit'),
-                icon: const Icon(Icons.edit_outlined),
-                label: Text(
-                  p.username == null ? t.v3CreateProfile : t.v3EditProfile,
-                ),
-              )
-            else
-              FollowButton(profile: p),
-            if (p.username != null)
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final origin = Uri.base.hasAuthority
-                      ? Uri.base.origin
-                      : ApiConfig.baseUrl;
-                  await Clipboard.setData(
-                    ClipboardData(text: '$origin/#/u/${p.username}'),
-                  );
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(t.v3Copied)));
-                  }
-                },
-                icon: const Icon(Icons.ios_share_rounded),
-                label: Text(t.v3ShareProfile),
-              ),
-            if (!p.isSelf)
-              TextButton(
-                onPressed: () => reportContent(context, ref, profileId: p.id),
-                child: Text(t.v3Report),
-              ),
-          ],
-        ),
-        if (p.isSelf) ...[
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () => context.push('/manage-songs'),
-                icon: const Icon(Icons.library_music_outlined),
-                label: Text(t.v3ManageSongs),
-              ),
-              const AccountManagementButton(),
-              TextButton.icon(
-                onPressed: () async {
-                  try {
-                    await ref.read(signOutProvider)();
-                  } catch (error) {
-                    if (context.mounted) communityError(context, error);
-                  }
-                },
-                icon: const Icon(Icons.logout_rounded),
-                label: Text(t.signOut),
-              ),
-            ],
-          ),
-        ],
+        ProfileHeader(profile: p),
         const SizedBox(height: 32),
         if (p.username == null)
           Text(
@@ -225,12 +107,10 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
               data: (data) => Column(
                 children: [
                   if ((data['items'] as List).isEmpty) const CommunityEmpty(),
-                  for (final item in data['items'] as List)
-                    ListTile(
-                      leading: const Icon(Icons.queue_music_rounded),
-                      title: Text(item['title'] as String),
-                      subtitle: Text('${item['songCount']} ${t.v3Songs}'),
-                      onTap: () => context.push('/playlists/${item['id']}'),
+                  if ((data['items'] as List).isNotEmpty)
+                    PlaylistGrid(
+                      items: (data['items'] as List)
+                          .cast<Map<String, dynamic>>(),
                     ),
                   CommunityPager(
                     offset: offset,

@@ -10,6 +10,7 @@ import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/application/catalog_provider.dart';
+import 'music_library_screen.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -25,6 +26,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget build(BuildContext context) {
     final t = context.l10n;
     final demo = ref.watch(demoModeProvider);
+    if (!demo) return const MusicLibraryScreen();
     final all = showAll ?? !demo;
     final catalog = ref.watch(catalogProvider);
     final liked = ref.watch(likedSongIndicesProvider);

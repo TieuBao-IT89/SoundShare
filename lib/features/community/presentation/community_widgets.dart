@@ -26,10 +26,46 @@ void communityError(BuildContext context, Object error) =>
 class CommunityEmpty extends StatelessWidget {
   const CommunityEmpty({super.key});
   @override
-  Widget build(BuildContext context) => EmptyState(
-    icon: Icons.graphic_eq_rounded,
-    title: context.l10n.v3NoContent,
-    message: context.l10n.v3NoContentDescription,
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 560),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(right: 16, top: 4),
+              child: Icon(
+                Icons.graphic_eq_rounded,
+                color: AppColors.cyan,
+                size: 28,
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.v3NoContent,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    context.l10n.v3NoContentDescription,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
   );
 }
 
@@ -180,19 +216,30 @@ class CreatorRow extends StatelessWidget {
                     if (profile.bio.isNotEmpty)
                       Text(
                         profile.bio,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.secondaryText,
                           fontSize: 12,
                         ),
                       ),
-                    Text(
-                      '${context.l10n.v3Followers}: ${profile.followers} · ${context.l10n.v3Songs}: ${profile.songs}',
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 12,
-                      ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final counter in [
+                          '${profile.followers} ${context.l10n.v3Followers}',
+                          '${profile.songs} ${context.l10n.v3Songs}',
+                        ])
+                          Text(
+                            counter,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.secondaryText,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -200,8 +247,7 @@ class CreatorRow extends StatelessWidget {
             ],
           ),
         );
-        return bounds.maxWidth < 360 ||
-                MediaQuery.textScalerOf(context).scale(14) > 20
+        return MediaQuery.textScalerOf(context).scale(14) > 22
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -275,8 +321,7 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
 
   @override
   Widget build(BuildContext context) {
-    final song = widget.song;
-    final t = context.l10n;
+    final song = widget.song, t = context.l10n;
     final active =
         ref.watch(hasSelectedSongProvider) &&
         ref.watch(currentSongProvider)?.identity == song.identity;
@@ -284,12 +329,14 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
         ref.watch(communityLikesProvider)[song.identity] ?? song.liked;
     final saved =
         ref.watch(communitySavesProvider)[song.identity] ?? song.saved;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
+    return LayoutBuilder(
+      builder: (context, bounds) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Material(
+          color: active ? AppColors.surface : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
             onTap: () {
               widget.onPlay?.call();
               ref
@@ -297,117 +344,188 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                   .playFrom(widget.queue, widget.index);
               context.push('/player');
             },
-            child: Row(
-              children: [
-                if (widget.rank != null)
-                  SizedBox(
-                    width: 32,
-                    child: Text(
-                      '${widget.rank}'.padLeft(2, '0'),
-                      style: const TextStyle(color: AppColors.secondaryText),
-                    ),
-                  ),
-                Artwork(url: song.artwork, size: 60, radius: 8),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        song.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  if (widget.rank != null)
+                    SizedBox(
+                      width: 28,
+                      child: Text(
+                        '${widget.rank}'.padLeft(2, '0'),
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: active ? AppColors.cyan : AppColors.text,
+                          color: widget.rank! <= 3
+                              ? AppColors.cyan
+                              : AppColors.secondaryText,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      Text(
-                        song.artist,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppColors.secondaryText),
-                      ),
-                      if (widget.showStats)
+                    ),
+                  Artwork(url: song.artwork, size: 48, radius: 8),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Text(
-                          '${song.validPlays} ${t.v3Views} · ${song.likeCount} ${t.v3Likes}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.secondaryText,
+                          song.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: active ? AppColors.cyan : AppColors.text,
                           ),
                         ),
-                    ],
+                        if (song.username == null)
+                          Text(
+                            song.artist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.secondaryText,
+                            ),
+                          )
+                        else
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              alignment: Alignment.centerLeft,
+                              minimumSize: const Size(48, 48),
+                            ),
+                            onPressed: () => context.push(
+                              '/u/${Uri.encodeComponent(song.username!)}',
+                            ),
+                            child: Text(
+                              '${song.artist} \u00b7 @${song.username}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.secondaryText,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        if (widget.showStats)
+                          Text(
+                            '${song.validPlays} ${t.v3Views} \u00b7 ${song.likeCount} ${t.v3Likes}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.secondaryText,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                Icon(
-                  active ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
-                  color: AppColors.mystic,
-                ),
-              ],
+                  if (bounds.maxWidth >= 600)
+                    IconButton(
+                      tooltip: liked ? t.unlikeSong : t.likeSong,
+                      onPressed: busy ? null : () => _interact('like'),
+                      icon: Icon(
+                        liked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                      ),
+                    ),
+                  if (bounds.maxWidth >= 340)
+                    IconButton(
+                      tooltip: saved ? t.v3RemoveSaved : t.v3SaveTrack,
+                      onPressed: busy ? null : () => _interact('save'),
+                      icon: Icon(
+                        saved
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded,
+                      ),
+                    ),
+                  SongActionMenu(song: song),
+                ],
+              ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(left: widget.rank == null ? 68 : 100),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                if (song.username != null)
-                  TextButton(
-                    onPressed: () => context.push(
-                      '/u/${Uri.encodeComponent(song.username!)}',
-                    ),
-                    child: Text('@${song.username}'),
-                  ),
-                IconButton(
-                  tooltip: liked ? t.unlikeSong : t.likeSong,
-                  onPressed: busy ? null : () => _interact('like'),
-                  icon: Icon(
-                    liked
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: liked ? AppColors.mystic : AppColors.secondaryText,
-                  ),
-                ),
-                IconButton(
-                  tooltip: saved ? t.v3RemoveSaved : t.v3SaveTrack,
-                  onPressed: busy ? null : () => _interact('save'),
-                  icon: Icon(
-                    saved
-                        ? Icons.bookmark_rounded
-                        : Icons.bookmark_border_rounded,
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  tooltip: t.v3More,
-                  onSelected: (value) async {
-                    if (value == 'queue') {
-                      ref.read(playbackActionsProvider).addToQueue(song);
-                      return;
-                    }
-                    if (value == 'playlist') {
-                      await choosePlaylist(context, ref, song);
-                      return;
-                    }
-                    if (value == 'report') {
-                      await reportContent(context, ref, trackId: song.id);
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(value: 'queue', child: Text(t.v3AddToQueue)),
-                    PopupMenuItem(
-                      value: 'playlist',
-                      child: Text(t.v3AddToPlaylist),
-                    ),
-                    PopupMenuItem(value: 'report', child: Text(t.v3Report)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class SongActionMenu extends ConsumerStatefulWidget {
+  const SongActionMenu({super.key, required this.song});
+  final Song song;
+  @override
+  ConsumerState<SongActionMenu> createState() => _SongActionMenuState();
+}
+
+class _SongActionMenuState extends ConsumerState<SongActionMenu> {
+  bool busy = false;
+  @override
+  Widget build(BuildContext context) {
+    final song = widget.song, t = context.l10n;
+    final liked =
+        ref.watch(communityLikesProvider)[song.identity] ?? song.liked;
+    final saved =
+        ref.watch(communitySavesProvider)[song.identity] ?? song.saved;
+    return PopupMenuButton<String>(
+      tooltip: t.v3More,
+      enabled: !busy,
+      onSelected: (value) async {
+        if (value == 'queue') {
+          ref.read(playbackActionsProvider).addToQueue(song);
+          return;
+        }
+        if (value == 'playlist') {
+          await choosePlaylist(context, ref, song);
+          return;
+        }
+        if (value == 'report') {
+          await reportContent(context, ref, trackId: song.id);
+          return;
+        }
+        if (value == 'profile') {
+          context.push('/u/${Uri.encodeComponent(song.username!)}');
+          return;
+        }
+        setState(() => busy = true);
+        final provider = value == 'like'
+            ? communityLikesProvider
+            : communitySavesProvider;
+        final enabled = value == 'like' ? liked : saved;
+        try {
+          await ref
+              .read(communityRepositoryProvider)
+              .interact(song, value, !enabled);
+          if (!mounted) return;
+          ref.read(provider.notifier).state = {
+            ...ref.read(provider),
+            song.identity: !enabled,
+          };
+          ref.invalidate(catalogProvider);
+          ref.invalidate(communityHomeProvider);
+          ref.invalidate(communitySongsProvider);
+        } catch (error) {
+          if (context.mounted) communityError(context, error);
+        } finally {
+          if (mounted) setState(() => busy = false);
+        }
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'like',
+          child: Text(liked ? t.unlikeSong : t.likeSong),
+        ),
+        PopupMenuItem(
+          value: 'save',
+          child: Text(saved ? t.v3RemoveSaved : t.v3SaveTrack),
+        ),
+        PopupMenuItem(value: 'queue', child: Text(t.v3AddToQueue)),
+        PopupMenuItem(value: 'playlist', child: Text(t.v3AddToPlaylist)),
+        if (song.username != null)
+          PopupMenuItem(value: 'profile', child: Text('@${song.username}')),
+        PopupMenuItem(value: 'report', child: Text(t.v3Report)),
+      ],
     );
   }
 }

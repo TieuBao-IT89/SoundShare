@@ -2,6 +2,8 @@
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
+Bản giao diện **OBSIDIAN PULSE V4** tổ chức lại Trang chủ/Khám phá quanh artwork thật, thêm topbar và playback dock trên desktop, queue dạng panel/drawer, hồ sơ có cover và thư viện/playlist mới. Player tiếp tục dùng chung AudioPlayer; “Phát tất cả”/“Phát ngẫu nhiên” đọc đủ trang playlist trước khi đổi queue. Không có migration hoặc thay đổi API cho V4. Xem [audit V4](docs/ui/obsidian-pulse-v4-audit.md) và [báo cáo kiểm tra V4](docs/ui/obsidian-pulse-v4-review.md).
+
 SoundShare là ứng dụng Flutter để nghe, khám phá và chia sẻ bản thu độc lập. V3 **NOCTURNE** bổ sung hồ sơ `@username`, follow, khám phá/trending, playlist và chia sẻ public/private trên nền thư viện riêng hiện có. Flutter gọi Express; Clerk xác thực, Neon giữ metadata và Cloudinary giữ file authenticated. Các bài cũ tiếp tục riêng tư.
 
 Xem [hướng dẫn NOCTURNE V3](docs/nocturne-v3.md), [kiểm kê/nguồn thiết kế](docs/ui/nocturne-v3-audit.md) và [kết quả kiểm tra V3](docs/ui/nocturne-v3-review.md). Cần chạy migration 004 và khởi động lại backend khi nâng cấp; tài liệu Mystic Aurora bên dưới là lịch sử nghiệm thu trước V3.
