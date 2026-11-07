@@ -49,6 +49,16 @@ Render cung cấp environment cho cả build và runtime, nhưng Dockerfile này
 
 ## Schema, Clerk và vòng đời service
 
+### Lỗi giải nén SDK trên Render
+
+Lần deploy đầu trên service `soundshare-783s.onrender.com` (commit `5221e54`) dừng tại `flutter precache --web`: GNU tar cố khôi phục owner `uid 397546, gid 5000` từ `gradle-wrapper.tgz` và Render trả `Cannot change ownership ... Invalid argument`. Thông báo Flutter gợi ý kiểm tra mạng là lỗi bọc ngoài; log cụ thể cho thấy bước giải nén bị từ chối quyền sở hữu.
+
+Builder đặt `TAR_OPTIONS=--no-same-owner` trước các lệnh Flutter để tar không khôi phục UID/GID của archive. Biến chỉ có trong stage Flutter, không đưa vào Node runtime; không đổi API URL, credential hoặc dữ liệu. Sau khi merge bản sửa vào nhánh `develop` mà service đang theo dõi, chọn **Manual Deploy → Deploy latest commit**. Chỉ xóa build cache nếu lần deploy mới vẫn dùng đầu vào cũ; cần kiểm tra commit và log mới trước khi coi lỗi đã hết.
+
+Đã tải đúng archive trong log, xác nhận metadata `(397546, 5000)` và giải nén bằng GNU tar 1.35 trên Windows với `TAR_OPTIONS=--no-same-owner` kế thừa qua môi trường: thành công, có `gradle-wrapper.jar` và `gradlew`. Kiểm tra này xác nhận tùy chọn và archive, không tái tạo namespace Linux của Render hoặc thay thế lần Docker build mới. Xem [tài liệu GNU tar về quyền sở hữu](https://www.gnu.org/software/tar/manual/tar.html).
+
+Service URL đã biết: `https://soundshare-783s.onrender.com`. Khi deploy, `CLERK_AUTHORIZED_PARTIES` phải chứa origin này; `WEB_API_BASE_URL` có thể bỏ trống để dùng cùng origin. Lỗi giải nén trên xảy ra trước startup, không chứng minh các cấu hình runtime hoặc schema đã hợp lệ.
+
 Server kiểm tra migration 001–006 trước khi mở cổng, không tự migrate khi startup. Chuẩn bị database staging trước lần deploy đầu: trong terminal riêng đã cấu hình biến môi trường của **staging**, chạy `npm --prefix backend run migrate`, sau đó `npm --prefix backend run db:check`. Không thay `.env` development đang dùng và không chạy lệnh này trên production. Có thể chạy cùng lệnh trong image với `docker run --rm --env-file C:\private\soundshare-staging.env soundshare-web npm run migrate` sau khi build. Chỉ đường dẫn file xuất hiện trong history, không có credential.
 
 Free không hỗ trợ pre-deploy command, shell hoặc one-off job; vì vậy phải chuẩn bị schema từ máy được cấp quyền trước khi khởi động service. Với môi trường trả phí, có thể cấu hình `preDeployCommand: npm run migrate` sau khi rà soát migration và xác nhận database đích. Không có migration tự động trong Blueprint hiện tại.
@@ -69,7 +79,7 @@ Sau khi Render báo deploy thành công, xác minh `/api/v1/health` trả `200`,
 - Kiểm tra bàn phím ở comment sheet, cuộn dọc/ngang, xoay màn hình, upload MP3 hợp lệ và thông báo lỗi khi sai loại/kích thước.
 - Đổi tab, khóa màn hình, trở lại và thử khi service vừa thức. Đây là Web Safari; chưa cam kết hành vi background/native lock screen của ứng dụng iOS.
 
-Không ghi token, signed URL, email thật hoặc chuỗi kết nối vào ảnh chụp/log nghiệm thu. Chỉ ghi phiên bản iOS, commit deploy, bước kiểm tra, HTTP status/error code an toàn và kết quả. Chưa có service URL hoặc kết quả Safari thật cho đến khi tài khoản Render được kết nối, environment được cấu hình và các bước này được chạy.
+Không ghi token, signed URL, email thật hoặc chuỗi kết nối vào ảnh chụp/log nghiệm thu. Chỉ ghi phiên bản iOS, commit deploy, bước kiểm tra, HTTP status/error code an toàn và kết quả. Service đã được tạo tại `https://soundshare-783s.onrender.com`, nhưng lần deploy đầu thất bại ở bước giải nén SDK; chưa có bản chạy thành công hoặc kết quả Safari thật.
 
 ## Kiểm tra bản chuẩn bị ngày 08/11/2026
 
@@ -84,4 +94,4 @@ Không ghi token, signed URL, email thật hoặc chuỗi kết nối vào ảnh
 | HTTP development: `/`, health, CanvasKit, auth thiếu token | Lần lượt 200 / 200 / 200 / 401; SHA-256 của JS phục vụ qua Express khớp bundle release mới |
 | Chrome headless mở bản release qua Express local | Trang chào hiển thị được; chưa kiểm tra phiên đăng nhập hoặc Safari thật. Ảnh local: `.local/safari-deploy-local-chrome.png` (không commit) |
 | Rà soát staged files và bundle với các secret backend đang cấu hình | Không phát hiện giá trị secret; `.env` không được track |
-| Docker build / service Render / Safari iPhone | Chưa chạy; máy không có Docker, người dùng chọn bỏ CI Docker; cần kết nối Render và cấu hình môi trường để tiếp tục |
+| Docker build / service Render / Safari iPhone | Máy local không có Docker, người dùng chọn bỏ CI. Render đã build lần đầu trên develop `5221e54`, thất bại khi giải nén Gradle Wrapper; đã chuẩn bị sửa TAR_OPTIONS, chờ build lại. Safari chưa nghiệm thu |
