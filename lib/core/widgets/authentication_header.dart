@@ -1,3 +1,5 @@
+import 'theme_mode_menu.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ class AuthenticationHeader extends StatelessWidget {
           ),
         ),
       ),
+      const SizedBox(width: 8),
+      const ThemeModeMenu(),
     ],
   );
 }
@@ -41,7 +45,7 @@ class AuthBrandPanel extends StatelessWidget {
       SizedBox(height: compact ? 28 : 56),
       Text(
         context.l10n.authTagline,
-        style: const TextStyle(color: AppColors.cyan, fontSize: 12),
+        style: TextStyle(color: context.colors.accentText, fontSize: 12),
       ),
       const SizedBox(height: 16),
       Text(
@@ -56,8 +60,8 @@ class AuthBrandPanel extends StatelessWidget {
       const SizedBox(height: 20),
       Text(
         context.l10n.authDescription,
-        style: const TextStyle(
-          color: AppColors.secondaryText,
+        style: TextStyle(
+          color: context.colors.secondaryText,
           fontSize: 15,
           height: 1.8,
         ),
@@ -65,8 +69,8 @@ class AuthBrandPanel extends StatelessWidget {
       SizedBox(
         height: compact ? 200 : 300,
         width: double.infinity,
-        child: const ExcludeSemantics(
-          child: CustomPaint(painter: _WaveCoverPainter()),
+        child: ExcludeSemantics(
+          child: CustomPaint(painter: _WaveCoverPainter(context.colors)),
         ),
       ),
     ],
@@ -119,7 +123,9 @@ class _AuthenticationScaffoldState extends State<AuthenticationScaffold> {
             Expanded(
               flex: 7,
               child: DecoratedBox(
-                decoration: const BoxDecoration(gradient: AppGradients.soft),
+                decoration: BoxDecoration(
+                  gradient: context.colors.featuredGradient,
+                ),
                 child: SafeArea(
                   child: Center(
                     child: SingleChildScrollView(
@@ -136,7 +142,7 @@ class _AuthenticationScaffoldState extends State<AuthenticationScaffold> {
             Expanded(
               flex: 5,
               child: ColoredBox(
-                color: AppColors.secondaryBackground,
+                color: context.colors.secondaryBackground,
                 child: SafeArea(
                   child: Center(
                     child: SingleChildScrollView(
@@ -158,7 +164,8 @@ class _AuthenticationScaffoldState extends State<AuthenticationScaffold> {
 }
 
 class _WaveCoverPainter extends CustomPainter {
-  const _WaveCoverPainter();
+  const _WaveCoverPainter(this.palette);
+  final AppPalette palette;
   @override
   void paint(Canvas canvas, Size size) {
     final scale = math.min(size.width / 420, size.height / 300);
@@ -167,12 +174,12 @@ class _WaveCoverPainter extends CustomPainter {
     canvas.scale(scale);
     canvas.rotate(-.16);
     final ink = Paint()
-      ..color = AppColors.border
+      ..color = palette.border
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(
       const Offset(84, 0),
       124,
-      Paint()..color = AppColors.background,
+      Paint()..color = palette.background,
     );
     for (var radius = 90.0; radius <= 124; radius += 8) {
       canvas.drawCircle(const Offset(84, 0), radius, ink);
@@ -183,14 +190,14 @@ class _WaveCoverPainter extends CustomPainter {
     );
     canvas.drawRRect(
       cover,
-      Paint()..shader = AppGradients.soft.createShader(cover.outerRect),
+      Paint()..shader = palette.featuredGradient.createShader(cover.outerRect),
     );
     canvas.drawRRect(cover, ink);
     final wave = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.6
-      ..shader = const LinearGradient(
-        colors: [AppColors.primary, AppColors.mystic, AppColors.cyan],
+      ..shader = LinearGradient(
+        colors: [palette.primary, palette.mystic, palette.cyan],
       ).createShader(cover.outerRect);
     for (var line = 0; line < 5; line++) {
       final path = Path();
@@ -208,5 +215,6 @@ class _WaveCoverPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _WaveCoverPainter oldDelegate) =>
+      oldDelegate.palette != palette;
 }

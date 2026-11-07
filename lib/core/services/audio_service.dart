@@ -66,12 +66,14 @@ class PlaybackActions {
   String? _loadedId;
   DateTime? _loadedAt;
   int _request = 0;
+  int _sourceGeneration = 0;
   bool _disposed = false;
   Timer? _heartbeat;
   StreamSubscription<PlayerState>? _completion;
   String? _playSessionId;
   bool _sendingHeartbeat = false;
   bool _validReported = false;
+  bool _pauseRequested = false;
 
   Future<void> playFrom(List<Song> songs, int index) async {
     if (songs.isEmpty) return;
@@ -102,6 +104,34 @@ class PlaybackActions {
     if (index < ref.read(currentSongIndexProvider)) {
       ref.read(currentSongIndexProvider.notifier).state--;
     }
+  }
+
+  /// Reorder the explicit queue without reloading or restarting current audio.
+  /// newIndex is the final position, matching onReorderItem's convention.
+  void reorderQueue(int oldIndex, int newIndex) {
+    final source =
+        ref.read(playbackQueueProvider) ??
+        ref.read(catalogProvider).valueOrNull ??
+        const <Song>[];
+    if (oldIndex < 0 ||
+        oldIndex >= source.length ||
+        newIndex < 0 ||
+        newIndex >= source.length) {
+      return;
+    }
+    if (oldIndex == newIndex) return;
+    final queue = [...source];
+    queue.insert(newIndex, queue.removeAt(oldIndex));
+    final current = ref.read(currentSongIndexProvider);
+    final nextCurrent = current == oldIndex
+        ? newIndex
+        : oldIndex < current && newIndex >= current
+        ? current - 1
+        : oldIndex > current && newIndex <= current
+        ? current + 1
+        : current;
+    ref.read(playbackQueueProvider.notifier).state = List.unmodifiable(queue);
+    ref.read(currentSongIndexProvider.notifier).state = nextCurrent;
   }
 
   Future<void> playQueued(int index) => _play(
@@ -154,6 +184,7 @@ class PlaybackActions {
 
   Future<void> _play(List<Song> songs, int index) async {
     if (songs.isEmpty) return;
+    _pauseRequested = false;
     final selected = index % songs.length;
     final song = songs[selected];
     final retry = ref.read(playbackErrorProvider) != null;
@@ -174,6 +205,7 @@ class PlaybackActions {
         final resumeAt = _loadedId == song.identity
             ? player.position
             : Duration(milliseconds: song.resumePositionMs);
+        final sourceGeneration = ++_sourceGeneration;
         _heartbeat?.cancel();
         unawaited(_completion?.cancel());
         _playSessionId = null;
@@ -188,10 +220,13 @@ class PlaybackActions {
         _completion = player.playerStateStream.listen((state) {
           if (state.processingState == ProcessingState.completed &&
               !_disposed &&
-              request == _request) {
+              sourceGeneration == _sourceGeneration) {
             unawaited(_sendHeartbeat(completed: true));
             final queue = ref.read(playbackQueueProvider);
-            if (queue != null && !ref.read(repeatEnabledProvider)) {
+            if (queue != null &&
+                state.playing &&
+                !_pauseRequested &&
+                !ref.read(repeatEnabledProvider)) {
               final current = ref.read(currentSongIndexProvider);
               if (ref.read(shuffleEnabledProvider) && queue.length > 1) {
                 unawaited(skip(1));
@@ -212,7 +247,9 @@ class PlaybackActions {
       }
       if (_disposed || request != _request) return;
       ref.read(playbackLoadingProvider.notifier).state = false;
-      unawaited(player.play().catchError((Object _) => _error(request)));
+      if (!_pauseRequested) {
+        unawaited(player.play().catchError((Object _) => _error(request)));
+      }
     } catch (_) {
       _loadedId = null;
       _error(request);
@@ -221,10 +258,20 @@ class PlaybackActions {
 
   Future<void> togglePlayback() async {
     final player = ref.read(audioPlayerProvider);
-    if (!player.playing) return playQueued(ref.read(currentSongIndexProvider));
+    if (!player.playing ||
+        player.processingState == ProcessingState.completed) {
+      return playQueued(ref.read(currentSongIndexProvider));
+    }
+    await pause();
+  }
+
+  Future<void> pause() async {
+    // A sleep deadline may occur while a signed URL or decoder is loading.
+    // Remember that intent so the outstanding request cannot start audio later.
+    _pauseRequested = true;
     try {
       unawaited(_sendHeartbeat());
-      await player.pause();
+      await ref.read(audioPlayerProvider).pause();
     } catch (_) {
       _error(_request);
     }

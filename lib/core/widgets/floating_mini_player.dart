@@ -32,12 +32,12 @@ class FloatingMiniPlayer extends ConsumerWidget {
           child: DecoratedBox(
             key: const ValueKey('mini-player'),
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: .97),
+              color: context.colors.surface.withValues(alpha: .97),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.colors.border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: .16),
+                  color: context.colors.shadow,
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -64,9 +64,12 @@ class FloatingMiniPlayer extends ConsumerWidget {
                                 child: Row(
                                   children: [
                                     HeroMode(
-                                      enabled: !MediaQuery.disableAnimationsOf(
-                                        context,
-                                      ),
+                                      enabled:
+                                          TickerMode.valuesOf(context)
+                                              .enabled &&
+                                          !MediaQuery.disableAnimationsOf(
+                                            context,
+                                          ),
                                       child: Hero(
                                         tag: 'current-artwork-${song.identity}',
                                         child: Artwork(
@@ -104,8 +107,10 @@ class FloatingMiniPlayer extends ConsumerWidget {
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               color: failed
-                                                  ? AppColors.error
-                                                  : AppColors.secondaryText,
+                                                  ? context.colors.error
+                                                  : context
+                                                        .colors
+                                                        .secondaryText,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -132,8 +137,8 @@ class FloatingMiniPlayer extends ConsumerWidget {
                                 : copy.resumeTrack,
                             onPressed: loading ? null : actions.togglePlayback,
                             style: IconButton.styleFrom(
-                              foregroundColor: AppColors.text,
-                              backgroundColor: AppColors.violet.withValues(
+                              foregroundColor: context.colors.mystic,
+                              backgroundColor: context.colors.violet.withValues(
                                 alpha: .16,
                               ),
                             ),

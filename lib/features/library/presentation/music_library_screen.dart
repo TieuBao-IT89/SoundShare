@@ -85,9 +85,9 @@ class MusicLibraryScreen extends ConsumerWidget {
                 ),
                 Text(
                   t.libraryPrivacyNote,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.secondaryText,
+                    color: context.colors.secondaryText,
                   ),
                 ),
                 const SizedBox(height: 8),

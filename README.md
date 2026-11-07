@@ -2,6 +2,8 @@
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
+**AURORA PEARL V6** bổ sung giao diện sáng ngọc trai, banner pastel và player ambient, giữ **OBSIDIAN PULSE** làm lựa chọn tối. **Công tắc giao diện** chuyển trực tiếp Sáng/Tối; nút **A** bên cạnh bật/tắt Theo hệ thống. Lựa chọn lưu trên thiết bị, lần đầu mặc định Sáng. Chuyển giao diện dùng cùng router, session và AudioPlayer. Xem [design system](DESIGN.md), [audit V6](docs/ui/aurora-pearl-v6-audit.md) và [kiểm tra/ảnh so sánh V6](docs/ui/aurora-pearl-v6-review.md).
+
 **OBSIDIAN WAVE V5** bổ sung welcome và trang xác thực toàn màn hình: desktop split layout, mobile một cột, visual sóng âm tự thiết kế. Clerk SignIn/SignUp được nhúng tại `auth.html`, giữ các bước xác minh/khôi phục/MFA do Clerk quản lý và tách hash khỏi Flutter. Không thay backend/token policy. [Audit V5](docs/ui/obsidian-wave-v5-audit.md) và [QA/Before–After, giới hạn nghiệm thu](docs/ui/obsidian-wave-v5-review.md).
 
 Bản giao diện **OBSIDIAN PULSE V4** tổ chức lại Trang chủ/Khám phá quanh artwork thật, thêm topbar và playback dock trên desktop, queue dạng panel/drawer, hồ sơ có cover và thư viện/playlist mới. Player tiếp tục dùng chung AudioPlayer; “Phát tất cả”/“Phát ngẫu nhiên” đọc đủ trang playlist trước khi đổi queue. Không có migration hoặc thay đổi API cho V4. Xem [audit V4](docs/ui/obsidian-pulse-v4-audit.md) và [báo cáo kiểm tra V4](docs/ui/obsidian-pulse-v4-review.md).

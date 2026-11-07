@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../app/theme/app_theme.dart';
-import '../../features/community/application/community_providers.dart';
-import '../../features/home/application/catalog_provider.dart';
 import '../../features/home/domain/song.dart';
 import '../../l10n/l10n.dart';
 import '../services/audio_service.dart';
+import '../services/song_favorite_service.dart';
 import 'music_progress_slider.dart';
 import 'listening_panel.dart';
+import 'player_sheet.dart';
 
 /// All controls read the existing player; these widgets own no playback state.
 class PlaybackToggle extends ConsumerWidget {
@@ -24,7 +24,9 @@ class PlaybackToggle extends ConsumerWidget {
       stream: player.playerStateStream,
       initialData: player.playerState,
       builder: (context, snapshot) {
-        final playing = snapshot.data?.playing ?? false;
+        final playing =
+            (snapshot.data?.playing ?? false) &&
+            snapshot.data?.processingState != ProcessingState.completed;
         return IconButton.filled(
           tooltip: busy
               ? context.l10n.loadingAudio
@@ -38,22 +40,35 @@ class PlaybackToggle extends ConsumerWidget {
               : ref.read(playbackActionsProvider).togglePlayback,
           style: IconButton.styleFrom(
             minimumSize: Size.square(large ? 72 : 48),
-            backgroundColor: AppColors.text,
-            foregroundColor: AppColors.background,
+            backgroundColor: context.colors.isDark
+                ? context.colors.text
+                : context.colors.action,
+            foregroundColor: context.colors.isDark
+                ? context.colors.background
+                : Colors.white,
           ),
           icon: AnimatedSwitcher(
             duration: MediaQuery.disableAnimationsOf(context)
                 ? Duration.zero
                 : const Duration(milliseconds: 180),
-            child: Icon(
-              busy
-                  ? Icons.hourglass_top_rounded
-                  : playing
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
-              key: ValueKey((busy, playing)),
-              size: large ? 36 : 26,
-            ),
+            child: busy
+                ? Icon(
+                    Icons.hourglass_top_rounded,
+                    key: const ValueKey('loading'),
+                    size: large ? 36 : 26,
+                  )
+                : TweenAnimationBuilder<double>(
+                    key: const ValueKey('play-pause'),
+                    tween: Tween(begin: playing ? 1 : 0, end: playing ? 1 : 0),
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 220),
+                    builder: (context, value, _) => AnimatedIcon(
+                      icon: AnimatedIcons.play_pause,
+                      progress: AlwaysStoppedAnimation(value),
+                      size: large ? 36 : 26,
+                    ),
+                  ),
           ),
         );
       },
@@ -73,7 +88,11 @@ class PlayerQueueButton extends ConsumerWidget {
           queuePanelVisibleProvider,
         );
       } else {
-        context.push('/queue');
+        showPlayerSheet<void>(
+          context,
+          (sheetContext) =>
+              ListeningPanel(onClose: () => Navigator.pop(sheetContext)),
+        );
       }
     },
     icon: const Icon(Icons.queue_music_rounded),
@@ -140,57 +159,48 @@ class PlaybackProgress extends ConsumerWidget {
   }
 }
 
-class SongFavoriteButton extends ConsumerStatefulWidget {
+Future<bool?> toggleSongFavorite(
+  BuildContext context,
+  WidgetRef ref,
+  Song song,
+) async {
+  try {
+    final liked = await ref.read(songFavoriteActionsProvider).toggle(song);
+    if (liked != null) HapticFeedback.selectionClick().ignore();
+    return liked;
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.likeSaveFailed)));
+    }
+    return null;
+  }
+}
+
+class SongFavoriteButton extends ConsumerWidget {
   const SongFavoriteButton({super.key, required this.song});
   final Song song;
   @override
-  ConsumerState<SongFavoriteButton> createState() => _SongFavoriteButtonState();
-}
-
-class _SongFavoriteButtonState extends ConsumerState<SongFavoriteButton> {
-  bool busy = false;
-  @override
-  Widget build(BuildContext context) {
-    final song = widget.song, index = ref.watch(currentSongIndexProvider);
-    final liked = song.community
-        ? ref.watch(communityLikesProvider)[song.identity] ?? song.liked
-        : ref.watch(likedSongIndicesProvider).contains(index);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final liked = ref.watch(songLikedProvider(song));
+    final busy = ref.watch(favoriteBusyProvider).contains(song.identity);
     return IconButton(
       tooltip: liked ? context.l10n.unlikeSong : context.l10n.likeSong,
       isSelected: liked,
-      icon: Icon(
-        liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+      icon: AnimatedSwitcher(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 180),
+        transitionBuilder: (child, animation) => ScaleTransition(
+          scale: animation,
+          child: FadeTransition(opacity: animation, child: child),
+        ),
+        child: Icon(
+          liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          key: ValueKey(liked),
+        ),
       ),
-      onPressed: busy
-          ? null
-          : () async {
-              setState(() => busy = true);
-              try {
-                await ref.read(songRepositoryProvider).favorite(song, !liked);
-                if (!mounted) return;
-                if (song.community) {
-                  ref.read(communityLikesProvider.notifier).state = {
-                    ...ref.read(communityLikesProvider),
-                    song.identity: !liked,
-                  };
-                  ref.invalidate(catalogProvider);
-                  ref.invalidate(communityHomeProvider);
-                  ref.invalidate(communitySongsProvider);
-                } else {
-                  final likes = {...ref.read(likedSongIndicesProvider)};
-                  liked ? likes.remove(index) : likes.add(index);
-                  ref.read(likedSongIndicesProvider.notifier).state = likes;
-                }
-              } catch (_) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(context.l10n.likeSaveFailed)),
-                  );
-                }
-              } finally {
-                if (mounted) setState(() => busy = false);
-              }
-            },
+      onPressed: busy ? null : () => toggleSongFavorite(context, ref, song),
     );
   }
 }

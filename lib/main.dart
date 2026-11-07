@@ -4,13 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
 import 'app/app.dart';
+import 'app/theme/theme_controller.dart';
 import 'core/config/clerk_config.dart';
 import 'l10n/clerk_vi.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  const app = ProviderScope(child: SoundShareApp());
+  final preferences = DeviceThemePreferenceStore();
+  final mode = await restoreThemeMode(preferences);
+  final app = ProviderScope(
+    overrides: [
+      initialThemeModeProvider.overrideWithValue(mode),
+      themePreferenceStoreProvider.overrideWithValue(preferences),
+    ],
+    child: const SoundShareApp(),
+  );
   final vietnamese = SoundShareClerkLocalizationsVi();
   runApp(
     ClerkConfig.isConfigured && !kIsWeb

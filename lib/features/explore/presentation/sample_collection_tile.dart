@@ -68,15 +68,15 @@ class SampleCollectionTile extends StatelessWidget {
                           semanticLabel: t.artworkFor(title),
                         )
                       else
-                        const Icon(
+                        Icon(
                           Icons.graphic_eq_rounded,
-                          color: AppColors.mystic,
+                          color: context.colors.mystic,
                           size: 32,
                         ),
                       const Spacer(),
-                      const Icon(
+                      Icon(
                         Icons.arrow_outward_rounded,
-                        color: AppColors.secondaryText,
+                        color: context.colors.secondaryText,
                         size: 22,
                       ),
                     ],
@@ -86,8 +86,10 @@ class SampleCollectionTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     localizedCollectionDescription(context, collection),
-                    style: Theme.of(context).textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.secondaryText, height: 1.5),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: context.colors.secondaryText,
+                      height: 1.5,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -95,7 +97,7 @@ class SampleCollectionTile extends StatelessWidget {
                         ? t.sampleCount(matches.length)
                         : t.trackCount(matches.length),
                     style: Theme.of(context).textTheme.labelMedium
-                        ?.copyWith(color: AppColors.cyan),
+                        ?.copyWith(color: context.colors.accentText),
                   ),
                 ],
               ),

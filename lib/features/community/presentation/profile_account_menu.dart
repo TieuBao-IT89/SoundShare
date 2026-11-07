@@ -50,7 +50,7 @@ class _ProfileAccountMenuState extends ConsumerState<ProfileAccountMenu> {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: AppColors.background.withValues(alpha: .85),
+    color: context.colors.background.withValues(alpha: .85),
     borderRadius: BorderRadius.circular(24),
     child: PopupMenuButton<_AccountAction>(
       tooltip: context.l10n.accountSection,
@@ -74,16 +74,12 @@ class _ProfileAccountMenuState extends ConsumerState<ProfileAccountMenu> {
           value: _AccountAction.signOut,
           child: Row(
             children: [
-              const Icon(
-                Icons.logout_rounded,
-                size: 20,
-                color: AppColors.error,
-              ),
+              Icon(Icons.logout_rounded, size: 20, color: context.colors.error),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   context.l10n.signOut,
-                  style: const TextStyle(color: AppColors.error),
+                  style: TextStyle(color: context.colors.error),
                 ),
               ),
             ],

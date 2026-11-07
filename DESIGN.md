@@ -1,4 +1,26 @@
-# SoundShare — OBSIDIAN PULSE V4
+# SoundShare — AURORA PEARL V6 / OBSIDIAN PULSE
+
+V6 đặt artwork của người sáng tạo trên nền ngọc trai: typography slate rõ nét, thao tác violet đậm, cyan làm điểm nhấn và gradient pastel ở vùng khám phá. Giữ layout và hành vi V4/V5 bên dưới. Light có thiết kế riêng cho featured banner, player ambient, cover fallback, genre, surface/elevation và navigation; Dark tiếp tục dùng palette OBSIDIAN PULSE. [Audit](docs/ui/aurora-pearl-v6-audit.md) · [Kiểm tra và ảnh chạy thực tế](docs/ui/aurora-pearl-v6-review.md).
+
+| Token Light | Giá trị | Vai trò |
+|---|---|---|
+| Nền / surface / phụ | `#F7F8FC` / `#FFFFFF` / `#F0F2FA` | Ngọc trai, trắng và phân cấp bề mặt |
+| Vùng chọn | `#EFEAFF` | Navigation, chip, song row đang chọn |
+| Primary / deep | `#633BC9` / `#5A32BA` | Thao tác chính, focus và chữ nhấn |
+| Cyan / cyan cho chữ | `#007E91` / `#006D80` | Brand swatch / chữ nhỏ trên pastel đủ tương phản |
+| Chữ chính / phụ / subtle | `#172033` / `#526078` / `#65718B` | Tiêu đề, metadata và mô tả |
+| Border / divider / input | `#E4E6F2` / `#EDF0F6` / `#848CA3` | Viền trang trí / ngăn cách / nhận diện control |
+| Thành công / cảnh báo / lỗi | `#18794E` / `#986000` / `#B42342` | Phản hồi có nhãn |
+
+Featured dùng `#EEE4FF → #DDEBFF → #D4F5F4`; brand dùng `#633BC9 → #7C5DE0 → #3D8BEB`. Gradient có chữ trắng dùng các stop tối riêng `#633BC9 → #5A32BA → #5141AE`. Player hòa sắc artwork vào nền, giới hạn saturation 0,35 và tỷ lệ hòa 0,38 ở Light để chữ luôn nằm trên nền sáng; artwork và controls giữ riêng. Card Light trắng, viền mảnh và shadow slate 7%; Dark giữ surface đặc. Không dùng brand gradient làm nền cho mọi card.
+
+`AppPalette` là `ThemeExtension` của cả hai `ThemeData`. Widget lấy token từ `context.colors`, bao gồm painter, fallback ảnh, overlay, skeleton, navigation và player. `ThemeMode` do Riverpod điều khiển, lưu bằng `SharedPreferencesAsync` tại `soundshare.themeMode`, khôi phục trước `runApp`; giá trị hỏng/không đọc được trở về Light. Công tắc mặt trời/mặt trăng chuyển trực tiếp Sáng/Tối. Nút A bật/tắt Theo hệ thống và có trạng thái chọn rõ. Công tắc luôn phản ánh độ sáng đang hiển thị; gạt công tắc thoát chế độ tự động, tắt A giữ độ sáng hiện tại. Đổi theme ngay lập tức, không đổi router hoặc tạo lại container của phiên. `ThemePreferenceScope` truyền lựa chọn qua ranh giới container phiên riêng mà không thay lifecycle audio/dữ liệu.
+
+Web chạy `theme.js` đồng bộ trước CSS/Flutter, đọc cùng preference JSON để tránh flash nền sai; `html/body`, `color-scheme` và meta theme-color được cập nhật theo lựa chọn. Theme của tab khác được áp dụng khi mở lại/refresh. Clerk dùng Appearance variables tham chiếu CSS custom properties, nên đổi màu không unmount form OTP/recovery/MFA; native dùng `ClerkThemeExtension`. Công tắc và nút A cũng có ở trang xác thực Web, hỗ trợ bàn phím và focus rõ. SVG Pearl là biến thể sáng của vector sóng âm tự thiết kế, không thêm artwork thương mại.
+
+Be Vietnam Pro, tiếng Việt, các breakpoint 768/1100/1360, cùng AudioPlayer và toàn bộ data flow giữ như V4/V5. Tương phản màu thực có test; những bước cần tài khoản/OTP và thiết bị native được phân biệt trong báo cáo V6.
+
+## Nền tảng bố cục V4
 
 V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#10121D, surface #171A29/#23283B, brand #8957F7/#6D4DD7, blue/cyan #3D8BEB/#57D6DE; chữ #F7F7FA/#AAB1C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
 
@@ -49,6 +71,16 @@ V3 bổ sung Home editorial, discovery/trending có cửa sổ thời gian, tìm
 
 **Dành riêng cho bạn:** artwork vẫn dẫn nội dung; một dòng lý do dưới metadata giải thích thể loại đã thích/lưu, lịch sử nghe, khung giờ thường nghe hoặc creator đang theo dõi. Lý do chỉ nằm trong rail gợi ý, không nhân lên ở danh sách bài mới/feed follow. Mô tả phân biệt gợi ý cá nhân hóa và bài mới khi chưa có tín hiệu phù hợp. Không thêm nhãn “AI” hay hiệu ứng trang trí cho baseline chấm điểm. Khoảng cao dành cho lý do có tính font scaling; giữ thao tác phát và AudioPlayer hiện có. [Chi tiết](docs/personalized-recommendations.md).
 
+## Tìm kiếm dùng chung
+
+Thanh tìm kiếm lấy cảm hứng từ [Material 3 Search](https://m3.material.io/components/search/overview), [shadcn/ui Command](https://ui.shadcn.com/docs/components/command) và [Music App Search trên Dribbble của Bhavuk Thakur](https://dribbble.com/shots/14028793-Music-App-Search-screen-UI-UX). SoundShare dùng capsule nền Pearl/Obsidian, icon tìm kiếm dẫn đầu, focus ring violet, nút xóa và nút gửi truy vấn riêng khi có nội dung. Không thêm provider hoặc thư viện UI.
+
+`SoundShareSearchField` dùng chung cho topbar, Tìm kiếm cộng đồng và `MysticSearchBar` của thư viện/demo. Ctrl+K (⌘K trên macOS) focus ô tìm kiếm ở route/tab đang hiển thị; Esc bỏ focus. Keycap chỉ hiện khi đủ rộng và cỡ chữ phù hợp. Trên màn hình tìm kiếm, topbar không lặp ô nhập. Capsule tăng chiều cao theo cỡ chữ; mọi nút chạm tối thiểu 48 px, chuyển focus 180 ms và tắt với Reduce Motion.
+
+Trang tìm cộng đồng dẫn người nghe từ bài hát đến @người sáng tạo: tiêu đề editorial, bộ lọc có icon và lịch sử thành chip có thể chọn lại/xóa toàn bộ. Lịch sử vẫn chỉ trong phiên, không dựng gợi ý hoặc thống kê giả. Debounce 300 ms giữ nguyên; Enter/nút gửi thực thi ngay truy vấn đang nhập và ghi đúng lịch sử, kể cả trước khi debounce kết thúc. API, auth và player giữ luồng hiện tại.
+
+Ảnh widget, nguồn tham khảo và giới hạn nghiệm thu: [search refresh review](docs/ui/search-refresh-review.md).
+
 ## Ngôn ngữ và authentication
 
 Giao diện mặc định `vi`, dùng Flutter localization và `lib/l10n/app_vi.arb`; generated Dart được tạo bằng `flutter gen-l10n`. `context.l10n` cung cấp copy cho widget, cùng tài nguyên cung cấp thông báo API an toàn. Không dịch metadata người dùng.
@@ -62,6 +94,20 @@ Trên Web, điều hướng Clerk về hash route dùng `routerPush`/`routerRepl
 Quản lý tài khoản mở Clerk UserProfile trên Web hoặc ClerkUserButton trên native. Hồ sơ công khai SoundShare dùng `/users/me`, do người dùng tự chỉnh và liên kết bằng `sub` server đã xác minh. Không đồng bộ email, mật khẩu hay tên Clerk đè lên hồ sơ SoundShare. Đổi tên trong cùng phiên không khởi tạo lại nguồn phát/thư viện.
 
 ## Chuyển động, tiếp cận và kiểm tra
+
+Artwork trong Đang phát dùng `VinylRecordArtwork`: thân đĩa charcoal, 40 rãnh đồng tâm, nhãn tròn từ ảnh bìa bài hiện tại (70% đường kính), lỗ tâm nhỏ, viền có độ dày và bóng đổ tròn. Hướng tham khảo [Vinyl Music Player của Tom.vsx](https://dribbble.com/shots/14611479-Vinyl-Music-Player-App-UI-Concept) và [Vinyl Player của Ana Carolina Magalhães](https://dribbble.com/shots/27364872-Vinyl-Player-Music-Player-UI); giữ palette và controls SoundShare. Không thêm ảnh thương mại hoặc package animation.
+
+[Ảnh và kiểm tra Vinyl 2.0](docs/ui/vinyl-player-v2-review.md) ghi rõ bìa mẫu và giới hạn nghiệm thu chuyển động. [Bản vinyl đầu tiên](docs/ui/vinyl-player-review.md) là lịch sử thiết kế trước nâng cấp.
+
+Vinyl 2.0 đặt bản thu của người sáng tạo giữa một mâm đĩa kỹ thuật số: chất liệu đĩa là khung, ảnh bìa là điểm nhận diện. Nền dùng hai radial gradient tĩnh, lấy màu từ bitmap 32×32 cùng cache của artwork rồi chuyển màu trong 650 ms; giữ màu cũ trong lúc ảnh mới tải, dùng màu thương hiệu khi ảnh lỗi/thiếu/trung tính hoặc quá hạn 5 giây. Saturation giới hạn 0,35; Light hòa tối đa 0,38 vào nền sáng, Dark 0,35 vào nền tối. Không blur toàn màn hình hoặc lấy mẫu mỗi frame.
+
+Cần kim chỉ chạm vành ngoài, chuyển vào/ra trong 650 ms theo playing/ready. Pause, buffering, kết thúc hoặc lỗi đưa kim về nghỉ; ẩn trên đĩa nhỏ hơn 220 px và khi Reduce Motion. Double-tap đĩa và nút tim dùng chung thao tác lưu, khóa theo identity khi đang gửi; chỉ đổi trạng thái sau khi repository thành công. Vuốt ngang trong vùng đĩa chuyển bài, không tranh gesture với seek bar. Chạm tên creator hoặc username mở hồ sơ công khai.
+
+Nút hàng đợi trên điện thoại mở Bottom Sheet có Safe Area; tablet/desktop giữ drawer/panel hiện có. Chọn dòng để phát ngay, tay nắm kéo đổi thứ tự, bỏ bài chưa phát hoặc thêm bản hiện tại bằng nút playlist-add. Đổi thứ tự giữ đúng occurrence đang phát, kể cả bài trùng, không tải lại audio; queue chỉ tồn tại trong phiên. Nút lời mở trạng thái tiếng Việt chưa có dữ liệu vì API chưa cung cấp lyrics/timestamp; chưa có highlight hoặc cuộn đồng bộ. Hẹn giờ 15/30/60 phút dùng một deadline có thể thay/hủy, tạm dừng player hiện tại kể cả khi chuyển bài; hết giờ lúc đang tải ngăn audio tự phát muộn. Timer không lưu qua khởi động lại và chưa bảo đảm khi OS đình chỉ ứng dụng.
+
+Đĩa co theo chiều cao khả dụng để Play nằm trong vùng an toàn ở 320/360/390/430 px; text lớn hoặc màn hình ngang thấp vẫn cuộn được. Play/Pause morph 220 ms, tim chuyển trạng thái 180 ms, artwork cross-fade 500 ms; Reduce Motion bỏ các chuyển động này và animation của Bottom Sheet. Góc đĩa giữ qua thay đổi bố cục theo breakpoint.
+
+Đĩa quay thuận chiều kim đồng hồ, 12 giây/vòng, từ `AudioPlayer.playerStateStream` hiện có; chỉ quay khi playing/ready và không loading/lỗi. Pause, buffering, complete, Reduce Motion, route ẩn hoặc ứng dụng ở nền dừng đúng góc; resume tiếp tục từ góc đã giữ. Chỉ lớp đĩa/nhãn quay bằng `RotationTransition`, reflection/bóng đổ đứng yên; `RepaintBoundary` giữ bề mặt artwork ngoài các lần build theo frame. Ảnh thiếu/lỗi dùng fallback `Artwork`. Hero vẫn dùng tag bài hát hiện tại.
 
 Banner nội dung nổi bật ở Trang chủ/Khám phá tự trượt qua tối đa ba bài sau mỗi 5 giây, chuyển trong 250 ms và quay lại bài đầu sau bài cuối. Vuốt hoặc chọn chấm điều hướng bắt đầu lại chu kỳ sau khi chuyển xong. Tạm dừng tự trượt khi giữ chạm, rê chuột hoặc focus bàn phím trong banner, ứng dụng ở nền hay route/tab không hiển thị; khi quay lại chờ đủ chu kỳ mới. Không tự trượt khi chỉ có một bài, bật Reduce Motion hoặc hỗ trợ điều hướng tiếp cận; thao tác chọn thủ công vẫn hoạt động.
 

@@ -19,12 +19,12 @@ class PlaybackDock extends ConsumerWidget {
     }
     return Material(
       key: const ValueKey('mini-player'),
-      color: AppColors.secondaryBackground,
+      color: context.colors.secondaryBackground,
       child: SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.border)),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: context.colors.border)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: LayoutBuilder(
@@ -56,9 +56,9 @@ class PlaybackDock extends ConsumerWidget {
                             song.artist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.secondaryText,
+                              color: context.colors.secondaryText,
                             ),
                           ),
                         ],

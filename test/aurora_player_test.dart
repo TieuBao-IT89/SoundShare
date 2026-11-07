@@ -59,12 +59,12 @@ void main() {
         expect(audio.loads, 1);
 
         await tester.tap(find.text('Slow Motion').last);
-        await tester.pumpAndSettle();
+        await pumpPlaybackUi(tester);
         final slider = tester.widget<Slider>(find.byType(Slider));
         expect(slider.value, 65000);
         expect(slider.max, 180000);
         slider.onChanged!(90000);
-        await tester.pumpAndSettle();
+        await pumpPlaybackUi(tester);
         expect(audio.position, const Duration(seconds: 90));
         expect(find.text('1:30'), findsOneWidget);
 

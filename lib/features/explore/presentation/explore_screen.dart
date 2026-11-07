@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -70,6 +71,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final catalog = ref.watch(catalogProvider);
     return AppScaffold(
       child: ListView(
+        scrollCacheExtent: const ScrollCacheExtent.pixels(600),
         controller: scrollController,
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -224,10 +226,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     genre: genres[i],
                     width: width,
                     accent: switch (i % 4) {
-                      0 => AppColors.mystic,
-                      1 => AppColors.cyan,
-                      2 => AppColors.pink,
-                      _ => AppColors.violet,
+                      0 => context.colors.mystic,
+                      1 => context.colors.cyan,
+                      2 => context.colors.pink,
+                      _ => context.colors.violet,
                     },
                     selected:
                         genres[i].toLowerCase() == filters.genre?.toLowerCase(),
@@ -287,7 +289,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             child: Text(
               localizedCollectionDescription(context, collection),
               style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(color: AppColors.secondaryText),
+                  ?.copyWith(color: context.colors.secondaryText),
             ),
           ),
       ],
@@ -380,7 +382,7 @@ class _GenreChoice extends StatelessWidget {
         end: Alignment.bottomRight,
         colors: [
           accent.withValues(alpha: selected ? .32 : .18),
-          AppColors.surface.withValues(alpha: .8),
+          context.colors.surface.withValues(alpha: .8),
         ],
       ),
       borderRadius: BorderRadius.circular(16),
@@ -391,7 +393,7 @@ class _GenreChoice extends StatelessWidget {
       showCheckmark: false,
       backgroundColor: Colors.transparent,
       selectedColor: Colors.transparent,
-      side: BorderSide(color: selected ? accent : AppColors.border),
+      side: BorderSide(color: selected ? accent : context.colors.border),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: compact ? 8 : 16),
       label: SizedBox(

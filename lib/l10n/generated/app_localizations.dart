@@ -376,6 +376,18 @@ abstract class AppLocalizations {
   /// **'Xóa tìm kiếm'**
   String get clearSearch;
 
+  /// No description provided for @clearSearchHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa lịch sử'**
+  String get clearSearchHistory;
+
+  /// No description provided for @searchShortcut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhấn {shortcut} để tìm kiếm'**
+  String searchShortcut(String shortcut);
+
   /// No description provided for @combinedFilters.
   ///
   /// In vi, this message translates to:
@@ -2545,7 +2557,7 @@ abstract class AppLocalizations {
   /// No description provided for @v3SearchHint.
   ///
   /// In vi, this message translates to:
-  /// **'Bài hát, nghệ sĩ hoặc @username'**
+  /// **'Bài hát hoặc @username'**
   String get v3SearchHint;
 
   /// No description provided for @v3SearchIntro.
@@ -3117,6 +3129,102 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Nội dung nổi bật {position}/{total}'**
   String v4FeaturedPosition(int position, int total);
+
+  /// No description provided for @playerReorder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kéo để đổi thứ tự phát'**
+  String get playerReorder;
+
+  /// No description provided for @playerLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời bài hát'**
+  String get playerLyrics;
+
+  /// No description provided for @playerLyricsUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có lời bài hát cho bản thu này.'**
+  String get playerLyricsUnavailable;
+
+  /// No description provided for @playerRecordHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chạm hai lần để thích hoặc bỏ thích. Vuốt ngang để chuyển bài.'**
+  String get playerRecordHint;
+
+  /// No description provided for @playerSleepTimer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hẹn giờ dừng nhạc'**
+  String get playerSleepTimer;
+
+  /// No description provided for @playerSleepDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhạc sẽ tạm dừng khi hết thời gian đã chọn.'**
+  String get playerSleepDescription;
+
+  /// No description provided for @playerSleepUntil.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dừng nhạc lúc {time}'**
+  String playerSleepUntil(String time);
+
+  /// No description provided for @playerMinutes.
+  ///
+  /// In vi, this message translates to:
+  /// **'{minutes} phút'**
+  String playerMinutes(int minutes);
+
+  /// No description provided for @playerCancelTimer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy hẹn giờ'**
+  String get playerCancelTimer;
+
+  /// No description provided for @playerAddedToQueue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm vào danh sách phát.'**
+  String get playerAddedToQueue;
+
+  /// No description provided for @themeAppearance.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao diện'**
+  String get themeAppearance;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sáng'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tối'**
+  String get themeDark;
+
+  /// No description provided for @themeDarkMode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao diện tối'**
+  String get themeDarkMode;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo hệ thống'**
+  String get themeSystem;
+
+  /// No description provided for @themeSaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đổi giao diện nhưng chưa lưu được lựa chọn trên thiết bị. Hãy thử lại.'**
+  String get themeSaveFailed;
 }
 
 class _AppLocalizationsDelegate

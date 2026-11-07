@@ -1,3 +1,5 @@
+import '../../../core/widgets/theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,14 +43,8 @@ class ProfileHeader extends ConsumerWidget {
                           radius: 0,
                         )
                       : DecoratedBox(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.surfaceLight,
-                                AppColors.indigo,
-                                AppColors.secondaryBackground,
-                              ],
-                            ),
+                          decoration: BoxDecoration(
+                            gradient: context.colors.featuredGradient,
                           ),
                           child: Align(
                             alignment: p.isSelf
@@ -59,7 +55,9 @@ class ProfileHeader extends ConsumerWidget {
                               child: Icon(
                                 Icons.graphic_eq_rounded,
                                 size: 72,
-                                color: AppColors.text.withValues(alpha: .16),
+                                color: context.colors.text.withValues(
+                                  alpha: .16,
+                                ),
                               ),
                             ),
                           ),
@@ -68,7 +66,10 @@ class ProfileHeader extends ConsumerWidget {
                     const Positioned(
                       top: 12,
                       right: 12,
-                      child: ProfileAccountMenu(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [ThemeModeMenu(), ProfileAccountMenu()],
+                      ),
                     ),
                 ],
               ),
@@ -85,7 +86,10 @@ class ProfileHeader extends ConsumerWidget {
                 DecoratedBox(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.background, width: 5),
+                    border: Border.all(
+                      color: context.colors.background,
+                      width: 5,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(5),
@@ -108,7 +112,7 @@ class ProfileHeader extends ConsumerWidget {
                         if (p.username != null)
                           Text(
                             '@${p.username}',
-                            style: const TextStyle(color: AppColors.mystic),
+                            style: TextStyle(color: context.colors.mystic),
                           ),
                       ],
                     ),
@@ -123,7 +127,7 @@ class ProfileHeader extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
               p.bio,
-              style: const TextStyle(color: AppColors.secondaryText),
+              style: TextStyle(color: context.colors.secondaryText),
             ),
           ),
         if (p.username != null)

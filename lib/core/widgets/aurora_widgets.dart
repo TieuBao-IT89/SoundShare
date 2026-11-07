@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_theme.dart';
 import '../../l10n/l10n.dart';
+import 'soundshare_search_field.dart';
 
 class AuroraBackground extends StatelessWidget {
   const AuroraBackground({
@@ -15,7 +16,7 @@ class AuroraBackground extends StatelessWidget {
   final bool ambient;
   @override
   Widget build(BuildContext context) => DecoratedBox(
-    decoration: const BoxDecoration(gradient: AppGradients.background),
+    decoration: BoxDecoration(gradient: context.colors.backgroundGradient),
     child: Stack(
       children: [
         if (ambient) ...[
@@ -24,7 +25,7 @@ class AuroraBackground extends StatelessWidget {
             right: -140,
             child: IgnorePointer(
               child: _Glow(
-                color: AppColors.primary.withValues(alpha: .17),
+                color: context.colors.primary.withValues(alpha: .17),
                 size: 500,
               ),
             ),
@@ -34,7 +35,7 @@ class AuroraBackground extends StatelessWidget {
             left: -180,
             child: IgnorePointer(
               child: _Glow(
-                color: AppColors.cyan.withValues(alpha: .07),
+                color: context.colors.accentText.withValues(alpha: .07),
                 size: 480,
               ),
             ),
@@ -77,9 +78,21 @@ class GlassCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: padding,
     decoration: BoxDecoration(
-      color: gradient == null ? AppColors.surface : null,
+      color: gradient == null ? context.colors.surface : null,
       gradient: gradient,
       borderRadius: borderRadius ?? BorderRadius.circular(16),
+      border: context.colors.isDark
+          ? null
+          : Border.all(color: context.colors.border),
+      boxShadow: context.colors.isDark
+          ? null
+          : [
+              BoxShadow(
+                color: context.colors.shadow,
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
     ),
     child: Material(color: Colors.transparent, child: child),
   );
@@ -100,7 +113,9 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
-      color: onPressed == null ? AppColors.surfaceLight : AppColors.action,
+      color: onPressed == null
+          ? context.colors.surfaceLight
+          : context.colors.action,
       borderRadius: BorderRadius.circular(16),
     ),
     child: FilledButton(
@@ -109,7 +124,7 @@ class GradientButton extends StatelessWidget {
         backgroundColor: Colors.transparent,
         disabledBackgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        disabledForegroundColor: AppColors.secondaryText,
+        disabledForegroundColor: context.colors.secondaryText,
         shadowColor: Colors.transparent,
       ),
       child: Row(
@@ -154,10 +169,10 @@ class GradientIconButton extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      gradient: AppGradients.button,
+      gradient: context.colors.buttonGradient,
       boxShadow: [
         BoxShadow(
-          color: AppColors.primary.withValues(alpha: .22),
+          color: context.colors.primary.withValues(alpha: .22),
           blurRadius: 24,
           spreadRadius: selected ? 3 : 0,
         ),
@@ -169,7 +184,7 @@ class GradientIconButton extends StatelessWidget {
       style: IconButton.styleFrom(
         minimumSize: Size(size, size),
         foregroundColor: Colors.white,
-        disabledForegroundColor: AppColors.secondaryText,
+        disabledForegroundColor: context.colors.secondaryText,
       ),
       iconSize: size * .48,
       icon: Icon(icon),
@@ -190,7 +205,7 @@ class AuroraLogo extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (bounds) =>
-                AppGradients.primary.createShader(bounds),
+                context.colors.brandGradient.createShader(bounds),
             child: Icon(
               Icons.graphic_eq_rounded,
               size: size,
@@ -229,24 +244,11 @@ class MysticSearchBar extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
   @override
-  Widget build(BuildContext context) => TextField(
+  Widget build(BuildContext context) => SoundShareSearchField(
     controller: controller,
     onChanged: onChanged,
-    textInputAction: TextInputAction.search,
-    maxLength: 120,
-    decoration: InputDecoration(
-      labelText: context.l10n.searchLabel,
-      hintText: context.l10n.searchHint,
-      counterText: '',
-      prefixIcon: const Icon(Icons.search_rounded),
-      suffixIcon: controller.text.isEmpty
-          ? null
-          : IconButton(
-              tooltip: context.l10n.clearSearch,
-              onPressed: onClear,
-              icon: const Icon(Icons.close_rounded),
-            ),
-    ),
+    onClear: onClear,
+    enableShortcut: true,
   );
 }
 
@@ -393,9 +395,9 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
                     begin: Alignment(-3 + animation.value * 6, 0),
                     end: Alignment(-1 + animation.value * 6, 0),
                     colors: [
-                      AppColors.surfaceLight.withValues(alpha: 0),
-                      AppColors.secondaryText.withValues(alpha: .25),
-                      AppColors.surfaceLight.withValues(alpha: 0),
+                      context.colors.surfaceLight.withValues(alpha: 0),
+                      context.colors.secondaryText.withValues(alpha: .25),
+                      context.colors.surfaceLight.withValues(alpha: 0),
                     ],
                   ).createShader(bounds),
                   child: child,
@@ -408,7 +410,7 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: .8),
+                    color: context.colors.surface.withValues(alpha: .8),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -417,7 +419,7 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceLight,
+                          color: context.colors.surfaceLight,
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -431,7 +433,7 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
                               height: 10,
                               width: 130,
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceLight,
+                                color: context.colors.surfaceLight,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
@@ -440,7 +442,7 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
                               height: 8,
                               width: 84,
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceLight,
+                                color: context.colors.surfaceLight,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),

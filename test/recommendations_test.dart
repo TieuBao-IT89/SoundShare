@@ -9,7 +9,7 @@ import 'package:soundshare/features/home/domain/song.dart';
 import 'package:soundshare/l10n/l10n.dart';
 
 import 'community_test.dart' show CommunityFixture, showCommunity;
-import 'support/test_app.dart' show TestPlayer;
+import 'support/test_app.dart' show TestPlayer, pumpPlaybackUi;
 
 Map<String, dynamic> recommendationContext({
   String strategy = 'personalized',
@@ -198,7 +198,7 @@ void main() {
           .descendant(of: rail, matching: find.byType(InkWell))
           .first;
       await tester.tap(artwork);
-      await tester.pumpAndSettle();
+      await pumpPlaybackUi(tester);
       expect(audio.loads, 1);
       expect(audio.active, isTrue);
       expect(
@@ -249,6 +249,11 @@ void main() {
         fixture: fixture,
         size: const Size(320, 640),
         scale: 2,
+      );
+      await tester.scrollUntilVisible(
+        find.byType(SongArtworkRail),
+        250,
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.ensureVisible(find.byType(SongArtworkRail));
       await tester.pumpAndSettle();

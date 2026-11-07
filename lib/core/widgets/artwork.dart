@@ -33,7 +33,7 @@ class Artwork extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: url.isEmpty
-            ? _fallback()
+            ? _fallback(context)
             : kIsWeb
             ? Image(
                 image: artworkImageProvider(url),
@@ -43,8 +43,8 @@ class Artwork extends StatelessWidget {
                 frameBuilder: (context, child, frame, synchronous) =>
                     synchronous || frame != null
                     ? child
-                    : _fallback(loading: true),
-                errorBuilder: (_, _, _) => _fallback(),
+                    : _fallback(context, loading: true),
+                errorBuilder: (_, _, _) => _fallback(context),
               )
             : CachedNetworkImage(
                 imageUrl: url,
@@ -58,19 +58,19 @@ class Artwork extends StatelessWidget {
                 placeholder: (context, error) => Container(
                   width: size,
                   height: height ?? size,
-                  color: AppColors.surfaceLight,
-                  child: const Icon(
+                  color: context.colors.surfaceLight,
+                  child: Icon(
                     Icons.graphic_eq_rounded,
-                    color: AppColors.violet,
+                    color: context.colors.violet,
                   ),
                 ),
                 errorWidget: (context, error, stackTrace) => Container(
                   width: size,
                   height: height ?? size,
-                  color: AppColors.surfaceLight,
-                  child: const Icon(
+                  color: context.colors.surfaceLight,
+                  child: Icon(
                     Icons.music_note_rounded,
-                    color: AppColors.violet,
+                    color: context.colors.violet,
                   ),
                 ),
               ),
@@ -78,13 +78,13 @@ class Artwork extends StatelessWidget {
     ),
   );
 
-  Widget _fallback({bool loading = false}) => Container(
+  Widget _fallback(BuildContext context, {bool loading = false}) => Container(
     width: size,
     height: height ?? size,
-    color: AppColors.surfaceLight,
+    color: context.colors.surfaceLight,
     child: Icon(
       loading ? Icons.graphic_eq_rounded : Icons.music_note_rounded,
-      color: AppColors.violet,
+      color: context.colors.violet,
     ),
   );
 }

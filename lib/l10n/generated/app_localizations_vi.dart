@@ -168,6 +168,14 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clearSearch => 'Xóa tìm kiếm';
 
   @override
+  String get clearSearchHistory => 'Xóa lịch sử';
+
+  @override
+  String searchShortcut(String shortcut) {
+    return 'Nhấn $shortcut để tìm kiếm';
+  }
+
+  @override
   String get combinedFilters => 'Các lựa chọn được kết hợp với nhau';
 
   @override
@@ -1372,7 +1380,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get recommendationNewRelease => 'Bản thu mới để bạn khám phá';
 
   @override
-  String get v3SearchHint => 'Bài hát, nghệ sĩ hoặc @username';
+  String get v3SearchHint => 'Bài hát hoặc @username';
 
   @override
   String get v3SearchIntro => 'Một cái tên. Một thanh âm mới.';
@@ -1674,4 +1682,59 @@ class AppLocalizationsVi extends AppLocalizations {
   String v4FeaturedPosition(int position, int total) {
     return 'Nội dung nổi bật $position/$total';
   }
+
+  @override
+  String get playerReorder => 'Kéo để đổi thứ tự phát';
+
+  @override
+  String get playerLyrics => 'Lời bài hát';
+
+  @override
+  String get playerLyricsUnavailable => 'Chưa có lời bài hát cho bản thu này.';
+
+  @override
+  String get playerRecordHint =>
+      'Chạm hai lần để thích hoặc bỏ thích. Vuốt ngang để chuyển bài.';
+
+  @override
+  String get playerSleepTimer => 'Hẹn giờ dừng nhạc';
+
+  @override
+  String get playerSleepDescription =>
+      'Nhạc sẽ tạm dừng khi hết thời gian đã chọn.';
+
+  @override
+  String playerSleepUntil(String time) {
+    return 'Dừng nhạc lúc $time';
+  }
+
+  @override
+  String playerMinutes(int minutes) {
+    return '$minutes phút';
+  }
+
+  @override
+  String get playerCancelTimer => 'Hủy hẹn giờ';
+
+  @override
+  String get playerAddedToQueue => 'Đã thêm vào danh sách phát.';
+
+  @override
+  String get themeAppearance => 'Giao diện';
+
+  @override
+  String get themeLight => 'Sáng';
+
+  @override
+  String get themeDark => 'Tối';
+
+  @override
+  String get themeDarkMode => 'Giao diện tối';
+
+  @override
+  String get themeSystem => 'Theo hệ thống';
+
+  @override
+  String get themeSaveFailed =>
+      'Đã đổi giao diện nhưng chưa lưu được lựa chọn trên thiết bị. Hãy thử lại.';
 }

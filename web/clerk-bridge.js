@@ -62,14 +62,16 @@
           localization: window.soundshareClerkVi,
           ui: { ClerkUI: window.__internal_ClerkUICtor },
           appearance: {
-            variables: { colorPrimary: '#6D4DD7', colorPrimaryForeground: '#FFFFFF', colorBackground: '#10121D', colorInput: '#171A29', colorForeground: '#F7F7FA', colorInputForeground: '#F7F7FA', colorMutedForeground: '#AAB1C4', colorDanger: '#F47187', fontFamily: 'BeVietnamPro, sans-serif', fontSize: '14px', borderRadius: '.625rem' },
+            // Supported Appearance variables reference our root tokens. A theme
+            // change updates mounted OTP/recovery/account UI without a remount.
+            variables: { colorPrimary: 'var(--auth-action)', colorPrimaryForeground: '#FFFFFF', colorBackground: 'var(--auth-surface)', colorInput: 'var(--auth-input)', colorForeground: 'var(--auth-text)', colorInputForeground: 'var(--auth-text)', colorMutedForeground: 'var(--auth-muted)', colorBorder: 'var(--auth-field-border)', colorDanger: 'var(--auth-error)', colorSuccess: 'var(--auth-cyan)', fontFamily: 'BeVietnamPro, sans-serif', fontSize: '14px', borderRadius: '.625rem' },
             options: { showOptionalFields: false },
             elements: {
               formFieldInput: { minHeight: '48px' },
-              formFieldInputShowPasswordButton: { color: '#9B9EAE', minWidth: '48px' },
-              formButtonPrimary: { minHeight: '48px', color: '#FFFFFF', background: '#6742BF' },
-              socialButtonsBlockButton: { minHeight: '48px', color: '#F7F7FA', backgroundColor: '#1B1D29' },
-              socialButtonsBlockButtonText: { color: '#F7F7FA' },
+              formFieldInputShowPasswordButton: { color: 'var(--auth-muted)', minWidth: '48px' },
+              formButtonPrimary: { minHeight: '48px', color: '#FFFFFF', background: 'var(--auth-action)' },
+              socialButtonsBlockButton: { minHeight: '48px', color: 'var(--auth-text)', backgroundColor: 'var(--auth-input)' },
+              socialButtonsBlockButtonText: { color: 'var(--auth-text)' },
               modalContent: { maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' },
             },
           },

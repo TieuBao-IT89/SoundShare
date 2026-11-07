@@ -1,3 +1,5 @@
+import 'theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import 'aurora_widgets.dart';
 import 'floating_mini_player.dart';
 import 'listening_panel.dart';
 import 'playback_dock.dart';
+import 'soundshare_search_field.dart';
 
 class AppScaffold extends ConsumerWidget {
   const AppScaffold({
@@ -75,7 +78,7 @@ class AppScaffold extends ConsumerWidget {
                 )
               : null,
           body: Material(
-            color: AppColors.background,
+            color: context.colors.background,
             child: SafeArea(
               bottom: false,
               child: Row(
@@ -106,9 +109,11 @@ class AppScaffold extends ConsumerWidget {
           bottomNavigationBar: tablet
               ? _DockWithQueueDrawer(showDock: showMiniPlayer)
               : DecoratedBox(
-                  decoration: const BoxDecoration(
-                    color: AppColors.secondaryBackground,
-                    border: Border(top: BorderSide(color: AppColors.border)),
+                  decoration: BoxDecoration(
+                    color: context.colors.secondaryBackground,
+                    border: Border(
+                      top: BorderSide(color: context.colors.border),
+                    ),
                   ),
                   child: SafeArea(
                     top: false,
@@ -227,7 +232,7 @@ class SoundShareBottomNavigation extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: selectedIndex == i
-                                  ? AppColors.surfaceLight
+                                  ? context.colors.selected
                                   : null,
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -237,8 +242,8 @@ class SoundShareBottomNavigation extends StatelessWidget {
                                   : _icons[i],
                               size: 22,
                               color: selectedIndex == i
-                                  ? AppColors.mystic
-                                  : AppColors.secondaryText,
+                                  ? context.colors.mystic
+                                  : context.colors.secondaryText,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -254,8 +259,8 @@ class SoundShareBottomNavigation extends StatelessWidget {
                                     ? FontWeight.w600
                                     : FontWeight.w400,
                                 color: selectedIndex == i
-                                    ? AppColors.text
-                                    : AppColors.secondaryText,
+                                    ? context.colors.text
+                                    : context.colors.secondaryText,
                               ),
                             ),
                           ),
@@ -282,7 +287,7 @@ class _Navigation extends StatelessWidget {
     return SizedBox(
       width: compact ? 80 : 224,
       child: Material(
-        color: AppColors.secondaryBackground,
+        color: context.colors.secondaryBackground,
         child: ListView(
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 8 : 16,
@@ -309,8 +314,8 @@ class _Navigation extends StatelessWidget {
                         )
                       : ListTile(
                           selected: selectedIndex == i,
-                          selectedTileColor: AppColors.surfaceLight,
-                          selectedColor: AppColors.text,
+                          selectedTileColor: context.colors.selected,
+                          selectedColor: context.colors.mystic,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -368,10 +373,28 @@ class _Navigation extends StatelessWidget {
   }
 }
 
-class _Topbar extends ConsumerWidget {
+class _Topbar extends ConsumerStatefulWidget {
   const _Topbar();
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Topbar> createState() => _TopbarState();
+}
+
+class _TopbarState extends ConsumerState<_Topbar> {
+  final searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = GoRouterState.of(context).uri.path;
+    final hasPageSearch =
+        path == '/search' ||
+        path == '/library/search' ||
+        (path == '/explore' && ref.watch(demoModeProvider));
     final avatar = ref.watch(demoModeProvider)
         ? ''
         : ref.watch(myPublicProfileProvider).valueOrNull?.avatar ?? '';
@@ -391,28 +414,32 @@ class _Topbar extends ConsumerWidget {
               alignment: Alignment.centerLeft,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: TextField(
-                  key: const ValueKey('global-search'),
-                  maxLength: 120,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (value) => context.go(
-                    Uri(
-                      path: '/search',
-                      queryParameters: {'q': value.trim()},
-                    ).toString(),
-                  ),
-                  decoration: InputDecoration(
-                    hintText: context.l10n.v3SearchHint,
-                    counterText: '',
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
+                child: hasPageSearch
+                    ? Text(
+                        context.l10n.search,
+                        style: TextStyle(
+                          color: context.colors.secondaryText,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    : SoundShareSearchField(
+                        key: const ValueKey('global-search'),
+                        controller: searchController,
+                        compact: true,
+                        enableShortcut: true,
+                        hintText: context.l10n.v3SearchHint,
+                        onSubmitted: (value) => context.go(
+                          Uri(
+                            path: '/search',
+                            queryParameters: {'q': value.trim()},
+                          ).toString(),
+                        ),
+                      ),
               ),
             ),
           ),
           const SizedBox(width: 16),
+          const ThemeModeMenu(),
           IconButton(
             tooltip: context.l10n.uploadMusic,
             onPressed: () => context.push('/upload'),

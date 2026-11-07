@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       context.l10n.brandTagline,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.secondaryText),
+                      style: TextStyle(color: context.colors.secondaryText),
                     ),
                   ],
                 ),

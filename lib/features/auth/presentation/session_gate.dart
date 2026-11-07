@@ -32,7 +32,10 @@ class SessionGate extends ConsumerWidget {
               const AuthenticationHeader(compact: true),
               const SizedBox(height: 32),
               if (MediaQuery.disableAnimationsOf(context))
-                const Icon(Icons.hourglass_top_rounded, color: AppColors.cyan)
+                Icon(
+                  Icons.hourglass_top_rounded,
+                  color: context.colors.accentText,
+                )
               else
                 CircularProgressIndicator(
                   semanticsLabel: context.l10n.openingLibrary,
@@ -58,9 +61,9 @@ class SessionGate extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.wifi_off_rounded,
-                      color: AppColors.error,
+                      color: context.colors.error,
                       size: 30,
                     ),
                     const SizedBox(height: 16),

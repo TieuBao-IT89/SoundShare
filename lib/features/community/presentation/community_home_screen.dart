@@ -1,3 +1,5 @@
+import '../../../core/widgets/theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
+import '../../../core/widgets/aurora_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/music_recommendation.dart';
@@ -32,32 +35,17 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
         key: const PageStorageKey('community-home'),
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.v4Greeting,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      profile?.displayName.isNotEmpty == true
-                          ? profile!.displayName
-                          : t.v4HomeIntro,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+          if (MediaQuery.sizeOf(context).width < 768) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: AuroraLogo(
+                    size: 28,
+                    wordmark: MediaQuery.sizeOf(context).width >= 360,
+                  ),
                 ),
-              ),
-              if (MediaQuery.sizeOf(context).width < 768) ...[
+
+                const ThemeModeMenu(),
                 IconButton(
                   tooltip: t.search,
                   onPressed: () => context.go('/search'),
@@ -78,6 +66,34 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.v4Greeting,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      profile?.displayName.isNotEmpty == true
+                          ? profile!.displayName
+                          : t.v4HomeIntro,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.colors.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -161,9 +177,9 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                           t,
                           HomeRecommendation.tryParse(data['recommendation']),
                         ),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.secondaryText,
+                          color: context.colors.secondaryText,
                         ),
                       ),
                     ),

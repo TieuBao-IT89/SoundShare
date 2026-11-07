@@ -103,7 +103,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             ? t.librarySavedSession
                             : t.librarySavedPrivate,
                         icon: Icons.favorite_rounded,
-                        accent: AppColors.pink,
+                        accent: context.colors.pink,
                         onTap: () {
                           if (demo) {
                             setState(() => showAll = false);
@@ -122,7 +122,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   : t.trackCount(total)),
                         caption: demo ? t.demoNotice : t.privateLibraryNotice,
                         icon: Icons.library_music_rounded,
-                        accent: AppColors.cyan,
+                        accent: context.colors.cyan,
                         onTap: () => setState(() => showAll = true),
                       ),
                     ];
@@ -220,7 +220,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     demo
                         ? Icons.info_outline_rounded
                         : Icons.lock_outline_rounded,
-                    color: AppColors.secondaryText,
+                    color: context.colors.secondaryText,
                     size: 16,
                   ),
                   const SizedBox(width: 8),
@@ -228,7 +228,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     child: Text(
                       demo ? t.demoLibraryNote : t.libraryPrivacyNote,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.secondaryText,
+                        color: context.colors.secondaryText,
                         height: 1.5,
                       ),
                     ),
@@ -272,9 +272,11 @@ class _CollectionSelector extends StatelessWidget {
           : const Duration(milliseconds: 180),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        color: selected ? AppColors.surfaceLight : AppColors.surface,
+        color: selected ? context.colors.surfaceLight : context.colors.surface,
         border: Border.all(
-          color: selected ? accent.withValues(alpha: .65) : AppColors.border,
+          color: selected
+              ? accent.withValues(alpha: .65)
+              : context.colors.border,
         ),
       ),
       child: Material(
@@ -306,13 +308,15 @@ class _CollectionSelector extends StatelessWidget {
                   Text(
                     count!,
                     style: Theme.of(context).textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.text),
+                        ?.copyWith(color: context.colors.text),
                   ),
                 const SizedBox(height: 10),
                 Text(
                   caption,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: AppColors.secondaryText, height: 1.5),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: context.colors.secondaryText,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),

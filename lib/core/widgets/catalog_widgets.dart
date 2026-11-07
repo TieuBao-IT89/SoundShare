@@ -35,8 +35,8 @@ class ScreenHeading extends StatelessWidget {
           Expanded(
             child: Text(
               eyebrow,
-              style: const TextStyle(
-                color: AppColors.cyan,
+              style: TextStyle(
+                color: context.colors.accentText,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.3,
@@ -54,7 +54,7 @@ class ScreenHeading extends StatelessWidget {
       const SizedBox(height: 10),
       Text(
         subtitle,
-        style: const TextStyle(color: AppColors.secondaryText, height: 1.6),
+        style: TextStyle(color: context.colors.secondaryText, height: 1.6),
       ),
     ],
   );
@@ -94,13 +94,13 @@ class SongTile extends ConsumerWidget {
           selected: selected,
           child: Material(
             color: selected
-                ? AppColors.primary.withValues(alpha: .12)
-                : AppColors.surface.withValues(alpha: .45),
+                ? context.colors.primary.withValues(alpha: .12)
+                : context.colors.surface.withValues(alpha: .45),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(
                 color: selected
-                    ? AppColors.mystic.withValues(alpha: .4)
+                    ? context.colors.mystic.withValues(alpha: .4)
                     : Colors.transparent,
               ),
             ),
@@ -119,15 +119,15 @@ class SongTile extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: selected ? AppColors.cyan : AppColors.text,
+                  color: selected ? context.colors.cyan : context.colors.text,
                 ),
               ),
               subtitle: Text(
                 '${song.artist} · ${song.genre}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.secondaryText,
+                style: TextStyle(
+                  color: context.colors.secondaryText,
                   fontSize: 12,
                 ),
               ),
@@ -138,7 +138,9 @@ class SongTile extends ConsumerWidget {
                   selected
                       ? Icons.graphic_eq_rounded
                       : Icons.play_arrow_rounded,
-                  color: selected ? AppColors.cyan : AppColors.secondaryText,
+                  color: selected
+                      ? context.colors.cyan
+                      : context.colors.secondaryText,
                 ),
               ),
             ),

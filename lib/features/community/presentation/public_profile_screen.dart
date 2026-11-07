@@ -55,7 +55,7 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
         if (p.username == null)
           Text(
             t.v3ProfileIntro,
-            style: const TextStyle(color: AppColors.secondaryText),
+            style: TextStyle(color: context.colors.secondaryText),
           )
         else ...[
           Wrap(
