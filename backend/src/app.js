@@ -16,8 +16,9 @@ import { HttpError } from "./utils/http-error.js";
 import { notFoundHandler } from "./middleware/not-found.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { createCommunityRouter } from './routes/community.routes.js';
+import { createSocialRouter } from './routes/social.routes.js';
 
-export const createApp = ({ uploadService, trackService, communityService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory } = {}) => {
+export const createApp = ({ uploadService, trackService, communityService, socialService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory } = {}) => {
   const app = express();
   app.disable("x-powered-by");
   app.use(requestContext);
@@ -60,6 +61,7 @@ export const createApp = ({ uploadService, trackService, communityService, check
       : undefined));
   });
   app.use(express.json({ limit: "1mb" }));
+  if (socialService) app.use('/api/v1', createSocialRouter({service:socialService,requireAuth}));
   if (communityService) app.use('/api/v1',createCommunityRouter({service:communityService,requireAuth}));
   if (trackService) {
     app.get("/api/v1/auth/me", requireAuth, async (req, res) => {

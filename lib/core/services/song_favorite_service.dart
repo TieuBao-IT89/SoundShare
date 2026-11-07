@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/community/application/community_providers.dart';
 import '../../features/home/application/catalog_provider.dart';
 import '../../features/home/domain/song.dart';
+import '../../features/social/application/social_providers.dart';
 
 final favoriteBusyProvider = StateProvider<Set<String>>((ref) => {});
 final _favoriteOverridesProvider = StateProvider<Map<String, bool>>(
@@ -36,8 +37,22 @@ class SongFavoriteActions {
   bool _disposed = false;
 
   Future<bool?> toggle(Song song) async {
+    if (song.community &&
+        ref.read(socialBusyProvider).contains('like:${song.identity}')) {
+      return null;
+    }
     if (ref.read(favoriteBusyProvider).contains(song.identity)) return null;
     final next = !ref.read(songLikedProvider(song));
+    if (song.community) {
+      ref.read(socialBusyProvider.notifier).state = {
+        ...ref.read(socialBusyProvider),
+        'like:${song.identity}',
+      };
+      ref.read(communityLikesProvider.notifier).state = {
+        ...ref.read(communityLikesProvider),
+        song.identity: next,
+      };
+    }
     ref.read(favoriteBusyProvider.notifier).state = {
       ...ref.read(favoriteBusyProvider),
       song.identity,
@@ -69,8 +84,21 @@ class SongFavoriteActions {
         }
       }
       return next;
+    } catch (_) {
+      if (!_disposed && song.community) {
+        ref.read(communityLikesProvider.notifier).state = {
+          ...ref.read(communityLikesProvider),
+          song.identity: !next,
+        };
+      }
+      rethrow;
     } finally {
       if (!_disposed) {
+        if (song.community) {
+          ref.read(socialBusyProvider.notifier).state = {
+            ...ref.read(socialBusyProvider),
+          }..remove('like:${song.identity}');
+        }
         ref.read(favoriteBusyProvider.notifier).state = {
           ...ref.read(favoriteBusyProvider),
         }..remove(song.identity);

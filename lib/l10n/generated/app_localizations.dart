@@ -3225,6 +3225,270 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đã đổi giao diện nhưng chưa lưu được lựa chọn trên thiết bị. Hãy thử lại.'**
   String get themeSaveFailed;
+
+  /// No description provided for @v9Shorts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Music Shorts'**
+  String get v9Shorts;
+
+  /// No description provided for @v9ForYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cho bạn'**
+  String get v9ForYou;
+
+  /// No description provided for @v9Following.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang theo dõi'**
+  String get v9Following;
+
+  /// No description provided for @v9Trending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thịnh hành'**
+  String get v9Trending;
+
+  /// No description provided for @v9Autoplay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự phát khi vuốt'**
+  String get v9Autoplay;
+
+  /// No description provided for @v9AutoNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự chuyển đoạn tiếp theo'**
+  String get v9AutoNext;
+
+  /// No description provided for @v9Preview.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghe thử'**
+  String get v9Preview;
+
+  /// No description provided for @v9FullTrack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghe toàn bộ'**
+  String get v9FullTrack;
+
+  /// No description provided for @v9Comments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình luận'**
+  String get v9Comments;
+
+  /// No description provided for @v9WriteComment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Viết bình luận...'**
+  String get v9WriteComment;
+
+  /// No description provided for @v9Reply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lời'**
+  String get v9Reply;
+
+  /// No description provided for @v9Send.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi'**
+  String get v9Send;
+
+  /// No description provided for @v9DeletedComment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình luận đã được xóa'**
+  String get v9DeletedComment;
+
+  /// No description provided for @v9Replies.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem trả lời'**
+  String get v9Replies;
+
+  /// No description provided for @v9BackComments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Về bình luận'**
+  String get v9BackComments;
+
+  /// No description provided for @v9NoComments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bình luận. Hãy mở đầu cuộc trò chuyện.'**
+  String get v9NoComments;
+
+  /// No description provided for @v9Notifications.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông báo'**
+  String get v9Notifications;
+
+  /// No description provided for @v9Unread.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa đọc'**
+  String get v9Unread;
+
+  /// No description provided for @v9All.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get v9All;
+
+  /// No description provided for @v9ReadAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu tất cả đã đọc'**
+  String get v9ReadAll;
+
+  /// No description provided for @v9Preferences.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tùy chọn thông báo'**
+  String get v9Preferences;
+
+  /// No description provided for @v9NoNotifications.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã xem hết thông báo.'**
+  String get v9NoNotifications;
+
+  /// No description provided for @v9NewFollower.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã theo dõi bạn'**
+  String get v9NewFollower;
+
+  /// No description provided for @v9NewComment.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã bình luận về bài hát của bạn'**
+  String get v9NewComment;
+
+  /// No description provided for @v9NewReply.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã trả lời bình luận của bạn'**
+  String get v9NewReply;
+
+  /// No description provided for @v9SongLike.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã thích bài hát của bạn'**
+  String get v9SongLike;
+
+  /// No description provided for @v9NewTrack.
+  ///
+  /// In vi, this message translates to:
+  /// **'vừa chia sẻ một bản thu mới'**
+  String get v9NewTrack;
+
+  /// No description provided for @v9CommentLike.
+  ///
+  /// In vi, this message translates to:
+  /// **'đã thích bình luận của bạn'**
+  String get v9CommentLike;
+
+  /// No description provided for @v9FollowersPreference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Người theo dõi mới'**
+  String get v9FollowersPreference;
+
+  /// No description provided for @v9CommentsPreference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bình luận trên bài hát'**
+  String get v9CommentsPreference;
+
+  /// No description provided for @v9RepliesPreference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trả lời bình luận'**
+  String get v9RepliesPreference;
+
+  /// No description provided for @v9LikesPreference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lượt thích bài hát và bình luận'**
+  String get v9LikesPreference;
+
+  /// No description provided for @v9TracksPreference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bài mới từ creator đang theo dõi'**
+  String get v9TracksPreference;
+
+  /// No description provided for @v9EmptyFollowing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có bản thu từ người bạn theo dõi. Khám phá creator hoặc chuyển sang Cho bạn.'**
+  String get v9EmptyFollowing;
+
+  /// No description provided for @v9FeedEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn đã nghe hết lượt khám phá này. Làm mới để khám phá tiếp.'**
+  String get v9FeedEnd;
+
+  /// No description provided for @v9RefreshFeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm mới feed'**
+  String get v9RefreshFeed;
+
+  /// No description provided for @v9PreviewHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhấn phát để bắt đầu nghe thử. Vuốt để khám phá bản thu tiếp theo.'**
+  String get v9PreviewHint;
+
+  /// No description provided for @v9DeleteComment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa bình luận'**
+  String get v9DeleteComment;
+
+  /// No description provided for @v9ReportSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo đã được gửi để xem xét.'**
+  String get v9ReportSent;
+
+  /// No description provided for @v9Share.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chia sẻ liên kết'**
+  String get v9Share;
+
+  /// No description provided for @v9RecentActivity.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bản phát hành gần đây'**
+  String get v9RecentActivity;
+
+  /// No description provided for @v9Unavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung này không còn khả dụng.'**
+  String get v9Unavailable;
+
+  /// No description provided for @v9PreviewSeconds.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đoạn nghe thử tối đa 30 giây'**
+  String get v9PreviewSeconds;
+
+  /// No description provided for @v9ShortsEntryIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghe thử bản thu mới. Vuốt để tìm âm thanh bạn thích.'**
+  String get v9ShortsEntryIntro;
 }
 
 class _AppLocalizationsDelegate

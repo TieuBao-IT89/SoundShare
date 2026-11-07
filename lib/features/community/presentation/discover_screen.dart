@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../application/community_providers.dart';
 import 'community_widgets.dart';
 import 'music_components.dart';
+import '../../shorts/presentation/shorts_discovery_entry.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key, this.initialGenre});
@@ -75,6 +76,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             t.v4ExploreIntro,
             style: TextStyle(fontSize: 13, color: context.colors.secondaryText),
           ),
+          const SizedBox(height: 20),
+          const ShortsDiscoveryEntry(),
           const SizedBox(height: 20),
           CommunityAsync(
             value: ref.watch(communitySongsProvider(freshKey)),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
@@ -18,6 +19,8 @@ import 'package:soundshare/features/home/domain/song.dart';
 import 'package:soundshare/l10n/l10n.dart';
 
 import 'support/test_app.dart';
+
+import 'package:soundshare/features/shorts/presentation/shorts_discovery_entry.dart';
 
 const creatorId = '00000000-0000-4000-8000-000000000002';
 const trackId = '00000000-0000-4000-8000-000000000003';
@@ -96,7 +99,14 @@ class CommunityFixture {
         return http.Response('', 204);
       }
       dynamic data;
-      if (path.endsWith('/users/me')) {
+      if (path.endsWith('/shorts/feed')) {
+        data = {
+          'items': [song],
+          'nextCursor': null,
+        };
+      } else if (path.endsWith('/notifications/unread-count')) {
+        data = {'count': 0};
+      } else if (path.endsWith('/users/me')) {
         data = {
           ...profile,
           'username': 'listener_a',
@@ -208,6 +218,40 @@ Future<ProviderContainer> showCommunity(
 }
 
 void main() {
+  setUpAll(() async {
+    if (!const bool.fromEnvironment('CAPTURE_V9')) return;
+    final font = FontLoader('BeVietnamPro');
+    for (final weight in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
+      font.addFont(rootBundle.load('assets/fonts/BeVietnamPro-$weight.ttf'));
+    }
+    await font.load();
+    await (FontLoader(
+      'MaterialIcons',
+    )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+  });
+  testWidgets('Shorts entry belongs to discovery and opens the REST feed', (
+    tester,
+  ) async {
+    final fixture = CommunityFixture();
+    await showCommunity(tester, '/explore', fixture: fixture);
+    expect(find.byType(ShortsDiscoveryEntry), findsOneWidget);
+    if (const bool.fromEnvironment('CAPTURE_V9')) {
+      await expectLater(
+        find.byType(Scaffold).first,
+        matchesGoldenFile('../.local/v9-shorts-entry-discovery.png'),
+      );
+    }
+    await tester.tap(find.byType(ShortsDiscoveryEntry));
+    await pumpPlaybackUi(tester);
+    expect(
+      fixture.requests.any((r) => r.url.path.endsWith('/shorts/feed')),
+      true,
+    );
+    expect(find.text(fixture.song['title']), findsWidgets);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byType(BackButton));
+    await pumpPlaybackUi(tester);
+  });
   test('Community profile and search parse API responses', () async {
     final fixture = CommunityFixture();
     final repo = CommunityRepository(fixture.api);

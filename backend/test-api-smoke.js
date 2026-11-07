@@ -10,6 +10,9 @@ import { createTrackRepository } from "./src/repositories/track.repository.js";
 import { createTrackService } from "./src/services/track.service.js";
 import { createCommunityRepository } from "./src/repositories/community.repository.js";
 import { createCommunityService } from "./src/services/community.service.js";
+import { createSocialRepository } from "./src/repositories/social.repository.js";
+import { createSocialService } from "./src/services/social.service.js";
+import { assertSchemaReady } from "./src/database/schema-readiness.js";
 
 if (!["development", "test"].includes(process.env.NODE_ENV)) {
   throw new Error(
@@ -23,7 +26,13 @@ const uploadService = createUploadService({
   storage,
 });
 const communityRepository = createCommunityRepository(pool);
+const socialRepository = createSocialRepository(pool);
 const app = createApp({
+  socialService: createSocialService({
+    repository: socialRepository,
+    communityRepository,
+    storage,
+  }),
   logging: false,
   checkDatabaseConnection,
   uploadService,
@@ -75,6 +84,13 @@ try {
     ["DELETE", `/community/songs/${id}`, 401],
     ["POST", "/community/playlists", 401],
     ["POST", "/community/reports", 401],
+    ["GET", "/shorts/feed", 401],
+    ["GET", `/community/songs/${id}/comments`, 401],
+    ["POST", `/community/songs/${id}/comments`, 401],
+    ["GET", "/notifications", 401],
+    ["GET", "/notifications/unread-count", 401],
+    ["PATCH", "/notifications/read-all", 401],
+    ["GET", "/notifications/preferences", 401],
   ]) {
     const response = await fetch(`${base}${route}`, {
       method,
@@ -91,6 +107,31 @@ try {
   }
 
   const checks = [
+    [
+      "Neon schema readiness including V9",
+      async () => {
+        await assertSchemaReady(pool);
+        return true;
+      },
+    ],
+    [
+      "Neon V9 read queries",
+      async () => {
+        const owner = "readonly-smoke-no-user";
+        await socialRepository.notifications(owner, {
+          limit: 1,
+          unread: "false",
+        });
+        await socialRepository.unread(owner);
+        const tracks = await communityRepository.tracks(owner, {
+          limit: 1,
+          offset: 0,
+        });
+        if (tracks.length)
+          await socialRepository.comments(owner, tracks[0].id, { limit: 1 });
+        return true;
+      },
+    ],
     [
       "Cloudinary authenticated ping",
       async () =>

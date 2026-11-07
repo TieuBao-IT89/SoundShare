@@ -12,6 +12,11 @@ class Song {
     this.description = '',
     this.validPlays = 0,
     this.likeCount = 0,
+    this.commentCount = 0,
+    this.previewDurationMs = 30000,
+    this.durationSeconds,
+    this.following = false,
+    this.uploaderAvatar = '',
     this.resumePositionMs = 0,
     this.recommendationReason,
     required this.title,
@@ -30,6 +35,10 @@ class Song {
   final String? username, uploaderId;
   final String visibility, description;
   final int validPlays, likeCount, resumePositionMs;
+  final int commentCount, previewDurationMs;
+  final double? durationSeconds;
+  final bool following;
+  final String uploaderAvatar;
   final SongRecommendationReason? recommendationReason;
   String get identity => id ?? '$title|$artist';
 
@@ -50,6 +59,13 @@ class Song {
     description: data['description'] as String? ?? '',
     validPlays: (data['validPlayCount'] as num? ?? 0).toInt(),
     likeCount: (data['likeCount'] as num? ?? 0).toInt(),
+    commentCount: (data['commentCount'] as num? ?? 0).toInt(),
+    previewDurationMs: (data['previewDurationMs'] as num? ?? 30000)
+        .toInt()
+        .clamp(1, 30000),
+    durationSeconds: (data['durationSeconds'] as num?)?.toDouble(),
+    following: data['following'] == true,
+    uploaderAvatar: data['uploader']?['avatar']?['url'] as String? ?? '',
     resumePositionMs: (data['resumePositionMs'] as num? ?? 0).toInt(),
     recommendationReason: SongRecommendationReason.tryParse(
       data['recommendationReason'],

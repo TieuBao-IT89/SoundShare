@@ -12,6 +12,18 @@ import { createTrackService } from "./src/services/track.service.js";
 import { createCommunityRepository } from "./src/repositories/community.repository.js";
 import { createCommunityService } from "./src/services/community.service.js";
 import { createMediaCleanupService } from "./src/services/media-cleanup.service.js";
+import { createSocialRepository } from "./src/repositories/social.repository.js";
+import { createSocialService } from "./src/services/social.service.js";
+import { createNotificationDelivery } from "./src/services/notification-delivery.service.js";
+import { assertSchemaReady } from "./src/database/schema-readiness.js";
+
+try {
+  await assertSchemaReady(pool);
+} catch (error) {
+  console.error(error.message);
+  await pool.end();
+  process.exit(1);
+}
 
 const storage = createCloudinaryStorage(cloudinary);
 const uploadService = createUploadService({
@@ -19,7 +31,32 @@ const uploadService = createUploadService({
   storage,
 });
 const cleanupService = createMediaCleanupService({ pool, uploadService });
+const notificationDelivery = createNotificationDelivery(
+  createSocialRepository(pool),
+);
+let deliveryRunning = false;
+const deliverNotifications = async () => {
+  if (deliveryRunning) return;
+  deliveryRunning = true;
+  try {
+    await notificationDelivery.process({ batches: 5 });
+  } catch {
+    console.warn(JSON.stringify({ code: "NOTIFICATION_DELIVERY_PENDING" }));
+  } finally {
+    deliveryRunning = false;
+  }
+};
+// Fast in-process delivery. The durable outbox and scheduled worker command
+// provide recovery across restarts and instances; this timer is only a wakeup.
+const notificationTimer = setInterval(deliverNotifications, 15000);
+notificationTimer.unref();
+void deliverNotifications();
 const app = createApp({
+  socialService: createSocialService({
+    repository: createSocialRepository(pool),
+    communityRepository: createCommunityRepository(pool),
+    storage,
+  }),
   checkDatabaseConnection,
   uploadService,
   communityService: createCommunityService({

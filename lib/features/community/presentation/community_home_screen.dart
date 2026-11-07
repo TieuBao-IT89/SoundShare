@@ -1,4 +1,5 @@
 import '../../../core/widgets/theme_mode_menu.dart';
+import '../../notifications/presentation/notification_center.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -94,6 +95,8 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                   ],
                 ),
               ),
+              if (MediaQuery.sizeOf(context).width < 768)
+                const NotificationBell(),
             ],
           ),
           const SizedBox(height: 20),
@@ -130,6 +133,7 @@ class _CommunityHomeScreenState extends ConsumerState<CommunityHomeScreen> {
                     runSpacing: 8,
                     children: [
                       for (final entry in [
+                        (Icons.graphic_eq_rounded, t.v9Shorts, '/shorts'),
                         (
                           Icons.favorite_border_rounded,
                           t.likedTracks,

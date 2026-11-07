@@ -1,6 +1,12 @@
 # SoundShare
 
+**V9 — Social Music** thêm source Music Shorts, bình luận/reply và hộp thông báo bền vững, dùng chung player V7. Cần migration 006 và scheduler giao thông báo trước khi nghiệm thu môi trường thật. Xem [kiến trúc, API, setup và giới hạn V9](docs/soundshare-v9-social-music.md).
+
+Development hiện đã áp dụng migration 005–006. Khi khởi động, server và script Web chạy kiểm tra schema; có thể kiểm tra riêng bằng `npm run db:check` trong `backend/`. Nếu chưa sẵn sàng, áp dụng migration trong đúng môi trường rồi khởi động lại; startup không tự sửa database.
+
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
+
+**V7 — Native Audio Experience** bổ sung source tích hợp Android MediaSession/foreground playback với một AudioPlayer dùng chung, điều khiển notification/lock screen/media button, cleanup theo tài khoản và audio focus. Phần Android đang chờ build/nghiệm thu trên thiết bị vì môi trường hiện chưa có SDK. Xem [kiến trúc, setup và kết quả V7](docs/soundshare-v7-background-audio.md); không coi kiểm thử Dart là nghiệm thu Bluetooth hoặc phát nền native.
 
 **AURORA PEARL V6** bổ sung giao diện sáng ngọc trai, banner pastel và player ambient, giữ **OBSIDIAN PULSE** làm lựa chọn tối. **Công tắc giao diện** chuyển trực tiếp Sáng/Tối; nút **A** bên cạnh bật/tắt Theo hệ thống. Lựa chọn lưu trên thiết bị, lần đầu mặc định Sáng. Chuyển giao diện dùng cùng router, session và AudioPlayer. Xem [design system](DESIGN.md), [audit V6](docs/ui/aurora-pearl-v6-audit.md) và [kiểm tra/ảnh so sánh V6](docs/ui/aurora-pearl-v6-review.md).
 

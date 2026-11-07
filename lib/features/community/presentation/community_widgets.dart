@@ -1,3 +1,7 @@
+import '../../social/application/social_providers.dart';
+import '../../comments/presentation/comments_sheet.dart';
+import '../../../core/services/share_link.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +14,6 @@ import '../../../core/widgets/aurora_widgets.dart';
 import '../../../core/widgets/section_heading.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/song.dart';
-import '../../home/application/catalog_provider.dart';
 import '../application/community_providers.dart';
 import '../data/community_repository.dart';
 
@@ -134,20 +137,12 @@ class FollowButton extends ConsumerStatefulWidget {
 
 class _FollowButtonState extends ConsumerState<FollowButton> {
   bool busy = false;
-  bool? following;
-  @override
-  void didUpdateWidget(covariant FollowButton old) {
-    super.didUpdateWidget(old);
-    if (old.profile.id != widget.profile.id ||
-        old.profile.following != widget.profile.following) {
-      following = null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.profile.isSelf) return const SizedBox.shrink();
-    final enabled = following ?? widget.profile.following;
+    final enabled =
+        ref.watch(communityFollowsProvider)[widget.profile.id] ??
+        widget.profile.following;
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         backgroundColor: enabled
@@ -164,10 +159,9 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
               setState(() => busy = true);
               try {
                 await ref
-                    .read(communityRepositoryProvider)
-                    .follow(widget.profile, !enabled);
+                    .read(socialActionsProvider)
+                    .follow(widget.profile.id, widget.profile.following);
                 if (!mounted) return;
-                setState(() => following = !enabled);
                 ref.invalidate(publicProfileProvider);
                 ref.invalidate(connectionsProvider);
                 ref.invalidate(communityHomeProvider);
@@ -301,26 +295,9 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
   bool busy = false;
   Future<void> _interact(String kind) async {
     final song = widget.song;
-    final provider = kind == 'like'
-        ? communityLikesProvider
-        : communitySavesProvider;
-    final enabled =
-        ref.read(provider)[song.identity] ??
-        (kind == 'like' ? song.liked : song.saved);
     setState(() => busy = true);
     try {
-      await ref
-          .read(communityRepositoryProvider)
-          .interact(song, kind, !enabled);
-      if (mounted) {
-        ref.read(provider.notifier).state = {
-          ...ref.read(provider),
-          song.identity: !enabled,
-        };
-        ref.invalidate(catalogProvider);
-        ref.invalidate(communityHomeProvider);
-        ref.invalidate(communitySongsProvider);
-      }
+      await ref.read(socialActionsProvider).interact(song, kind);
     } catch (error) {
       if (mounted) communityError(context, error);
     } finally {
@@ -483,6 +460,14 @@ class _SongActionMenuState extends ConsumerState<SongActionMenu> {
       tooltip: t.v3More,
       enabled: !busy,
       onSelected: (value) async {
+        if (value == 'comments') {
+          await showComments(context, ref, song.id!);
+          return;
+        }
+        if (value == 'share') {
+          await shareLink(context, '/shorts/${song.id}');
+          return;
+        }
         if (value == 'queue') {
           ref.read(playbackActionsProvider).addToQueue(song);
           return;
@@ -500,22 +485,8 @@ class _SongActionMenuState extends ConsumerState<SongActionMenu> {
           return;
         }
         setState(() => busy = true);
-        final provider = value == 'like'
-            ? communityLikesProvider
-            : communitySavesProvider;
-        final enabled = value == 'like' ? liked : saved;
         try {
-          await ref
-              .read(communityRepositoryProvider)
-              .interact(song, value, !enabled);
-          if (!mounted) return;
-          ref.read(provider.notifier).state = {
-            ...ref.read(provider),
-            song.identity: !enabled,
-          };
-          ref.invalidate(catalogProvider);
-          ref.invalidate(communityHomeProvider);
-          ref.invalidate(communitySongsProvider);
+          await ref.read(socialActionsProvider).interact(song, value);
         } catch (error) {
           if (context.mounted) communityError(context, error);
         } finally {
@@ -531,6 +502,10 @@ class _SongActionMenuState extends ConsumerState<SongActionMenu> {
           value: 'save',
           child: Text(saved ? t.v3RemoveSaved : t.v3SaveTrack),
         ),
+        if (song.visibility == 'public')
+          PopupMenuItem(value: 'comments', child: Text(t.v9Comments)),
+        if (song.visibility == 'public')
+          PopupMenuItem(value: 'share', child: Text(t.v9Share)),
         PopupMenuItem(value: 'queue', child: Text(t.v3AddToQueue)),
         PopupMenuItem(value: 'playlist', child: Text(t.v3AddToPlaylist)),
         if (song.username != null)

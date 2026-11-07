@@ -35,6 +35,7 @@ class ApiException implements Exception {
     'PROFILE_REQUIRED' => appCopy.v3ProfileRequired,
     'RIGHTS_REQUIRED' => appCopy.v3RightsRequired,
     'COMMUNITY_UNAVAILABLE' => appCopy.v3Unavailable,
+    'SOCIAL_UNAVAILABLE' => appCopy.v3Unavailable,
     'UPLOAD_CANCELLED' => appCopy.v3UploadCancelled,
     'TRACK_ALREADY_EXISTS' => appCopy.errorAlreadySaved,
     'SESSION_TIMEOUT' => appCopy.sessionTimeout,

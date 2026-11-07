@@ -1,4 +1,12 @@
 PRD — SoundShare
+
+## V9 — Social Music Discovery
+
+Source mở rộng Music Shorts, comments/reply một cấp, comment likes/report và notification inbox/preferences bền vững. Dữ liệu đi qua Clerk → Express `/api/v1` → PostgreSQL; dùng player V7 duy nhất, preview tối đa 30 giây, không tính impression/swipe thành valid play. Comments chỉ dành cho public/active track và creator; mọi thao tác và notification truy cập lại phải kiểm tra visibility hiện tại. Notifications dùng transactional outbox, batch 100 recipients và event dedupe; scheduler deployment bắt buộc. Không tự publish hoặc đổi visibility bài cũ.
+
+API mới: GET `/shorts/feed`, `/shorts/songs/:id`, `/community/songs/:id/comments`, `/community/comments/:id`, `/notifications`, `/notifications/unread-count`, `/notifications/preferences`; POST comments/replies/report; DELETE owned comment; PUT/DELETE comment like; PATCH notification read/read-all/preferences. Toàn bộ dưới `/api/v1`, yêu cầu Bearer Clerk, strict validation, recipient/owner do server suy ra. Migration 006 thêm comments, likes, notifications, preferences, outbox, snapshots và mở rộng reports. [Contract đầy đủ: schema, paging, status/error, quyền, chính sách playback và nghiệm thu](docs/soundshare-v9-social-music.md#api-contract-v9).
+
+Migration 005–006 hiện đã áp dụng trên Neon development; smoke kiểm tra schema/truy vấn và dịch vụ thật đã qua. Server/start Web kiểm tra schema trước khi chạy. Chưa nghiệm thu mutation bằng phiên người dùng và Android V9 hoặc triển khai production. Shorts được đặt trong Khám phá, shortcut Home và sidebar desktop; inbox tự refresh trang đầu khi foreground, có backoff khi lỗi. Các phần PRD bên dưới tiếp tục mô tả các phiên bản trước.
 Product Requirements Document
 Phiên bản: 1.0
 Trạng thái: Draft; phần V3 bên dưới mở rộng MVP thư viện riêng
@@ -8,6 +16,8 @@ Backend: Node.js + Express, cung cấp REST API
 Cơ sở dữ liệu: Neon PostgreSQL
 Authentication: Clerk, dịch vụ xác thực độc lập
 Cloud Storage: Cloudinary, dịch vụ lưu trữ file độc lập
+
+V7 — Native Audio Experience: Android dùng một AudioService handler và cùng AudioPlayer/PlaybackActions/queue của tài khoản để nhận lệnh notification, lock screen và media button. Giữ playback khi UI ở nền; UI hủy position ticks/animation khi ẩn. Pause do interruption/noisy không tự resume; stop/logout xóa queue/metadata, hủy heartbeat và nhả focus. Đổi tài khoản đợi engine cũ dispose; signed URL chỉ ở luồng playback, artwork hệ thống là file local. Không thay backend/API/schema, không lưu queue để tự phát sau process death. Source và kiểm thử tự động được triển khai; nghiệm thu SDK/APK/Bluetooth/lock screen/Android OEM còn mở. [Kiến trúc và tiêu chí nghiệm thu V7](docs/soundshare-v7-background-audio.md).
 
 Vinyl Player 2.0: ảnh bìa chiếm 70% đĩa có rãnh/phản chiếu/bóng đổ; quay 12 giây/vòng theo cùng AudioPlayer. Nền radial lấy màu artwork và đổi trong 650 ms, cần kim theo trạng thái ready/playing, pause giữ góc đĩa. Double-tap thích/bỏ thích qua repository hiện có, vuốt ngang chuyển bài, chạm creator mở hồ sơ. Mobile queue mở Bottom Sheet có phát ngay, thêm/bỏ và kéo đổi thứ tự; đổi thứ tự giữ đúng mục đang phát mà không khởi động lại audio. Queue và hẹn giờ chỉ tồn tại trong phiên. Hẹn giờ 15/30/60 phút có thể thay/hủy, tạm dừng bài hiện tại khi đến hạn, kể cả yêu cầu tải hoàn tất muộn. API hiện chưa có lyrics/timestamp nên nút lời chỉ hiển thị trạng thái chưa có dữ liệu, chưa có lời đồng bộ. Không thay API, schema, provider hoặc storage policy. Nghiệm thu thiết bị native/FPS và hẹn giờ khi OS đình chỉ còn cần chạy riêng. [Thiết kế, file thay đổi và kiểm tra](docs/ui/vinyl-player-v2-review.md).
 

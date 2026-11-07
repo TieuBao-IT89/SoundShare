@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/config/clerk_config.dart';
 import '../core/config/app_mode.dart';
+import '../core/services/api_client.dart';
 import '../features/auth/presentation/web_auth_stub.dart'
     if (dart.library.js_interop) '../features/auth/presentation/web_auth.dart';
 import '../features/auth/presentation/session_scope.dart';
@@ -29,6 +30,8 @@ import '../features/community/presentation/playlists_screen.dart';
 import '../features/community/presentation/manage_songs_screen.dart';
 import '../features/community/application/community_providers.dart';
 import '../features/community/presentation/queue_screen.dart';
+import '../features/shorts/presentation/shorts_screen.dart';
+import '../features/notifications/presentation/notification_center.dart';
 import '../l10n/l10n.dart';
 import '../core/widgets/aurora_widgets.dart';
 import 'theme/app_theme.dart';
@@ -39,6 +42,23 @@ import 'theme/theme_bridge_stub.dart'
 GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
+    GoRoute(path: '/shorts', builder: (context, state) => const ShortsScreen()),
+    GoRoute(
+      path: '/shorts/:id',
+      builder: (context, state) => ShortsScreen(
+        songId: state.pathParameters['id'],
+        openComments: state.uri.queryParameters['comments'] == '1',
+        commentId: state.uri.queryParameters['comment'],
+      ),
+    ),
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationCenter(),
+    ),
+    GoRoute(
+      path: '/notifications/preferences',
+      builder: (context, state) => const NotificationPreferencesScreen(),
+    ),
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
     GoRoute(
@@ -244,15 +264,24 @@ class SoundShareApp extends ConsumerWidget {
 
         return ClerkAuthBuilder(
           signedInBuilder: (context, authState) => SessionScope(
-            key: ValueKey(authState.user!.id),
+            key: ValueKey((authState.user!.id, authState.session?.id)),
             session: AuthSession(
               subject: authState.user!.id,
+              sessionId: authState.session?.id,
               name: authState.user!.hasName
                   ? authState.user!.name
                   : authState.user!.username ?? context.l10n.accountName,
             ),
-            token: ({bool refresh = false}) async =>
-                (await authState.sessionToken()).jwt,
+            token: ({bool refresh = false}) async {
+              if (refresh) await authState.refreshClient();
+              final active = authState.session;
+              if (active == null ||
+                  !active.isActive ||
+                  !DateTime.now().isBefore(active.expireAt)) {
+                throw const ApiException(401, 'UNAUTHORIZED');
+              }
+              return (await authState.sessionToken()).jwt;
+            },
             signOut: authState.signOut,
             child: appContent,
           ),
