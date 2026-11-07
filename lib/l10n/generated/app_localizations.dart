@@ -112,6 +112,12 @@ abstract class AppLocalizations {
   /// **'Trang chủ'**
   String get home;
 
+  /// No description provided for @appMenu.
+  ///
+  /// In vi, this message translates to:
+  /// **'Menu'**
+  String get appMenu;
+
   /// No description provided for @explore.
   ///
   /// In vi, this message translates to:

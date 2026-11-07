@@ -19,6 +19,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get home => 'Trang chủ';
 
   @override
+  String get appMenu => 'Menu';
+
+  @override
   String get explore => 'Khám phá';
 
   @override

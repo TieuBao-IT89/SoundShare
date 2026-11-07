@@ -411,7 +411,14 @@ class _NotificationPreferencesScreenState
     return AppScaffold(
       child: Column(
         children: [
-          AppBar(title: Text(t.v9Preferences)),
+          AppBar(
+            leading: BackButton(
+              onPressed: () => context.canPop()
+                  ? context.pop()
+                  : context.go('/notifications'),
+            ),
+            title: Text(t.v9Preferences),
+          ),
           Expanded(
             child: CommunityAsync(
               value: ref.watch(notificationPreferencesProvider),
