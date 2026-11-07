@@ -15,7 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Match the project's Dart ^3.13.3 requirement; verify the release commit.
 RUN git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git /opt/flutter \
     && test "$(git -C /opt/flutter rev-parse HEAD)" = "9584c6713b324636289d067944a46fd6b49df14b"
-ENV PATH="/opt/flutter/bin:${PATH}" CI=true
+# Render's build user namespace cannot restore arbitrary archive UID/GIDs.
+# Keep extracted SDK artifacts owned by the current container user instead.
+ENV PATH="/opt/flutter/bin:${PATH}" CI=true TAR_OPTIONS="--no-same-owner"
 RUN flutter config --no-analytics --enable-web && flutter precache --web
 WORKDIR /app
 COPY pubspec.yaml pubspec.lock analysis_options.yaml l10n.yaml ./
