@@ -1737,4 +1737,140 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get themeSaveFailed =>
       'Đã đổi giao diện nhưng chưa lưu được lựa chọn trên thiết bị. Hãy thử lại.';
+
+  @override
+  String get v9Shorts => 'Music Shorts';
+
+  @override
+  String get v9ForYou => 'Cho bạn';
+
+  @override
+  String get v9Following => 'Đang theo dõi';
+
+  @override
+  String get v9Trending => 'Thịnh hành';
+
+  @override
+  String get v9Autoplay => 'Tự phát khi vuốt';
+
+  @override
+  String get v9AutoNext => 'Tự chuyển đoạn tiếp theo';
+
+  @override
+  String get v9Preview => 'Nghe thử';
+
+  @override
+  String get v9FullTrack => 'Nghe toàn bộ';
+
+  @override
+  String get v9Comments => 'Bình luận';
+
+  @override
+  String get v9WriteComment => 'Viết bình luận...';
+
+  @override
+  String get v9Reply => 'Trả lời';
+
+  @override
+  String get v9Send => 'Gửi';
+
+  @override
+  String get v9DeletedComment => 'Bình luận đã được xóa';
+
+  @override
+  String get v9Replies => 'Xem trả lời';
+
+  @override
+  String get v9BackComments => 'Về bình luận';
+
+  @override
+  String get v9NoComments => 'Chưa có bình luận. Hãy mở đầu cuộc trò chuyện.';
+
+  @override
+  String get v9Notifications => 'Thông báo';
+
+  @override
+  String get v9Unread => 'Chưa đọc';
+
+  @override
+  String get v9All => 'Tất cả';
+
+  @override
+  String get v9ReadAll => 'Đánh dấu tất cả đã đọc';
+
+  @override
+  String get v9Preferences => 'Tùy chọn thông báo';
+
+  @override
+  String get v9NoNotifications => 'Bạn đã xem hết thông báo.';
+
+  @override
+  String get v9NewFollower => 'đã theo dõi bạn';
+
+  @override
+  String get v9NewComment => 'đã bình luận về bài hát của bạn';
+
+  @override
+  String get v9NewReply => 'đã trả lời bình luận của bạn';
+
+  @override
+  String get v9SongLike => 'đã thích bài hát của bạn';
+
+  @override
+  String get v9NewTrack => 'vừa chia sẻ một bản thu mới';
+
+  @override
+  String get v9CommentLike => 'đã thích bình luận của bạn';
+
+  @override
+  String get v9FollowersPreference => 'Người theo dõi mới';
+
+  @override
+  String get v9CommentsPreference => 'Bình luận trên bài hát';
+
+  @override
+  String get v9RepliesPreference => 'Trả lời bình luận';
+
+  @override
+  String get v9LikesPreference => 'Lượt thích bài hát và bình luận';
+
+  @override
+  String get v9TracksPreference => 'Bài mới từ creator đang theo dõi';
+
+  @override
+  String get v9EmptyFollowing =>
+      'Chưa có bản thu từ người bạn theo dõi. Khám phá creator hoặc chuyển sang Cho bạn.';
+
+  @override
+  String get v9FeedEnd =>
+      'Bạn đã nghe hết lượt khám phá này. Làm mới để khám phá tiếp.';
+
+  @override
+  String get v9RefreshFeed => 'Làm mới feed';
+
+  @override
+  String get v9PreviewHint =>
+      'Nhấn phát để bắt đầu nghe thử. Vuốt để khám phá bản thu tiếp theo.';
+
+  @override
+  String get v9DeleteComment => 'Xóa bình luận';
+
+  @override
+  String get v9ReportSent => 'Báo cáo đã được gửi để xem xét.';
+
+  @override
+  String get v9Share => 'Chia sẻ liên kết';
+
+  @override
+  String get v9RecentActivity => 'Bản phát hành gần đây';
+
+  @override
+  String get v9Unavailable => 'Nội dung này không còn khả dụng.';
+
+  @override
+  String get v9PreviewSeconds => 'Đoạn nghe thử tối đa 30 giây';
+
+  @override
+  String get v9ShortsEntryIntro =>
+      'Nghe thử bản thu mới. Vuốt để tìm âm thanh bạn thích.';
 }

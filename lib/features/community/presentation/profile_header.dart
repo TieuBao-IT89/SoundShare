@@ -1,12 +1,13 @@
 import '../../../core/widgets/theme_mode_menu.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+import '../../../core/services/share_link.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
-import '../../../core/config/api_config.dart';
 import '../../../core/services/api_client.dart';
 import '../../../core/widgets/artwork.dart';
 import '../../../l10n/l10n.dart';
@@ -180,16 +181,7 @@ class ProfileHeader extends ConsumerWidget {
                 tooltip: t.v3ShareProfile,
                 icon: const Icon(Icons.ios_share_rounded),
                 onPressed: () async {
-                  final origin = Uri.base.hasAuthority
-                      ? Uri.base.origin
-                      : ApiConfig.baseUrl;
-                  await Clipboard.setData(
-                    ClipboardData(text: '$origin/#/u/${p.username}'),
-                  );
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(t.v3Copied)));
-                  }
+                  await shareLink(context, '/u/${p.username}');
                 },
               ),
             if (!p.isSelf)

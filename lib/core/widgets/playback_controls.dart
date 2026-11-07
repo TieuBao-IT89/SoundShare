@@ -11,6 +11,7 @@ import '../services/song_favorite_service.dart';
 import 'music_progress_slider.dart';
 import 'listening_panel.dart';
 import 'player_sheet.dart';
+import 'visible_playback_position.dart';
 
 /// All controls read the existing player; these widgets own no playback state.
 class PlaybackToggle extends ConsumerWidget {
@@ -146,11 +147,10 @@ class PlaybackProgress extends ConsumerWidget {
     return StreamBuilder<Duration?>(
       stream: player.durationStream,
       initialData: player.duration,
-      builder: (context, duration) => StreamBuilder<Duration>(
-        stream: player.positionStream,
-        initialData: player.position,
+      builder: (context, duration) => VisiblePlaybackPosition(
+        player: player,
         builder: (context, position) => MusicProgressSlider(
-          position: position.data ?? Duration.zero,
+          position: position,
           duration: duration.data ?? Duration.zero,
           onSeek: ref.read(playbackActionsProvider).seek,
         ),

@@ -1,5 +1,9 @@
 # SoundShare — AURORA PEARL V6 / OBSIDIAN PULSE
 
+V9 mở rộng cùng hệ giao diện: Shorts dọc đặt artwork/creator ở trung tâm, thao tác xã hội ở cạnh và nghe thử ở đáy; giữ Be Vietnam Pro, nền Pearl/Obsidian và ambient hiện có. Comments dùng sheet theo bàn phím; inbox dùng hàng actor/nội dung/unread. Không tự phát lần đầu, đóng sheet không resume; menu cho bật autoplay/auto-next, có nút chuyển trang cho a11y. Chi tiết trạng thái và giới hạn trong [báo cáo V9](docs/soundshare-v9-social-music.md).
+
+Lối vào Shorts là một chế độ nghe trong **Khám phá**, dùng hàng điều hướng có mô tả và mũi tên, cùng surface lavender của theme. Home giữ shortcut trong nhóm truy cập nhanh sau nội dung nổi bật; sidebar desktop có mục Shorts. Nút đứng riêng dưới lời chào đã bỏ. Comments/inbox có thông báo lỗi rõ và pull-to-refresh cả khi ít nội dung; inbox foreground cập nhật nền, giữ nguyên danh sách khi đang refresh.
+
 V6 đặt artwork của người sáng tạo trên nền ngọc trai: typography slate rõ nét, thao tác violet đậm, cyan làm điểm nhấn và gradient pastel ở vùng khám phá. Giữ layout và hành vi V4/V5 bên dưới. Light có thiết kế riêng cho featured banner, player ambient, cover fallback, genre, surface/elevation và navigation; Dark tiếp tục dùng palette OBSIDIAN PULSE. [Audit](docs/ui/aurora-pearl-v6-audit.md) · [Kiểm tra và ảnh chạy thực tế](docs/ui/aurora-pearl-v6-review.md).
 
 | Token Light | Giá trị | Vai trò |
@@ -94,6 +98,8 @@ Trên Web, điều hướng Clerk về hash route dùng `routerPush`/`routerRepl
 Quản lý tài khoản mở Clerk UserProfile trên Web hoặc ClerkUserButton trên native. Hồ sơ công khai SoundShare dùng `/users/me`, do người dùng tự chỉnh và liên kết bằng `sub` server đã xác minh. Không đồng bộ email, mật khẩu hay tên Clerk đè lên hồ sơ SoundShare. Đổi tên trong cùng phiên không khởi tạo lại nguồn phát/thư viện.
 
 ## Chuyển động, tiếp cận và kiểm tra
+
+V7 thêm điều khiển media Android ngoài giao diện, cùng player/actions/queue hiện có. UI và notification dùng trạng thái thực; khi background, vinyl và subscription vị trí của Now Playing/mini dừng cập nhật, khi trở lại lấy vị trí thực mà không restart bài. Chính sách pause/noisy/focus, metadata riêng tư và cleanup phiên được mô tả tại [báo cáo Native Audio V7](docs/soundshare-v7-background-audio.md). Bố cục/theme hiện có giữ nguyên; Android native còn chờ nghiệm thu thiết bị.
 
 Artwork trong Đang phát dùng `VinylRecordArtwork`: thân đĩa charcoal, 40 rãnh đồng tâm, nhãn tròn từ ảnh bìa bài hiện tại (70% đường kính), lỗ tâm nhỏ, viền có độ dày và bóng đổ tròn. Hướng tham khảo [Vinyl Music Player của Tom.vsx](https://dribbble.com/shots/14611479-Vinyl-Music-Player-App-UI-Concept) và [Vinyl Player của Ana Carolina Magalhães](https://dribbble.com/shots/27364872-Vinyl-Player-Music-Player-UI); giữ palette và controls SoundShare. Không thêm ảnh thương mại hoặc package animation.
 

@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "db:check": "node src/database/check-schema.js",
+    "notifications:deliver": "node notification-worker.js",
     "dev": "nodemon server.js",
     "start": "node server.js",
     "migrate": "node src/database/migrate.js",

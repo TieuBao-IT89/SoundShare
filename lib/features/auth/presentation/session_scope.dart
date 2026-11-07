@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/api_client.dart';
+import '../../../core/services/audio_service.dart';
 import '../domain/auth_session.dart';
 import 'session_gate.dart';
 
@@ -28,17 +29,22 @@ class _SessionScopeState extends State<SessionScope> {
   late final tokenOverride = tokenSourceProvider.overrideWithValue(
     ({bool refresh = false}) => widget.token(refresh: refresh),
   );
-  late final signOutOverride = signOutProvider.overrideWithValue(
-    () => widget.signOut(),
-  );
+  late final signOutOverride = signOutProvider.overrideWithValue(() async {
+    if (container.exists(playbackActionsProvider)) {
+      await container.read(playbackActionsProvider).stop();
+    }
+    await widget.signOut();
+  });
   late final clientOverride = apiClientProvider.overrideWith((ref) {
     final client =
-        widget.createClient?.call(widget.token) ??
-        ApiClient(token: widget.token);
+        widget.createClient?.call(_currentToken) ??
+        ApiClient(token: _currentToken);
     ref.onDispose(client.close);
     return client;
   });
-  late final container = ProviderContainer(
+  Future<String> _currentToken({bool refresh = false}) =>
+      widget.token(refresh: refresh);
+  late final ProviderContainer container = ProviderContainer(
     overrides: [
       authSessionProvider.overrideWithValue(widget.session),
       tokenOverride,

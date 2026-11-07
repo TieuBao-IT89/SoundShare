@@ -6,7 +6,11 @@ import 'audio_service.dart';
 
 final sleepTimerProvider =
     StateNotifierProvider<SleepTimerController, DateTime?>((ref) {
-      return SleepTimerController(ref);
+      final timer = SleepTimerController(ref);
+      ref.listen(hasSelectedSongProvider, (_, selected) {
+        if (!selected) timer.cancel();
+      });
+      return timer;
     });
 
 /// A single cancellable deadline; switching songs does not restart the timer.

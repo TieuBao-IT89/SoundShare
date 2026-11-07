@@ -8,6 +8,8 @@ abstract final class ApiConfig {
       return _configuredBaseUrl.replaceFirst(RegExp(r'/+$'), '');
     }
 
+    if (kIsWeb) return Uri.base.origin;
+
     return switch (defaultTargetPlatform) {
       TargetPlatform.android => 'http://10.0.2.2:3000',
       _ => 'http://localhost:3000',

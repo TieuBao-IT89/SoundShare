@@ -1,4 +1,5 @@
 import 'theme_mode_menu.dart';
+import '../../features/notifications/presentation/notification_center.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -335,6 +336,7 @@ class _Navigation extends StatelessWidget {
             const Divider(),
             const SizedBox(height: 16),
             for (final item in [
+              (Icons.graphic_eq_rounded, t.v9Shorts, '/shorts'),
               (Icons.favorite_border_rounded, t.likedTracks, '/liked'),
               (Icons.queue_music_rounded, t.v3Playlists, '/playlists'),
             ])
@@ -440,6 +442,7 @@ class _TopbarState extends ConsumerState<_Topbar> {
           ),
           const SizedBox(width: 16),
           const ThemeModeMenu(),
+          const NotificationBell(),
           IconButton(
             tooltip: context.l10n.uploadMusic,
             onPressed: () => context.push('/upload'),

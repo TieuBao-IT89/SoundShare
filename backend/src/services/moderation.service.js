@@ -24,7 +24,9 @@ export const createModerationService = (pool) => ({
       if (!row)
         throw new HttpError(404, "REPORT_NOT_FOUND", "Report not found.");
       if (action === "hide" || action === "restore") {
-        if (row.track_id)
+        if (row.comment_id)
+          await client.query("UPDATE track_comments SET status=$2,updated_at=NOW() WHERE id=$1 AND status<>'deleted'",[row.comment_id,action==='hide'?'hidden':'active']);
+        else if (row.track_id)
           await client.query(
             "UPDATE private_tracks SET status=$2,updated_at=NOW() WHERE id=$1",
             [row.track_id, action === "hide" ? "hidden" : "active"],

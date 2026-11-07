@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../services/audio_service.dart';
 import 'artwork.dart';
 import 'music_progress_slider.dart';
+import 'visible_playback_position.dart';
 
 /// Shares its selection, audio instance, and actions with the full player.
 class FloatingMiniPlayer extends ConsumerWidget {
@@ -128,7 +129,10 @@ class FloatingMiniPlayer extends ConsumerWidget {
                         stream: player.playerStateStream,
                         initialData: player.playerState,
                         builder: (context, snapshot) {
-                          final playing = snapshot.data?.playing ?? false;
+                          final playing =
+                              (snapshot.data?.playing ?? false) &&
+                              snapshot.data?.processingState !=
+                                  ProcessingState.completed;
                           return IconButton(
                             tooltip: loading
                                 ? copy.loadingAudio
@@ -198,13 +202,11 @@ class FloatingMiniPlayer extends ConsumerWidget {
                     stream: player.durationStream,
                     initialData: player.duration,
                     builder: (context, durationSnapshot) =>
-                        StreamBuilder<Duration>(
-                          stream: player.positionStream,
-                          initialData: player.position,
-                          builder: (context, positionSnapshot) =>
+                        VisiblePlaybackPosition(
+                          player: player,
+                          builder: (context, position) =>
                               MusicProgressIndicator(
-                                position:
-                                    positionSnapshot.data ?? Duration.zero,
+                                position: position,
                                 duration:
                                     durationSnapshot.data ?? Duration.zero,
                               ),
