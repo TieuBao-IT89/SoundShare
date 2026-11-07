@@ -1,0 +1,32 @@
+# Allow only build inputs into the context. This also excludes Render secret
+# files, local .env files, .git, caches, logs and platform build artifacts.
+**
+!Dockerfile
+!.dockerignore
+!pubspec.yaml
+!pubspec.lock
+!analysis_options.yaml
+!l10n.yaml
+!lib/
+!lib/**
+!assets/
+!assets/**
+!web/
+!web/**
+!scripts/
+!scripts/web-config.mjs
+!backend/
+!backend/package.json
+!backend/package-lock.json
+!backend/server.js
+!backend/notification-worker.js
+!backend/src/
+!backend/src/**
+# Keep these exclusions last, including unexpected files inside allowed paths.
+**/.env
+**/.env.*
+**/node_modules
+**/.local
+**/*.log
+**/*.pem
+**/*.key

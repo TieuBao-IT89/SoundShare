@@ -18,8 +18,12 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import { createCommunityRouter } from './routes/community.routes.js';
 import { createSocialRouter } from './routes/social.routes.js';
 
-export const createApp = ({ uploadService, trackService, communityService, socialService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory } = {}) => {
+export const createApp = ({ uploadService, trackService, communityService, socialService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory, trustProxyHops = 0 } = {}) => {
   const app = express();
+  if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 2) {
+    throw new Error("TRUST_PROXY_HOPS must be an integer between 0 and 2.");
+  }
+  app.set("trust proxy", trustProxyHops);
   app.disable("x-powered-by");
   app.use(requestContext);
   const clerkOrigin = new URL(clerkOptions.issuer).origin;

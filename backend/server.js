@@ -58,6 +58,7 @@ const app = createApp({
     storage,
   }),
   checkDatabaseConnection,
+  trustProxyHops: Number(process.env.TRUST_PROXY_HOPS || 0),
   uploadService,
   communityService: createCommunityService({
     repository: createCommunityRepository(pool),
@@ -85,7 +86,7 @@ const cleanupTimer = setInterval(() => {
 }, 60000);
 cleanupTimer.unref();
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`
 ====================================
        SoundShare Backend

@@ -1,5 +1,9 @@
 PRD — SoundShare
 
+## Web HTTPS / Safari trên Render
+
+Docker nhiều giai đoạn build Flutter Web và chạy Express phục vụ cùng origin. Web không có `API_BASE_URL` tường minh sẽ dùng origin trình duyệt; native giữ cấu hình development hiện có. Chỉ publishable key và API origin được đưa vào bundle, secret/Neon/Cloudinary credential ở backend. Runtime bind `0.0.0.0:$PORT`, kiểm tra schema trước startup, health `/api/v1/health`; không thêm endpoint hoặc tự migrate. Proxy trust cấu hình bằng `TRUST_PROXY_HOPS` (mặc định 0, Render ingress 1, chỉ nhận số nguyên 0–2), ảnh hưởng IP dùng cho rate limit. Blueprint Free là bản thử, không bảo đảm notification delivery liên tục khi service ngủ. [Cấu hình và tiêu chí nghiệm thu Safari](docs/render-safari-deploy.md); chưa coi việc thêm Dockerfile là đã triển khai hoặc nghiệm thu iPhone.
+
 ## V9 — Social Music Discovery
 
 Source mở rộng Music Shorts, comments/reply một cấp, comment likes/report và notification inbox/preferences bền vững. Dữ liệu đi qua Clerk → Express `/api/v1` → PostgreSQL; dùng player V7 duy nhất, preview tối đa 30 giây, không tính impression/swipe thành valid play. Comments chỉ dành cho public/active track và creator; mọi thao tác và notification truy cập lại phải kiểm tra visibility hiện tại. Notifications dùng transactional outbox, batch 100 recipients và event dedupe; scheduler deployment bắt buộc. Không tự publish hoặc đổi visibility bài cũ.

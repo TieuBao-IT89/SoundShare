@@ -1,5 +1,7 @@
 # SoundShare
 
+Triển khai Web/API cùng HTTPS trên Render để thử Safari iPhone: [Docker, Blueprint, cấu hình và checklist thiết bị](docs/render-safari-deploy.md). Nhánh thử `feature/safari-web-deploy` gồm V7/V9; không tự merge vào develop/main. File cấu hình triển khai không đồng nghĩa đã có service chạy thật.
+
 **V9 — Social Music** thêm source Music Shorts, bình luận/reply và hộp thông báo bền vững, dùng chung player V7. Cần migration 006 và scheduler giao thông báo trước khi nghiệm thu môi trường thật. Xem [kiến trúc, API, setup và giới hạn V9](docs/soundshare-v9-social-music.md).
 
 Development hiện đã áp dụng migration 005–006. Khi khởi động, server và script Web chạy kiểm tra schema; có thể kiểm tra riêng bằng `npm run db:check` trong `backend/`. Nếu chưa sẵn sàng, áp dụng migration trong đúng môi trường rồi khởi động lại; startup không tự sửa database.
