@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,17 +20,148 @@ class FeaturedMusic extends ConsumerStatefulWidget {
   ConsumerState<FeaturedMusic> createState() => _FeaturedMusicState();
 }
 
-class _FeaturedMusicState extends ConsumerState<FeaturedMusic> {
+class _FeaturedMusicState extends ConsumerState<FeaturedMusic>
+    with WidgetsBindingObserver {
+  static const _slideInterval = Duration(seconds: 5);
   int page = 0;
   final controller = PageController();
+  Timer? _slideTimer;
+  bool _motionEnabled = false;
+  bool _hovered = false;
+  bool _focused = false;
+  bool _scrolling = false;
+  final _pointers = <int>{};
+
+  int get _pageCount => widget.songs.take(3).length;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _motionEnabled =
+        TickerMode.valuesOf(context).enabled &&
+        !MediaQuery.disableAnimationsOf(context) &&
+        !MediaQuery.accessibleNavigationOf(context) &&
+        (ModalRoute.of(context)?.isCurrent ?? true);
+    _restartSlideTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant FeaturedMusic oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.songs.take(3).length == _pageCount) return;
+    if (page >= _pageCount) {
+      page = _pageCount == 0 ? 0 : _pageCount - 1;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && controller.hasClients) controller.jumpToPage(page);
+      });
+    }
+    _restartSlideTimer();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _restartSlideTimer();
+  }
+
+  void _restartSlideTimer() {
+    _slideTimer?.cancel();
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (!_motionEnabled ||
+        _pageCount < 2 ||
+        _hovered ||
+        _focused ||
+        _scrolling ||
+        _pointers.isNotEmpty ||
+        (lifecycle != null && lifecycle != AppLifecycleState.resumed)) {
+      return;
+    }
+    _slideTimer = Timer(_slideInterval, () {
+      if (!mounted || !controller.hasClients) return;
+      _goToPage((page + 1) % _pageCount);
+    });
+  }
+
+  void _goToPage(int target) {
+    _restartSlideTimer();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      controller.jumpToPage(target);
+      return;
+    }
+    controller.animateToPage(
+      target,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+    if (notification is ScrollStartNotification) {
+      _scrolling = true;
+      _restartSlideTimer();
+    } else if (notification is ScrollEndNotification) {
+      _scrolling = false;
+      _restartSlideTimer();
+    }
+    return false;
+  }
+
   @override
   void dispose() {
+    _slideTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
     super.dispose();
   }
 
+  Widget _withSlideInteraction(Widget child) {
+    return MouseRegion(
+      onEnter: (_) {
+        _hovered = true;
+        _restartSlideTimer();
+      },
+      onExit: (_) {
+        _hovered = false;
+        _restartSlideTimer();
+      },
+      child: Focus(
+        onFocusChange: (focused) {
+          _focused = focused;
+          _restartSlideTimer();
+        },
+        child: Listener(
+          onPointerDown: (event) {
+            _pointers.add(event.pointer);
+            _restartSlideTimer();
+          },
+          onPointerUp: (event) {
+            _pointers.remove(event.pointer);
+            _restartSlideTimer();
+          },
+          onPointerCancel: (event) {
+            _pointers.remove(event.pointer);
+            _restartSlideTimer();
+          },
+          child: NotificationListener<ScrollNotification>(
+            onNotification: _onScrollNotification,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      _withSlideInteraction(_buildCarousel(context));
+
+  Widget _buildCarousel(BuildContext context) {
     final songs = widget.songs.take(3).toList();
     if (songs.isEmpty) return const CommunityEmpty();
     final height = MediaQuery.textScalerOf(context).scale(24) > 36
@@ -133,13 +266,7 @@ class _FeaturedMusicState extends ConsumerState<FeaturedMusic> {
                       i + 1,
                       songs.length,
                     ),
-                    onPressed: () => controller.animateToPage(
-                      i,
-                      duration: MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 250),
-                      curve: Curves.easeOut,
-                    ),
+                    onPressed: () => _goToPage(i),
                     icon: Container(
                       width: page == i ? 24 : 6,
                       height: 6,

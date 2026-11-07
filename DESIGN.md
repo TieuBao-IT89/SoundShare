@@ -63,6 +63,8 @@ Quản lý tài khoản mở Clerk UserProfile trên Web hoặc ClerkUserButton 
 
 ## Chuyển động, tiếp cận và kiểm tra
 
+Banner nội dung nổi bật ở Trang chủ/Khám phá tự trượt qua tối đa ba bài sau mỗi 5 giây, chuyển trong 250 ms và quay lại bài đầu sau bài cuối. Vuốt hoặc chọn chấm điều hướng bắt đầu lại chu kỳ sau khi chuyển xong. Tạm dừng tự trượt khi giữ chạm, rê chuột hoặc focus bàn phím trong banner, ứng dụng ở nền hay route/tab không hiển thị; khi quay lại chờ đủ chu kỳ mới. Không tự trượt khi chỉ có một bài, bật Reduce Motion hoặc hỗ trợ điều hướng tiếp cận; thao tác chọn thủ công vẫn hoạt động.
+
 Chuyển động phản hồi ngắn 150–280 ms: nội dung xuất hiện nhẹ, trạng thái chọn, đổi icon, chuyển vào Player và Hero artwork. Reduce Motion bỏ Hero/chuyển cảnh, bỏ shimmer/spinner tại các giao diện mới khi phù hợp. Glow không chuyển động liên tục.
 
 SongTile thu nhỏ 0,98 khi nhấn, nhả khi hủy hoặc bắt đầu cuộn, giữ keyboard/semantics của control bên trong. Mini Player chuyển icon trong 180 ms. Skeleton có một lớp shimmer cho cả cụm và dừng khi Reduce Motion được bật. Màu glow chỉ lấy mẫu bitmap 32×32 một lần mỗi ảnh, chuyển màu 320 ms, có timeout và giải phóng listener/tài nguyên khi đổi bài/rời màn hình; không dùng blur ảnh hay lấy mẫu mỗi frame.
