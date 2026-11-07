@@ -7,6 +7,7 @@ import '../../home/application/catalog_provider.dart';
 import '../../home/domain/song.dart';
 import '../application/community_providers.dart';
 import 'community_widgets.dart';
+import '../../lyrics/presentation/lyrics_editor.dart';
 
 class ManageSongsScreen extends ConsumerWidget {
   const ManageSongsScreen({super.key});
@@ -34,13 +35,25 @@ class ManageSongsScreen extends ConsumerWidget {
                     subtitle: Text(
                       '${song.artist} · ${song.visibility == 'public' ? t.v3Public : t.v3Private}',
                     ),
-                    trailing: IconButton(
-                      tooltip: t.v3EditSong,
-                      onPressed: () => showDialog<void>(
-                        context: context,
-                        builder: (_) => _SongEditor(song: song),
-                      ),
-                      icon: const Icon(Icons.edit_outlined),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: t.v11EditLyrics,
+                          onPressed: song.id == null
+                              ? null
+                              : () => showLyricsEditor(context, song),
+                          icon: const Icon(Icons.lyrics_outlined),
+                        ),
+                        IconButton(
+                          tooltip: t.v3EditSong,
+                          onPressed: () => showDialog<void>(
+                            context: context,
+                            builder: (_) => _SongEditor(song: song),
+                          ),
+                          icon: const Icon(Icons.edit_outlined),
+                        ),
+                      ],
                     ),
                   ),
               ],

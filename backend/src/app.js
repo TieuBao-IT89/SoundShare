@@ -17,8 +17,9 @@ import { notFoundHandler } from "./middleware/not-found.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { createCommunityRouter } from './routes/community.routes.js';
 import { createSocialRouter } from './routes/social.routes.js';
+import { createLyricsRouter } from './routes/lyrics.routes.js';
 
-export const createApp = ({ uploadService, trackService, communityService, socialService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory, trustProxyHops = 0 } = {}) => {
+export const createApp = ({ uploadService, trackService, communityService, socialService, lyricsService, checkDatabaseConnection, clerkOptions = getClerkOptions(), logging = true, uploadRateLimit, webDirectory, trustProxyHops = 0 } = {}) => {
   const app = express();
   if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 2) {
     throw new Error("TRUST_PROXY_HOPS must be an integer between 0 and 2.");
@@ -65,6 +66,7 @@ export const createApp = ({ uploadService, trackService, communityService, socia
       : undefined));
   });
   app.use(express.json({ limit: "1mb" }));
+  if (lyricsService) app.use('/api/v1/songs/:songId/lyrics', createLyricsRouter({ service: lyricsService, requireAuth }));
   if (socialService) app.use('/api/v1', createSocialRouter({service:socialService,requireAuth}));
   if (communityService) app.use('/api/v1',createCommunityRouter({service:communityService,requireAuth}));
   if (trackService) {

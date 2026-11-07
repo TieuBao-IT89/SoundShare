@@ -6,6 +6,7 @@ const migrationFiles = (
   .filter((name) => /^\d+.*\.sql$/.test(name))
   .sort();
 const socialTables = [
+  "track_lyrics",
   "track_comments",
   "comment_likes",
   "content_reports",

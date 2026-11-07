@@ -1,5 +1,13 @@
 PRD — SoundShare
 
+## V11 — Synced Lyrics & Music Experience
+
+Người đăng chọn file LRC UTF-8 tối đa 64 KB hoặc dán timestamp khi tạo bài; chủ bài có thể thêm/sửa/xóa lời ở Quản lý bài hát hoặc viewer. Backend kiểm tra định dạng và quyền, lưu văn bản lời có giới hạn/revision qua migration 007; tạo bài kèm lời phải nguyên tử và retry không tạo trùng. Không thay audio/artwork storage hoặc đưa thông tin Neon vào client.
+
+POST `/api/v1/songs` thêm `lyricsLrc?:string`. GET/PUT/DELETE `/api/v1/songs/:songId/lyrics` yêu cầu Clerk Bearer: GET trả document `{format,lrc,cues:[{atMs,text}],revision,updatedAt,canEdit}`, PUT strict `{lrc,revision}`, DELETE strict `{revision}`. Chỉ owner sửa; đọc theo visibility/status hiện tại. 401 identity sai, 403 sửa bài public của người khác, 404 private/hidden/deleted, 400 INVALID_LRC/VALIDATION_ERROR, 409 LYRICS_CHANGED, 429 RATE_LIMITED, 503 LYRICS_UNAVAILABLE. [Contract đầy đủ, giới hạn, phân quyền và migration](docs/soundshare-v11-lyrics.md).
+
+Player dùng cùng engine/queue và tiến trình thật, làm nổi dòng hiện tại, tự cuộn, chạm để tua giữ pause/play, sheet và `/lyrics` toàn màn hình. Kéo đọc tạm dừng tự cuộn, có nút theo lại; Respect Reduce Motion/text scale/Safe Area. Không đồng bộ khi không có LRC hợp lệ; xử lý loading/error/empty, kết quả đến muộn khi đổi bài và xung đột hai editor. V11 thay phần lyrics placeholder trong mô tả Vinyl 2.0 lịch sử bên dưới; chưa nghiệm thu Safari/Neon Render cho bản V11 trước khi triển khai và kiểm tra thật.
+
 ## Web HTTPS / Safari trên Render
 
 Docker nhiều giai đoạn build Flutter Web và chạy Express phục vụ cùng origin. Web không có `API_BASE_URL` tường minh sẽ dùng origin trình duyệt; native giữ cấu hình development hiện có. Chỉ publishable key và API origin được đưa vào bundle, secret/Neon/Cloudinary credential ở backend. Runtime bind `0.0.0.0:$PORT`, kiểm tra schema trước startup, health `/api/v1/health`; không thêm endpoint hoặc tự migrate. Proxy trust cấu hình bằng `TRUST_PROXY_HOPS` (mặc định 0, Render ingress 1, chỉ nhận số nguyên 0–2), ảnh hưởng IP dùng cho rate limit. Blueprint Free là bản thử, không bảo đảm notification delivery liên tục khi service ngủ. [Cấu hình và tiêu chí nghiệm thu Safari](docs/render-safari-deploy.md); chưa coi việc thêm Dockerfile là đã triển khai hoặc nghiệm thu iPhone.

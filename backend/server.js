@@ -16,6 +16,8 @@ import { createSocialRepository } from "./src/repositories/social.repository.js"
 import { createSocialService } from "./src/services/social.service.js";
 import { createNotificationDelivery } from "./src/services/notification-delivery.service.js";
 import { assertSchemaReady } from "./src/database/schema-readiness.js";
+import { createLyricsRepository } from './src/repositories/lyrics.repository.js';
+import { createLyricsService } from './src/services/lyrics.service.js';
 
 try {
   await assertSchemaReady(pool);
@@ -52,6 +54,7 @@ const notificationTimer = setInterval(deliverNotifications, 15000);
 notificationTimer.unref();
 void deliverNotifications();
 const app = createApp({
+  lyricsService: createLyricsService(createLyricsRepository(pool)),
   socialService: createSocialService({
     repository: createSocialRepository(pool),
     communityRepository: createCommunityRepository(pool),

@@ -7,6 +7,7 @@ export const createTrackSchema = z.object({
   audioAssetId: trackIdSchema, artworkAssetId: trackIdSchema.nullable().optional(),
   title: text(120), artist: text(120), genre: text(100), description: z.string().trim().max(1000).refine((value) => !value.includes('\u0000')).default(""),
   visibility: z.enum(['private','public']).default('private'), rightsConfirmed: z.boolean().default(false),
+  lyricsLrc: z.string().min(1).max(65536).optional(),
 }).strict().refine(value => value.visibility !== 'public' || value.rightsConfirmed);
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: trackIdSchema }).strict();
 export const listTracksSchema = z.object({

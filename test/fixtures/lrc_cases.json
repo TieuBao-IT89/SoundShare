@@ -1,0 +1,10 @@
+{
+  "valid": [
+    { "name": "BOM CRLF and fractions", "source": "\ufeff[ti:Bản thu thử]\r\n[00:01.25] Dòng đầu\r\n[00:02.500] Dòng sau\r\n", "cues": [{"atMs":1250,"text":"Dòng đầu"},{"atMs":2500,"text":"Dòng sau"}] },
+    { "name": "repeated tags sorted with offset", "source": "[offset:500]\n[00:05][00:02.3] Điệp khúc\n[00:00.20] Mở đầu", "cues": [{"atMs":0,"text":"Mở đầu"},{"atMs":1800,"text":"Điệp khúc"},{"atMs":4500,"text":"Điệp khúc"}] },
+    { "name": "same-time translations and instrumental gap", "source": "[00:00] Xin chào\n[00:00] Hello\n[00:00] Hello\n[00:10]\n[00:20] Trở lại", "cues": [{"atMs":0,"text":"Xin chào\nHello"},{"atMs":10000,"text":""},{"atMs":20000,"text":"Trở lại"}] },
+    { "name": "negative offset and emoji", "source": "[offset:-250]\n[00:01.001] Một nốt nhạc 🎵", "cues": [{"atMs":1251,"text":"Một nốt nhạc 🎵"}] },
+    { "name": "text is never markup", "source": "[00:01] <script>literal text</script> ' OR 1=1 --", "cues": [{"atMs":1000,"text":"<script>literal text</script> ' OR 1=1 --"}] }
+  ],
+  "invalid": ["", "plain lyrics", "[ti:Metadata only]", "[00:00]", "[00:61] bad", "[00:01.1234] bad", "[-01:01] bad", "[999:00] too late", "[offset:30001]\n[00:01] bad", "[offset:one]\n[00:01] bad", "[offset:0]\n[offset:1]\n[00:01] bad", "[00:01] <00:01.5>word timing", "[00:01] invalid\u0000text", "[00:01]good\nuntimed line", "[00:01][00:99]bad"]
+}
