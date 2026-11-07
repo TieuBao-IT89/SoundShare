@@ -1,5 +1,19 @@
+import 'music_recommendation.dart';
+
 class Song {
   const Song({
+    this.id,
+    this.liked = false,
+    this.community = false,
+    this.saved = false,
+    this.username,
+    this.uploaderId,
+    this.visibility = 'private',
+    this.description = '',
+    this.validPlays = 0,
+    this.likeCount = 0,
+    this.resumePositionMs = 0,
+    this.recommendationReason,
     required this.title,
     required this.artist,
     required this.artwork,
@@ -10,6 +24,37 @@ class Song {
   });
 
   final String title;
+  final String? id;
+  final bool liked;
+  final bool community, saved;
+  final String? username, uploaderId;
+  final String visibility, description;
+  final int validPlays, likeCount, resumePositionMs;
+  final SongRecommendationReason? recommendationReason;
+  String get identity => id ?? '$title|$artist';
+
+  factory Song.fromJson(Map<String, dynamic> data) => Song(
+    id: data['id'] as String,
+    title: data['title'] as String,
+    artist: data['artist'] as String,
+    genre: data['genre'] as String,
+    artwork: (data['artwork']?['url'] as String?) ?? '',
+    duration: '--:--',
+    audioUrl: '',
+    liked: data['liked'] == true,
+    community: data['community'] == true,
+    saved: data['saved'] == true,
+    username: data['uploader']?['username'] as String?,
+    uploaderId: data['uploader']?['id'] as String?,
+    visibility: data['visibility'] as String? ?? 'private',
+    description: data['description'] as String? ?? '',
+    validPlays: (data['validPlayCount'] as num? ?? 0).toInt(),
+    likeCount: (data['likeCount'] as num? ?? 0).toInt(),
+    resumePositionMs: (data['resumePositionMs'] as num? ?? 0).toInt(),
+    recommendationReason: SongRecommendationReason.tryParse(
+      data['recommendationReason'],
+    ),
+  );
   final String artist;
   final String artwork;
   final String duration;

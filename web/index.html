@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,18 +18,21 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="SoundShare — Âm nhạc kết nối cảm xúc. Thư viện âm nhạc riêng của bạn.">
+    <meta name="theme-color" content="#F7F8FC">
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="soundshare.css">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="musicapp">
+  <meta name="apple-mobile-web-app-title" content="SoundShare">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 
-  <title>musicapp</title>
+  <title>SoundShare</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -41,6 +44,11 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <!-- Required by the existing passkeys_web plugin registration. -->
+  <script src="https://github.com/corbado/flutter-passkeys/releases/download/2.4.0/bundle.js" type="application/javascript"></script>
+  <script src="clerk-vi.js"></script>
+  <script src="clerk-bridge.js"></script>
+  <script src="upload-transport.js"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

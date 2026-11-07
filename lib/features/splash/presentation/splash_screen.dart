@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/aurora_widgets.dart';
+import '../../../l10n/l10n.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,68 +15,73 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _fade;
-  Timer? _timer;
-
+  late final controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 650),
+  )..forward();
+  Timer? timer;
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..forward();
-    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-    _timer = Timer(const Duration(milliseconds: 1300), () {
+    timer = Timer(const Duration(milliseconds: 900), () {
       if (mounted) context.go('/');
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
+    timer?.cancel();
+    controller.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Center(
-      child: FadeTransition(
-        opacity: _fade,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                color: AppColors.violet,
-                borderRadius: BorderRadius.circular(26),
-              ),
-              child: const Icon(
-                Icons.graphic_eq_rounded,
-                color: Colors.white,
-                size: 48,
+  Widget build(BuildContext context) {
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    return Scaffold(
+      body: AuroraBackground(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: FadeTransition(
+              opacity: reduced
+                  ? const AlwaysStoppedAnimation(1)
+                  : CurvedAnimation(parent: controller, curve: Curves.easeOut),
+              child: ScaleTransition(
+                scale: reduced
+                    ? const AlwaysStoppedAnimation(1)
+                    : Tween<double>(begin: .96, end: 1).animate(
+                        CurvedAnimation(
+                          parent: controller,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AuroraLogo(size: 96),
+                    const SizedBox(height: 24),
+                    Text(
+                      context.l10n.appName,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.l10n.brandTagline,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: context.colors.secondaryText),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 22),
-            const Text(
-              'soundshare',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -.7,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Share your music. Enjoy every moment.',
-              style: TextStyle(color: AppColors.muted),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

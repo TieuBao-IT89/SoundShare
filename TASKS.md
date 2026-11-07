@@ -7,6 +7,58 @@
 
 ---
 
+## OBSIDIAN WAVE V5 — cập nhật 06/11/2026
+
+- [x] Audit source và ba ảnh Clerk V3, nghiên cứu API mount/unmount/appearance và nguồn thiết kế; [audit](docs/ui/obsidian-wave-v5-audit.md).
+- [x] Welcome OBSIDIAN WAVE, split desktop/mobile, vector sóng âm tự viết, cùng theme/Be Vietnam Pro và reduced motion.
+- [x] Trang auth HTML embedded Clerk; hash riêng, mode/back/forward/F5, teardown an toàn, return/deep-link validation và public configuration bootstrap.
+- [x] Native welcome/wrapper/theme giữ form SDK; session timeout/retry/sign-out giữ nguyên.
+- [x] 197 Flutter tests, 20 Web JS tests, ba backend bridge/CSP tests, analyze sạch, release build và 21 case Chrome live Clerk form đạt; 30 ảnh Before/After thật, [báo cáo](docs/ui/obsidian-wave-v5-review.md).
+- [ ] Nghiệm thu email/password/OTP/resend/recovery/Google OAuth/MFA và `/auth/me` sau redirect bằng tài khoản thật; chưa có ảnh verification thật.
+- [ ] Android/iOS, assistive technology và performance thiết bị thật. Không commit/push/publish trong V5.
+
+## Gợi ý cá nhân hóa — cập nhật 06/11/2026
+
+- [x] Audit recommendation V3, schema nghe/thích/lưu/follow; giữ Clerk → Express → Neon và AudioPlayer hiện có.
+- [x] Backend taste-v1 dùng valid history, decay, sở thích thể loại, follow, thói quen giờ nghe, đa dạng creator và fallback bài mới thật.
+- [x] Migration 005 additive cho index truy vấn có giới hạn; API validation/authorization/rate limit và reason DTO an toàn.
+- [x] Flutter Dành riêng cho bạn, UTC offset thiết bị, lý do theo từng bài, copy tài khoản mới và tương thích metadata cũ.
+- [x] Test PostgreSQL biệt lập, ranking/context và widget 320 px/chữ 2×; kết quả toàn bộ kiểm tra ghi trong [báo cáo tính năng](docs/personalized-recommendations.md).
+- [x] Analyze sạch, 182 Flutter tests đạt; backend đầy đủ 73 đạt/một TCP test bỏ qua, thêm một test decay đạt; release build và bốn phiên Chrome fixture đạt.
+- [ ] Áp dụng migration 005/nghiệm thu tài khoản thật trên môi trường được chỉ định; đo chất lượng gợi ý và tải catalog lớn, Android/iOS thật.
+
+## OBSIDIAN PULSE V4 — cập nhật 06/11/2026
+
+Trạng thái V4 căn cứ vào [audit](docs/ui/obsidian-pulse-v4-audit.md), [báo cáo QA](docs/ui/obsidian-pulse-v4-review.md) và [điều chỉnh menu tài khoản](docs/ui/profile-account-menu-review.md).
+
+- [x] Design system V4, Home/Discovery/Search/Profile/Library/Upload và shell thích ứng mobile/tablet/desktop.
+- [x] Dock, mini player, Now Playing và queue dùng chung AudioPlayer; playlist đọc đủ trang trước khi thay hàng đợi.
+- [x] Menu tài khoản trên hồ sơ của mình dùng launcher Clerk và luồng đăng xuất hiện có; kiểm tra loading, retry và lỗi an toàn.
+- [x] Bổ sung widget tests, công cụ QA và ảnh browser từ fixture biệt lập; cập nhật README/DESIGN/PRD.
+- [x] Kiểm tra lại trước PR: Dart format không đổi 33 file, Flutter analyze sạch, 174/174 Flutter tests và 12/12 JavaScript tests đạt.
+- [ ] Nghiệm thu Android/iOS thật, screen reader và hiệu năng trên thiết bị tầm trung; chạy lại Clerk/Cloudinary thật cho V4.
+
+## NOCTURNE V3 — cập nhật 06/11/2026
+
+Phần theo dõi bên dưới là backlog lịch sử. Trạng thái V3 căn cứ vào [audit](docs/ui/nocturne-v3-audit.md), [hướng dẫn vận hành](docs/nocturne-v3.md) và [báo cáo kiểm tra](docs/ui/nocturne-v3-review.md).
+
+- [x] Audit repository, nghiên cứu nguồn, design system NOCTURNE và navigation năm tab.
+- [x] Migration 004 additive; đã chạy Neon development, giữ 3 user/2 bài cũ, hai bài vẫn private.
+- [x] API và UI username/profile, tìm cộng đồng, follow, follower/following, feed.
+- [x] Discovery, trending cùng cửa sổ thống kê, valid play threshold/dedupe và thể loại thực.
+- [x] Cùng AudioPlayer, queue, resume, mini player; playlist, thích/lưu có lưu server.
+- [x] Public/private upload, byte progress/hủy Web, retry giữ asset ID, sửa/xóa owned song và cleanup bền vững.
+- [x] Báo cáo nội dung và CLI moderation; không có nút cấp quyền admin từ client.
+- [x] Kiểm thử PostgreSQL biệt lập, regression Flutter/JS, smoke chỉ đọc dịch vụ development, build Web và Chrome fixture.
+- [x] Người dùng xác nhận Web thật đăng nhập và mở được Cá nhân → Tạo hồ sơ công khai.
+- [x] Người dùng xác nhận lưu username/tên hiển thị và F5 vẫn giữ đúng hồ sơ trên Web thật.
+- [x] Người dùng xác nhận hai tài khoản thật: tìm @username mở đúng hồ sơ, follow thành công và F5 vẫn Đang theo dõi.
+- [x] Người dùng xác nhận tài khoản thứ hai thấy/phát được bài công khai và chuyển tab nhạc vẫn chạy.
+- [x] Người dùng xác nhận lượt nghe tăng; đọc Neon có 1 valid play event và truy vấn ranking cả bốn khoảng thời gian trả 1 valid play cho bài công khai.
+- [x] Người dùng xác nhận đăng xuất/đăng nhập lại thành công và vẫn giữ trạng thái Đang theo dõi.
+- [ ] Android/iOS thật, profile performance/large catalog, TCP PostgreSQL test branch và nhiều server instance.
+- [ ] Worker TTL cho upload dở, dashboard moderation và quy trình kháng nghị (chưa triển khai).
+
 ## 1. Tổng quan tiến độ
 
 SoundShare là ứng dụng nghe và chia sẻ âm nhạc được xây dựng bằng Flutter.

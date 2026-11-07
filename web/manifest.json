@@ -1,11 +1,12 @@
 {
-    "name": "musicapp",
-    "short_name": "musicapp",
+    "name": "SoundShare",
+    "short_name": "SoundShare",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F8FC",
+    "theme_color": "#F7F8FC",
+    "lang": "vi",
+    "description": "Âm nhạc kết nối cảm xúc. Thư viện âm nhạc riêng của bạn.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

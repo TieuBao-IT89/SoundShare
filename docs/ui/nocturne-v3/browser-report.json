@@ -1,0 +1,29 @@
+{
+  "fixture": "Isolated PostgreSQL; synthetic audio/artwork; simulated Clerk SDK with server-verified RSA JWTs",
+  "screenshots": [
+    "home-390.png",
+    "username-search-390.png",
+    "public-profile-390.png",
+    "playlist-dialog-390.png",
+    "playlist-created-390.png",
+    "discover-390.png",
+    "player-390.png",
+    "profile-mini-player-390.png",
+    "home-320.png",
+    "discover-320.png",
+    "profile-320.png",
+    "upload-320.png",
+    "home-1280.png",
+    "discover-1280.png",
+    "profile-1280.png",
+    "upload-1280.png"
+  ],
+  "checks": [
+    "Search @username opens the correct profile; follow persists after reload",
+    "Creating a playlist through the actual dialog persists it in isolated PostgreSQL",
+    "Real 20-second synthetic audio plays across navigation and records a valid play via heartbeat",
+    "No failed API responses or uncaught browser exceptions"
+  ],
+  "exceptions": [],
+  "apiFailures": []
+}

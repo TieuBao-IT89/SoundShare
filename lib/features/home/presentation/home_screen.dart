@@ -1,251 +1,325 @@
+import '../../../core/widgets/theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../core/config/app_mode.dart';
+import '../../../core/services/api_client.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/artwork.dart';
+import '../../../core/widgets/aurora_widgets.dart';
+import '../../../core/widgets/catalog_widgets.dart';
+import '../../../core/widgets/section_heading.dart';
+import '../../../l10n/l10n.dart';
+import '../../explore/domain/discovery.dart';
+import '../../explore/presentation/sample_collection_tile.dart';
+import '../application/catalog_provider.dart';
 import '../domain/song.dart';
+import '../../community/presentation/community_home_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => AppScaffold(
-    child: CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
-          sliver: SliverList.list(
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'MONDAY, OCTOBER 31',
-                          style: TextStyle(
-                            color: AppColors.muted,
-                            letterSpacing: 1.5,
-                            fontSize: 11,
-                          ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.l10n;
+    final sample = ref.watch(demoModeProvider);
+    if (!sample) return const CommunityHomeScreen();
+    final name = ref.watch(authSessionProvider)?.name.trim();
+    final displayName = name == null || name.isEmpty
+        ? (sample ? t.guestName : t.accountName)
+        : name;
+    return AppScaffold(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        children: [
+          _HomeHeader(name: displayName),
+          const SizedBox(height: 24),
+          ref
+              .watch(catalogProvider)
+              .when(
+                loading: () => const CatalogLoading(),
+                error: (_, _) => const CatalogError(),
+                data: (songs) {
+                  if (songs.isEmpty) {
+                    return AuroraReveal(
+                      child: GlassCard(
+                        child: EmptyState(
+                          icon: Icons.library_music_outlined,
+                          title: t.homeEmptyTitle,
+                          message: sample ? t.homeEmptyDemo : t.homeEmptyReal,
+                          actionLabel: sample ? t.exploreMusic : t.uploadTrack,
+                          onAction: () =>
+                              context.go(sample ? '/explore' : '/upload'),
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Good evening, Alex',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  }
+                  final collections = sampleCollections
+                      .where((collection) => songs.any(collection.contains))
+                      .toList();
+                  final liked = ref.watch(likedSongIndicesProvider);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AuroraReveal(child: _FeaturedBanner(song: songs.first)),
+                      if (songs.length > 1) ...[
+                        const SizedBox(height: 32),
+                        AuroraReveal(
+                          delay: 60,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionHeading(
+                                t.newUploads,
+                                actionLabel: t.browseAll,
+                                onAction: () => context.go('/library'),
+                              ),
+                              const SizedBox(height: 8),
+                              for (var i = 1; i < songs.length; i++)
+                                SongTile(song: songs[i], index: i),
+                            ],
                           ),
                         ),
                       ],
+                      if (collections.isNotEmpty) ...[
+                        const SizedBox(height: 32),
+                        AuroraReveal(
+                          delay: 120,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionHeading(
+                                t.genreCollections,
+                                actionLabel: t.explore,
+                                onAction: () => context.go('/explore'),
+                              ),
+                              Text(
+                                sample
+                                    ? t.collectionsDemoSubtitle
+                                    : t.collectionsRealSubtitle,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 4),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final wide = constraints.maxWidth >= 680;
+                                  return Wrap(
+                                    spacing: 16,
+                                    children: [
+                                      for (final collection in collections)
+                                        SizedBox(
+                                          width: wide
+                                              ? (constraints.maxWidth - 16) / 2
+                                              : constraints.maxWidth,
+                                          child: SampleCollectionTile(
+                                            sample: sample,
+                                            collection: collection,
+                                            songs: songs,
+                                            onTap: () => context.go(
+                                              DiscoveryFilters(
+                                                collectionId: collection.id,
+                                              ).location,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      if (liked.isNotEmpty) ...[
+                        const SizedBox(height: 32),
+                        SectionHeading(
+                          t.yourFavorites,
+                          actionLabel: t.openLibrary,
+                          onAction: () => context.go('/library'),
+                        ),
+                        const SizedBox(height: 8),
+                        for (var i = 0; i < songs.length; i++)
+                          if (liked.contains(i))
+                            SongTile(song: songs[i], index: i),
+                      ],
+                      const SizedBox(height: 24),
+                      Text(
+                        sample ? t.songsDemoCaption : t.songsPrivateCaption,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  );
+                },
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: AuroraLogo(size: 32, wordmark: true),
+                ),
+              ),
+            ),
+            const ThemeModeMenu(),
+            IconButton(
+              tooltip: t.searchLabel,
+              onPressed: () => context.go('/explore'),
+              icon: const Icon(Icons.search_rounded),
+            ),
+            IconButton.filledTonal(
+              tooltip: t.profile,
+              onPressed: () => context.go('/profile'),
+              style: IconButton.styleFrom(
+                backgroundColor: context.colors.surfaceLight,
+                foregroundColor: context.colors.accentText,
+              ),
+              icon: Text(
+                name.characters.first.toUpperCase(),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${t.homeGreeting} $name',
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(color: context.colors.secondaryText),
+              ),
+            ),
+            const SizedBox(width: 12),
+            GradientIconButton(
+              icon: Icons.add_rounded,
+              tooltip: t.uploadMusic,
+              size: 48,
+              onPressed: () => context.push('/upload'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeaturedBanner extends ConsumerWidget {
+  const _FeaturedBanner({required this.song});
+  final Song song;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.l10n;
+    final sample = ref.watch(demoModeProvider);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: context.colors.violet.withValues(alpha: .14),
+            blurRadius: 40,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: GlassCard(
+        padding: EdgeInsets.zero,
+        gradient: context.colors.featuredGradient,
+        borderRadius: BorderRadius.circular(24),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 620;
+            final copy = Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    sample ? t.demoBadge : t.privateBadge,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: context.colors.accentText,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  IconButton.filledTonal(
-                    onPressed: () => context.push('/upload'),
-                    icon: const Icon(Icons.add_rounded),
+                  const SizedBox(height: 12),
+                  Text(
+                    t.homeTitle,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    song.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${song.artist} · ${song.genre}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: context.colors.secondaryText),
+                  ),
+                  const SizedBox(height: 20),
+                  GradientButton(
+                    label: t.listenNow,
+                    icon: Icons.play_arrow_rounded,
+                    onPressed: () => openCatalogSong(context, ref, 0),
                   ),
                 ],
               ),
-              const SizedBox(height: 26),
-              _SectionTitle(
-                'Made for your mood',
-                action: 'See all',
-                onTap: () => context.go('/explore'),
+            );
+            final art = Padding(
+              padding: wide
+                  ? const EdgeInsets.fromLTRB(0, 24, 24, 24)
+                  : const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Artwork(
+                url: song.artwork,
+                size: wide ? 240 : constraints.maxWidth - 40,
+                height: wide ? 240 : 180,
+                radius: 18,
+                semanticLabel: t.artworkFor(song.title),
               ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () => context.push('/player'),
-                child: Container(
-                  height: 190,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6045A8), Color(0xFF282444)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Stack(
+            );
+            return wide
+                ? Row(
                     children: [
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Opacity(
-                            opacity: .55,
-                            child: Artwork(
-                              url: sampleSongs[0].artwork,
-                              size: 190,
-                              radius: 24,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(22),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            const Text(
-                              'YOUR DAILY MIX',
-                              style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 1.5,
-                                color: Color(0xFFD4C7FF),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Soft focus',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Fresh sounds for slower days',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.mint,
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: const Text(
-                                'PLAY MIX  →',
-                                style: TextStyle(
-                                  color: Color(0xFF182013),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      Expanded(child: copy),
+                      art,
                     ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              const _SectionTitle('Recently shared'),
-              const SizedBox(height: 8),
-              ...sampleSongs
-                  .take(3)
-                  .map(
-                    (song) => _SongTile(
-                      song: song,
-                      onTap: () => context.push('/player'),
-                    ),
-                  ),
-              const SizedBox(height: 20),
-              const _SectionTitle('Find your next favorite'),
-              const SizedBox(height: 14),
-              SizedBox(
-                height: 178,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: sampleSongs.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 14),
-                  itemBuilder: (context, index) => GestureDetector(
-                    onTap: () => context.push('/player'),
-                    child: SizedBox(
-                      width: 128,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Artwork(
-                            url: sampleSongs[index].artwork,
-                            size: 128,
-                            radius: 18,
-                          ),
-                          const SizedBox(height: 9),
-                          Text(
-                            sampleSongs[index].title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            sampleSongs[index].artist,
-                            style: const TextStyle(
-                              color: AppColors.muted,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title, {this.action, this.onTap});
-  final String title;
-  final String? action;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [art, copy],
+                  );
+          },
         ),
       ),
-      if (action != null)
-        TextButton(
-          onPressed: onTap,
-          child: Text(action!, style: const TextStyle(color: AppColors.violet)),
-        ),
-    ],
-  );
-}
-
-class _SongTile extends StatelessWidget {
-  const _SongTile({required this.song, required this.onTap});
-  final Song song;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => ListTile(
-    contentPadding: const EdgeInsets.symmetric(vertical: 3),
-    onTap: onTap,
-    leading: Artwork(url: song.artwork),
-    title: Text(
-      song.title,
-      style: const TextStyle(fontWeight: FontWeight.w600),
-    ),
-    subtitle: Text(
-      '${song.artist}  ·  ${song.genre}',
-      style: const TextStyle(color: AppColors.muted),
-    ),
-    trailing: IconButton(
-      onPressed: onTap,
-      icon: const Icon(
-        Icons.play_circle_outline_rounded,
-        color: AppColors.violet,
-        size: 27,
-      ),
-    ),
-  );
+    );
+  }
 }
