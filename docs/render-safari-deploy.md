@@ -77,9 +77,11 @@ Không ghi token, signed URL, email thật hoặc chuỗi kết nối vào ảnh
 |---|---|
 | `flutter pub get`, format, `flutter analyze` | Thành công, không có vấn đề analyzer |
 | `flutter test` | 317 test qua |
+| `flutter test --platform chrome test/api_config_test.dart` | Không hoàn tất: test server Flutter trả 404 cho `canvaskit/chromium/canvaskit.js` và `.wasm`; đã dừng tiến trình test. Không tính là test Chrome qua |
 | `node --test backend/test/*.test.js test/web/*.cjs` | 110 test qua; 1 integration test bỏ qua do không đặt `TEST_DATABASE_URL` |
 | `flutter build web --release --no-web-resources-cdn --dart-define-from-file=.local/web-config.json` | Thành công (130,9 giây) |
 | `render.yaml` với JSON Schema chính thức của Render | Hợp lệ |
 | HTTP development: `/`, health, CanvasKit, auth thiếu token | Lần lượt 200 / 200 / 200 / 401; SHA-256 của JS phục vụ qua Express khớp bundle release mới |
+| Chrome headless mở bản release qua Express local | Trang chào hiển thị được; chưa kiểm tra phiên đăng nhập hoặc Safari thật. Ảnh local: `.local/safari-deploy-local-chrome.png` (không commit) |
 | Rà soát staged files và bundle với các secret backend đang cấu hình | Không phát hiện giá trị secret; `.env` không được track |
 | Docker build / service Render / Safari iPhone | Chưa chạy; máy không có Docker, người dùng chọn bỏ CI Docker; cần kết nối Render và cấu hình môi trường để tiếp tục |
