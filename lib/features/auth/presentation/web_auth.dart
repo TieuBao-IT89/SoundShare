@@ -112,7 +112,10 @@ class _WebAuthGateState extends State<WebAuthGate> {
             const AuthenticationHeader(compact: true),
             const SizedBox(height: 32),
             if (MediaQuery.disableAnimationsOf(context))
-              const Icon(Icons.hourglass_top_rounded, color: AppColors.cyan)
+              Icon(
+                Icons.hourglass_top_rounded,
+                color: context.colors.accentText,
+              )
             else
               CircularProgressIndicator(
                 semanticsLabel: context.l10n.loadingSignIn,

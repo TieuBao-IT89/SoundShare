@@ -41,11 +41,13 @@ class MusicProgressSlider extends StatelessWidget {
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 4,
-              trackShape: const _AuroraSliderTrackShape(),
+              trackShape: _AuroraSliderTrackShape(context.colors),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-              thumbColor: AppColors.text,
-              overlayColor: AppColors.mystic.withValues(alpha: .15),
+              thumbColor: context.colors.isDark
+                  ? context.colors.text
+                  : context.colors.primary,
+              overlayColor: context.colors.mystic.withValues(alpha: .15),
             ),
             child: Slider(
               value: value,
@@ -65,8 +67,8 @@ class MusicProgressSlider extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(elapsed, style: _timeStyle),
-              Text(totalLabel, style: _timeStyle),
+              Text(elapsed, style: _timeStyle(context)),
+              Text(totalLabel, style: _timeStyle(context)),
             ],
           ),
         ),
@@ -74,8 +76,8 @@ class MusicProgressSlider extends StatelessWidget {
     );
   }
 
-  static const _timeStyle = TextStyle(
-    color: AppColors.secondaryText,
+  static TextStyle _timeStyle(BuildContext context) => TextStyle(
+    color: context.colors.secondaryText,
     fontSize: 12,
     fontFeatures: [FontFeature.tabularFigures()],
   );
@@ -103,15 +105,15 @@ class MusicProgressIndicator extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => Stack(
             children: [
-              const Positioned.fill(
-                child: ColoredBox(color: AppColors.surfaceLight),
+              Positioned.fill(
+                child: ColoredBox(color: context.colors.surfaceLight),
               ),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: Container(
                   width: constraints.maxWidth * value,
-                  decoration: const BoxDecoration(
-                    gradient: AppGradients.primary,
+                  decoration: BoxDecoration(
+                    gradient: context.colors.brandGradient,
                   ),
                 ),
               ),
@@ -129,7 +131,8 @@ String formatMusicTime(Duration duration) {
 }
 
 class _AuroraSliderTrackShape extends RoundedRectSliderTrackShape {
-  const _AuroraSliderTrackShape();
+  const _AuroraSliderTrackShape(this.palette);
+  final AppPalette palette;
 
   @override
   void paint(
@@ -156,7 +159,8 @@ class _AuroraSliderTrackShape extends RoundedRectSliderTrackShape {
     final radius = Radius.circular(rect.height / 2);
     context.canvas.drawRRect(
       RRect.fromRectAndRadius(rect, radius),
-      Paint()..color = AppColors.surfaceLight,
+      Paint()
+        ..color = palette.isDark ? palette.surfaceLight : palette.fieldBorder,
     );
     final active = textDirection == TextDirection.ltr
         ? Rect.fromLTRB(rect.left, rect.top, thumbCenter.dx, rect.bottom)
@@ -165,8 +169,8 @@ class _AuroraSliderTrackShape extends RoundedRectSliderTrackShape {
     context.canvas.drawRRect(
       RRect.fromRectAndRadius(active, radius),
       Paint()
-        ..shader = AppGradients.primary.createShader(rect)
-        ..color = AppColors.text.withValues(alpha: enableAnimation.value),
+        ..shader = palette.buttonGradient.createShader(rect)
+        ..color = palette.text.withValues(alpha: enableAnimation.value),
     );
   }
 }

@@ -24,7 +24,7 @@ class ListeningPanel extends ConsumerWidget {
     final song = ref.watch(currentSongProvider);
     final actions = ref.watch(playbackActionsProvider);
     return Material(
-      color: AppColors.secondaryBackground,
+      color: context.colors.secondaryBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,7 +55,10 @@ class ListeningPanel extends ConsumerWidget {
                 children: [
                   Text(
                     context.l10n.nowPlaying,
-                    style: const TextStyle(color: AppColors.cyan, fontSize: 12),
+                    style: TextStyle(
+                      color: context.colors.accentText,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ListTile(
@@ -71,7 +74,7 @@ class ListeningPanel extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    onTap: () => context.push('/player'),
+                    onTap: onClose ?? () => context.push('/player'),
                   ),
                   const Divider(),
                 ],
@@ -83,18 +86,25 @@ class ListeningPanel extends ConsumerWidget {
                     padding: const EdgeInsets.all(24),
                     child: Text(context.l10n.v3QueueEmpty),
                   )
-                : ListView.builder(
+                : ReorderableListView.builder(
                     key: const PageStorageKey('listening-queue'),
+                    buildDefaultDragHandles: false,
+                    onReorderItem: actions.reorderQueue,
                     itemCount: queue.length,
                     itemBuilder: (context, i) => ListTile(
+                      key: ValueKey((
+                        queue[i].identity,
+                        queue
+                            .take(i)
+                            .where((song) => song.identity == queue[i].identity)
+                            .length,
+                      )),
                       selected: i == current,
                       leading: SizedBox(
                         width: 24,
                         child: Text(
                           '${i + 1}',
-                          style: const TextStyle(
-                            color: AppColors.secondaryText,
-                          ),
+                          style: TextStyle(color: context.colors.secondaryText),
                         ),
                       ),
                       title: Text(
@@ -108,12 +118,29 @@ class ListeningPanel extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       onTap: () => actions.playQueued(i),
-                      trailing: IconButton(
-                        tooltip: context.l10n.v3RemoveFromQueue,
-                        onPressed: i == current
-                            ? null
-                            : () => actions.removeFromQueue(i),
-                        icon: const Icon(Icons.remove_circle_outline_rounded),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: context.l10n.v3RemoveFromQueue,
+                            onPressed: i == current
+                                ? null
+                                : () => actions.removeFromQueue(i),
+                            icon: const Icon(
+                              Icons.remove_circle_outline_rounded,
+                            ),
+                          ),
+                          ReorderableDragStartListener(
+                            index: i,
+                            child: Tooltip(
+                              message: context.l10n.playerReorder,
+                              child: const SizedBox.square(
+                                dimension: 48,
+                                child: Icon(Icons.drag_handle_rounded),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:soundshare/app/app.dart';
+import 'package:soundshare/app/theme/theme_controller.dart';
 import 'package:soundshare/core/config/app_mode.dart';
 import 'package:soundshare/core/services/audio_service.dart';
 import 'package:soundshare/features/home/application/catalog_provider.dart';
@@ -123,6 +124,8 @@ Future<ProviderContainer> showApp(
   SongRepository? repository,
   Size size = const Size(390, 844),
   double textScale = 1,
+  ThemeMode initialThemeMode = ThemeMode.light,
+  ThemePreferenceStore? themeStore,
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
@@ -136,6 +139,9 @@ Future<ProviderContainer> showApp(
   final router = createAppRouter(initialLocation: route);
   final container = ProviderContainer(
     overrides: [
+      initialThemeModeProvider.overrideWithValue(initialThemeMode),
+      if (themeStore != null)
+        themePreferenceStoreProvider.overrideWithValue(themeStore),
       demoModeProvider.overrideWithValue(true),
       audioPlayerProvider.overrideWithValue(audio),
       if (repository != null)
@@ -172,7 +178,15 @@ Future<void> tapVisible(
     );
   }
   await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
+  await pumpPlaybackUi(tester);
   await tester.tap(finder);
-  await tester.pumpAndSettle();
+  await pumpPlaybackUi(tester);
+}
+
+/// A playing vinyl schedules frames continuously. Advance the finite UI
+/// transitions around it instead of waiting for every animation to stop.
+Future<void> pumpPlaybackUi(WidgetTester tester) async {
+  for (var frame = 0; frame < 6; frame++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }

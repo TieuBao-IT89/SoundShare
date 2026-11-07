@@ -40,6 +40,20 @@ void main() {
         await container.read(playbackActionsProvider).play(0);
         await tester.pumpAndSettle();
         final field = find.byType(TextField);
+        if (field.evaluate().isEmpty) {
+          final contentList = find
+              .byWidgetPredicate(
+                (widget) => widget is ListView && widget.controller != null,
+              )
+              .first;
+          await tester.scrollUntilVisible(
+            field,
+            200,
+            scrollable: find
+                .descendant(of: contentList, matching: find.byType(Scrollable))
+                .first,
+          );
+        }
         await tapVisible(tester, field);
         await tester.enterText(field, 'Blue');
         final keyboardHeight = size.height > 400 ? 280.0 : 180.0;

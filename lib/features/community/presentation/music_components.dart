@@ -120,7 +120,15 @@ class _FeaturedMusicState extends ConsumerState<FeaturedMusic>
     super.dispose();
   }
 
-  Widget _withSlideInteraction(Widget child) {
+  @override
+  Widget build(BuildContext context) {
+    final songs = widget.songs.take(3).toList();
+    if (songs.isEmpty) return const CommunityEmpty();
+    final height = MediaQuery.textScalerOf(context).scale(24) > 36
+        ? 520.0
+        : context.colors.isDark
+        ? 250.0
+        : 330.0;
     return MouseRegion(
       onEnter: (_) {
         _hovered = true;
@@ -150,140 +158,244 @@ class _FeaturedMusicState extends ConsumerState<FeaturedMusic>
           },
           child: NotificationListener<ScrollNotification>(
             onNotification: _onScrollNotification,
-            child: child,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: height,
+                  child: PageView.builder(
+                    controller: controller,
+                    itemCount: songs.length,
+                    onPageChanged: (value) => setState(() => page = value),
+                    itemBuilder: (context, i) => !context.colors.isDark
+                        ? _PearlFeaturedSong(
+                            song: songs[i],
+                            onPlay: () {
+                              ref
+                                  .read(playbackActionsProvider)
+                                  .playFrom(widget.songs, i);
+                              context.push('/player');
+                            },
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                LayoutBuilder(
+                                  builder: (context, bounds) => Artwork(
+                                    url: songs[i].artwork,
+                                    size: bounds.maxWidth,
+                                    height: height,
+                                    radius: 0,
+                                  ),
+                                ),
+                                const DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xF20F1220),
+                                        Color(0xB0181C2C),
+                                        Color(0x180F1220),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 560,
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            context.l10n.v4Featured,
+                                            style: TextStyle(
+                                              color: context.colors.accentText,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            songs[i].title,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineMedium,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            songs[i].artist,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color:
+                                                  context.colors.secondaryText,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          FilledButton.icon(
+                                            onPressed: () {
+                                              ref
+                                                  .read(playbackActionsProvider)
+                                                  .playFrom(widget.songs, i);
+                                              context.push('/player');
+                                            },
+                                            icon: const Icon(
+                                              Icons.play_arrow_rounded,
+                                            ),
+                                            label: Text(context.l10n.listenNow),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                  ),
+                ),
+                if (songs.length > 1)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < songs.length; i++)
+                        Semantics(
+                          selected: page == i,
+                          child: IconButton(
+                            tooltip: context.l10n.v4FeaturedPosition(
+                              i + 1,
+                              songs.length,
+                            ),
+                            onPressed: () => _goToPage(i),
+                            icon: Container(
+                              width: page == i ? 24 : 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: page == i
+                                    ? context.colors.cyan
+                                    : context.colors.secondaryText,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+class _PearlFeaturedSong extends StatelessWidget {
+  const _PearlFeaturedSong({required this.song, required this.onPlay});
+  final Song song;
+  final VoidCallback onPlay;
 
   @override
-  Widget build(BuildContext context) =>
-      _withSlideInteraction(_buildCarousel(context));
-
-  Widget _buildCarousel(BuildContext context) {
-    final songs = widget.songs.take(3).toList();
-    if (songs.isEmpty) return const CommunityEmpty();
-    final height = MediaQuery.textScalerOf(context).scale(24) > 36
-        ? 520.0
-        : 250.0;
-    return Column(
-      children: [
-        SizedBox(
-          height: height,
-          child: PageView.builder(
-            controller: controller,
-            itemCount: songs.length,
-            onPageChanged: (value) => setState(() => page = value),
-            itemBuilder: (context, i) => ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  LayoutBuilder(
-                    builder: (context, bounds) => Artwork(
-                      url: songs[i].artwork,
-                      size: bounds.maxWidth,
-                      height: height,
-                      radius: 0,
-                    ),
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xF20F1220),
-                          Color(0xB0181C2C),
-                          Color(0x180F1220),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 560),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              context.l10n.v4Featured,
-                              style: const TextStyle(
-                                color: AppColors.cyan,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              songs[i].title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              songs[i].artist,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.secondaryText,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            FilledButton.icon(
-                              onPressed: () {
-                                ref
-                                    .read(playbackActionsProvider)
-                                    .playFrom(widget.songs, i);
-                                context.push('/player');
-                              },
-                              icon: const Icon(Icons.play_arrow_rounded),
-                              label: Text(context.l10n.listenNow),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: context.colors.featuredGradient,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: context.colors.border),
+    ),
+    child: LayoutBuilder(
+      builder: (context, bounds) {
+        final wide = bounds.maxWidth >= 620;
+        final largeText = MediaQuery.textScalerOf(context).scale(14) > 22;
+        final artSize = wide
+            ? 218.0
+            : largeText
+            ? 64.0
+            : 96.0;
+        final artwork = DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: context.colors.shadow,
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
-            ),
+            ],
           ),
-        ),
-        if (songs.length > 1)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < songs.length; i++)
-                Semantics(
-                  selected: page == i,
-                  child: IconButton(
-                    tooltip: context.l10n.v4FeaturedPosition(
-                      i + 1,
-                      songs.length,
-                    ),
-                    onPressed: () => _goToPage(i),
-                    icon: Container(
-                      width: page == i ? 24 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: page == i
-                            ? AppColors.cyan
-                            : AppColors.secondaryText,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+          child: Artwork(
+            url: song.artwork,
+            size: artSize,
+            radius: 18,
+            semanticLabel: context.l10n.artworkFor(song.title),
+          ),
+        );
+        final copy = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.v4Featured,
+                    style: TextStyle(
+                      color: context.colors.accentText,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-            ],
-          ),
-      ],
-    );
-  }
+                if (!wide) ...[const SizedBox(width: 12), artwork],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              song.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineMedium
+                  ?.copyWith(fontSize: wide ? 32 : 24),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              song.artist,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: context.colors.secondaryText),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onPlay,
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: Text(context.l10n.listenNow),
+            ),
+          ],
+        );
+        return Padding(
+          padding: EdgeInsets.all(wide ? 32 : 20),
+          child: wide
+              ? Row(
+                  children: [
+                    Expanded(child: copy),
+                    const SizedBox(width: 32),
+                    artwork,
+                  ],
+                )
+              : copy,
+        );
+      },
+    ),
+  );
 }
 
 class SongArtworkRail extends ConsumerWidget {
@@ -331,7 +443,9 @@ class SongArtworkRail extends ConsumerWidget {
                   right: 4,
                   bottom: 4,
                   child: Material(
-                    color: AppColors.secondaryBackground.withValues(alpha: .9),
+                    color: context.colors.secondaryBackground.withValues(
+                      alpha: .9,
+                    ),
                     borderRadius: BorderRadius.circular(24),
                     child: SongActionMenu(song: songs[i]),
                   ),
@@ -350,8 +464,8 @@ class SongArtworkRail extends ConsumerWidget {
                 songs[i].artist,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.secondaryText,
+                style: TextStyle(
+                  color: context.colors.secondaryText,
                   fontSize: 12,
                 ),
               ),
@@ -368,8 +482,8 @@ class SongArtworkRail extends ConsumerWidget {
                   '@${songs[i].username}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.secondaryText,
+                  style: TextStyle(
+                    color: context.colors.secondaryText,
                     fontSize: 12,
                   ),
                 ),
@@ -381,8 +495,8 @@ class SongArtworkRail extends ConsumerWidget {
                   songs[i].artist,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.secondaryText,
+                  style: TextStyle(
+                    color: context.colors.secondaryText,
                     fontSize: 12,
                   ),
                 ),
@@ -403,8 +517,8 @@ class SongArtworkRail extends ConsumerWidget {
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.secondaryText,
+                    style: TextStyle(
+                      color: context.colors.secondaryText,
                       fontSize: 11,
                       height: 1.4,
                     ),
@@ -457,14 +571,23 @@ class ChartSpotlight extends ConsumerWidget {
                     Positioned(
                       left: 12,
                       bottom: 8,
-                      child: Text(
-                        '${i + 1}'.padLeft(2, '0'),
-                        style: const TextStyle(
-                          fontSize: 48,
-                          height: 1.1,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          shadows: [Shadow(blurRadius: 8, color: Colors.black)],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.colors.surface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${i + 1}'.padLeft(2, '0'),
+                          style: TextStyle(
+                            fontSize: 32,
+                            height: 1.1,
+                            color: context.colors.mystic,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
@@ -472,7 +595,7 @@ class ChartSpotlight extends ConsumerWidget {
                       right: 8,
                       bottom: 8,
                       child: Material(
-                        color: AppColors.secondaryBackground,
+                        color: context.colors.secondaryBackground,
                         borderRadius: BorderRadius.circular(24),
                         child: SongActionMenu(song: songs[i]),
                       ),
@@ -494,16 +617,16 @@ class ChartSpotlight extends ConsumerWidget {
                   songs[i].artist,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.secondaryText,
+                  style: TextStyle(
+                    color: context.colors.secondaryText,
                     fontSize: 12,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${songs[i].validPlays} ${context.l10n.v3Views} · ${songs[i].likeCount} ${context.l10n.v3Likes}',
-                  style: const TextStyle(
-                    color: AppColors.secondaryText,
+                  style: TextStyle(
+                    color: context.colors.secondaryText,
                     fontSize: 11,
                   ),
                 ),
@@ -566,7 +689,7 @@ class CreatorRail extends StatelessWidget {
         width: MediaQuery.textScalerOf(context).scale(14) > 22 ? 250 : 186,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Padding(
@@ -593,8 +716,8 @@ class CreatorRail extends StatelessWidget {
                         '@${profiles[i].username}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
+                        style: TextStyle(
+                          color: context.colors.secondaryText,
                           fontSize: 12,
                         ),
                       ),
@@ -606,9 +729,9 @@ class CreatorRail extends StatelessWidget {
                   '${profiles[i].followers} ${context.l10n.v3Followers}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.secondaryText,
+                    color: context.colors.secondaryText,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -649,15 +772,22 @@ class GenreTiles extends StatelessWidget {
             SizedBox(
               width: width,
               child: Material(
-                color: i.isEven
-                    ? AppColors.surface
-                    : AppColors.secondaryBackground,
+                color: context.colors.isDark
+                    ? (i.isEven
+                          ? context.colors.surface
+                          : context.colors.secondaryBackground)
+                    : const [
+                        Color(0xFFEFEAFF),
+                        Color(0xFFE6F5F5),
+                        Color(0xFFE8F0FF),
+                        Color(0xFFFFF2E8),
+                      ][i % 4],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
                     color: selected == genres[i]
-                        ? AppColors.cyan
-                        : AppColors.border,
+                        ? context.colors.cyan
+                        : context.colors.border,
                   ),
                 ),
                 child: InkWell(
@@ -675,7 +805,9 @@ class GenreTiles extends StatelessWidget {
                             Icons.waves_rounded,
                             Icons.piano_outlined,
                           ][i % 4],
-                          color: i.isEven ? AppColors.cyan : AppColors.mystic,
+                          color: i.isEven
+                              ? context.colors.cyan
+                              : context.colors.mystic,
                           size: 28,
                         ),
                         const SizedBox(height: 16),
@@ -703,10 +835,12 @@ class ContentTabs extends StatelessWidget {
     required this.items,
     required this.selected,
     required this.onSelected,
+    this.icons = const {},
   });
   final List<(String, String)> items;
   final String selected;
   final ValueChanged<String> onSelected;
+  final Map<String, IconData> icons;
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
     scrollDirection: Axis.horizontal,
@@ -716,6 +850,17 @@ class ContentTabs extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
+              avatar: icons[item.$1] == null
+                  ? null
+                  : Icon(
+                      icons[item.$1],
+                      size: 18,
+                      color: selected == item.$1
+                          ? context.colors.primary
+                          : context.colors.secondaryText,
+                    ),
+              showCheckmark: icons.isEmpty ? null : false,
+              shape: icons.isEmpty ? null : const StadiumBorder(),
               label: Text(item.$2),
               selected: selected == item.$1,
               onSelected: (_) => onSelected(item.$1),

@@ -29,7 +29,7 @@ Future<void> showFeatured(
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
-        theme: dark ? AppTheme.dark : ThemeData.light(),
+        theme: dark ? AppTheme.dark : AppTheme.light,
         home: MediaQuery(
           data: MediaQueryData(
             disableAnimations: reduced,

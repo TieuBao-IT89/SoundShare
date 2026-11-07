@@ -73,11 +73,11 @@ class EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                gradient: AppGradients.soft,
+                gradient: context.colors.featuredGradient,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.colors.border),
               ),
-              child: Icon(icon, size: 36, color: AppColors.cyan),
+              child: Icon(icon, size: 36, color: context.colors.accentText),
             ),
             const SizedBox(height: 14),
             Text(
@@ -89,7 +89,7 @@ class EmptyState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, height: 1.4),
+              style: TextStyle(color: context.colors.muted, height: 1.4),
             ),
             if (actionLabel != null) ...[
               const SizedBox(height: 12),

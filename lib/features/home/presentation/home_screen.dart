@@ -1,3 +1,5 @@
+import '../../../core/widgets/theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -180,6 +182,7 @@ class _HomeHeader extends StatelessWidget {
                 ),
               ),
             ),
+            const ThemeModeMenu(),
             IconButton(
               tooltip: t.searchLabel,
               onPressed: () => context.go('/explore'),
@@ -189,8 +192,8 @@ class _HomeHeader extends StatelessWidget {
               tooltip: t.profile,
               onPressed: () => context.go('/profile'),
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.surfaceLight,
-                foregroundColor: AppColors.cyan,
+                backgroundColor: context.colors.surfaceLight,
+                foregroundColor: context.colors.accentText,
               ),
               icon: Text(
                 name.characters.first.toUpperCase(),
@@ -206,7 +209,7 @@ class _HomeHeader extends StatelessWidget {
               child: Text(
                 '${t.homeGreeting} $name',
                 style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(color: AppColors.secondaryText),
+                    ?.copyWith(color: context.colors.secondaryText),
               ),
             ),
             const SizedBox(width: 12),
@@ -236,7 +239,7 @@ class _FeaturedBanner extends ConsumerWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.violet.withValues(alpha: .14),
+            color: context.colors.violet.withValues(alpha: .14),
             blurRadius: 40,
             offset: const Offset(0, 12),
           ),
@@ -244,7 +247,7 @@ class _FeaturedBanner extends ConsumerWidget {
       ),
       child: GlassCard(
         padding: EdgeInsets.zero,
-        gradient: AppGradients.soft,
+        gradient: context.colors.featuredGradient,
         borderRadius: BorderRadius.circular(24),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -257,7 +260,7 @@ class _FeaturedBanner extends ConsumerWidget {
                   Text(
                     sample ? t.demoBadge : t.privateBadge,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.cyan,
+                      color: context.colors.accentText,
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w700,
                     ),
@@ -280,7 +283,7 @@ class _FeaturedBanner extends ConsumerWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.secondaryText),
+                        ?.copyWith(color: context.colors.secondaryText),
                   ),
                   const SizedBox(height: 20),
                   GradientButton(

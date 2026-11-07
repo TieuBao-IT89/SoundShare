@@ -30,13 +30,18 @@ Future<ui.Image> _bitmap(Color color) {
   return picture.toImage(8, 8).whenComplete(picture.dispose);
 }
 
-Widget _glow(ImageProvider? image, {bool reduced = false}) => MaterialApp(
+Widget _glow(
+  ImageProvider? image, {
+  bool reduced = false,
+  bool ambient = false,
+}) => MaterialApp(
   theme: AppTheme.dark,
   home: MediaQuery(
     data: MediaQueryData(disableAnimations: reduced),
     child: Scaffold(
       body: ArtworkGlow(
         image: image,
+        ambientBackground: ambient,
         child: const SizedBox.square(dimension: 100),
       ),
     ),
@@ -54,6 +59,74 @@ Color _glowColor(WidgetTester tester) {
 }
 
 void main() {
+  testWidgets(
+    'Ambient colors retain old cover while loading and blend for 650ms',
+    (tester) async {
+      final first = _DeferredImage(), second = _DeferredImage();
+      late ui.Image red, blue;
+      await tester.runAsync(() async {
+        red = await _bitmap(Colors.red);
+        blue = await _bitmap(Colors.blue);
+      });
+      addTearDown(() {
+        red.dispose();
+        blue.dispose();
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      });
+      Color paintedColor() {
+        final paint = tester.widget<DecoratedBox>(
+          find
+              .descendant(
+                of: find.byType(ArtworkGlow),
+                matching: find.byType(DecoratedBox),
+              )
+              .first,
+        );
+        return ((paint.decoration as BoxDecoration).gradient! as RadialGradient)
+            .colors
+            .first;
+      }
+
+      await tester.pumpWidget(_glow(first, ambient: true));
+      await tester.runAsync(() async {
+        first.frame.complete(red);
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      });
+      await tester.pumpAndSettle();
+      final old = paintedColor();
+      await tester.pumpWidget(_glow(second, ambient: true));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(paintedColor(), old);
+      await tester.runAsync(() async {
+        second.frame.complete(blue);
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      });
+      await tester.pump();
+      expect(paintedColor(), old);
+      await tester.pump(const Duration(milliseconds: 325));
+      final middle = paintedColor();
+      expect(middle, isNot(old));
+      await tester.pump(const Duration(milliseconds: 325));
+      expect(paintedColor(), isNot(middle));
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      await tester.pumpWidget(_glow(null, reduced: true, ambient: true));
+      expect(
+        tester
+            .widgetList<AnimatedContainer>(
+              find.descendant(
+                of: find.byType(ArtworkGlow),
+                matching: find.byType(AnimatedContainer),
+              ),
+            )
+            .every((widget) => widget.duration == Duration.zero),
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'Card press feedback preserves tap, keyboard and scroll cancellation',
     (tester) async {

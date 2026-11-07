@@ -73,10 +73,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           ),
           Text(
             t.v4ExploreIntro,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.secondaryText,
-            ),
+            style: TextStyle(fontSize: 13, color: context.colors.secondaryText),
           ),
           const SizedBox(height: 20),
           CommunityAsync(
@@ -106,8 +103,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             const SizedBox(height: 8),
             Text(
               t.v3TrendingNote,
-              style: const TextStyle(
-                color: AppColors.secondaryText,
+              style: TextStyle(
+                color: context.colors.secondaryText,
                 fontSize: 11,
               ),
             ),

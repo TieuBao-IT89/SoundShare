@@ -1,3 +1,5 @@
+import '../../../core/widgets/theme_mode_menu.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,25 +38,25 @@ class ProfileScreen extends ConsumerWidget {
         builder: (context, constraints) {
           final roomy = constraints.maxWidth >= 680;
           final identity = GlassCard(
-            gradient: AppGradients.soft,
+            gradient: context.colors.featuredGradient,
             padding: const EdgeInsets.all(26),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppGradients.primary,
+                    gradient: context.colors.brandGradient,
                   ),
                   child: CircleAvatar(
                     radius: 40,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: context.colors.surface,
                     child: session == null || name.trim().isEmpty
-                        ? const Icon(
+                        ? Icon(
                             Icons.person_outline_rounded,
                             size: 38,
-                            color: AppColors.text,
+                            color: context.colors.text,
                           )
                         : Text(
                             String.fromCharCode(name.trim().runes.first)
@@ -72,8 +74,10 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   demo ? t.profileDemoNote : t.profilePrivateNote,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(color: AppColors.secondaryText, height: 1.6),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: context.colors.secondaryText,
+                    height: 1.6,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Wrap(
@@ -91,8 +95,10 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Text(
                     t.demoBadge,
-                    style: Theme.of(context).textTheme.labelSmall
-                        ?.copyWith(color: AppColors.cyan, letterSpacing: 1.2),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: context.colors.accentText,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ],
               ],
@@ -101,7 +107,12 @@ class ProfileScreen extends ConsumerWidget {
           final actions = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SectionHeading(t.yourMusic),
+              Row(
+                children: [
+                  Expanded(child: SectionHeading(t.yourMusic)),
+                  const ThemeModeMenu(),
+                ],
+              ),
               const SizedBox(height: 14),
               GlassCard(
                 padding: const EdgeInsets.symmetric(
@@ -124,9 +135,9 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lock_outline_rounded,
-                      color: AppColors.cyan,
+                      color: context.colors.accentText,
                       size: 24,
                     ),
                     const SizedBox(height: 12),
@@ -139,7 +150,7 @@ class ProfileScreen extends ConsumerWidget {
                     Text(
                       demo ? t.demoLibraryNote : t.profilePrivacyMessage,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.secondaryText,
+                        color: context.colors.secondaryText,
                         height: 1.6,
                       ),
                     ),
@@ -152,15 +163,15 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.verified_user_outlined,
-                    color: AppColors.secondaryText,
+                    color: context.colors.secondaryText,
                   ),
                   title: Text(t.accountProvider),
                   subtitle: Text(
                     t.accountProviderNote,
-                    style: const TextStyle(
-                      color: AppColors.secondaryText,
+                    style: TextStyle(
+                      color: context.colors.secondaryText,
                       height: 1.5,
                     ),
                   ),
@@ -216,7 +227,7 @@ class ProfileScreen extends ConsumerWidget {
                     child: Text(
                       t.brandTagline,
                       style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: AppColors.secondaryText),
+                          ?.copyWith(color: context.colors.secondaryText),
                     ),
                   ),
                 ],
@@ -247,7 +258,7 @@ class _MusicCount extends StatelessWidget {
       Text(
         label,
         style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: AppColors.secondaryText),
+            ?.copyWith(color: context.colors.secondaryText),
       ),
     ],
   );
@@ -268,19 +279,19 @@ class _ProfileAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListTile(
     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-    leading: Icon(icon, color: AppColors.mystic),
+    leading: Icon(icon, color: context.colors.mystic),
     title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
     subtitle: Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Text(
         subtitle,
-        style: const TextStyle(color: AppColors.secondaryText, height: 1.5),
+        style: TextStyle(color: context.colors.secondaryText, height: 1.5),
       ),
     ),
-    trailing: const Icon(
+    trailing: Icon(
       Icons.arrow_forward_rounded,
       size: 20,
-      color: AppColors.secondaryText,
+      color: context.colors.secondaryText,
     ),
     onTap: onTap,
   );
@@ -321,6 +332,6 @@ class _SignOutButtonState extends ConsumerState<_SignOutButton> {
           },
     icon: const Icon(Icons.logout_rounded, size: 20),
     label: Text(busy ? context.l10n.signingOut : context.l10n.signOut),
-    style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
+    style: OutlinedButton.styleFrom(foregroundColor: context.colors.error),
   );
 }

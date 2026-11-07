@@ -43,14 +43,14 @@ class PlaylistGrid extends StatelessWidget {
                         aspectRatio: 1.4,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: context.colors.surface,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.library_music_outlined,
                               size: 48,
-                              color: AppColors.mystic,
+                              color: context.colors.mystic,
                             ),
                           ),
                         ),
@@ -65,8 +65,8 @@ class PlaylistGrid extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         '${item['songCount'] ?? 0} ${context.l10n.v3Songs} · ${item['visibility'] == 'public' ? context.l10n.v3Public : context.l10n.v3Private}',
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
+                        style: TextStyle(
+                          color: context.colors.secondaryText,
                           fontSize: 12,
                         ),
                       ),

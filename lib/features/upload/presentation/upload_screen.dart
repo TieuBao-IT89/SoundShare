@@ -243,8 +243,8 @@ class _UploadScreenState extends State<UploadScreen> {
                             widget.onUpload == null
                                 ? t.uploadDemoSubtitle
                                 : t.uploadSubtitle,
-                            style: const TextStyle(
-                              color: AppColors.secondaryText,
+                            style: TextStyle(
+                              color: context.colors.secondaryText,
                               fontSize: 13,
                             ),
                           ),
@@ -312,8 +312,8 @@ class _UploadScreenState extends State<UploadScreen> {
                                           : progress != null
                                           ? '${t.v3Sending}: ${(progress! * 100).round()}%'
                                           : t.uploadBusy,
-                                      style: const TextStyle(
-                                        color: AppColors.secondaryText,
+                                      style: TextStyle(
+                                        color: context.colors.secondaryText,
                                         height: 1.5,
                                       ),
                                     ),
@@ -337,17 +337,17 @@ class _UploadScreenState extends State<UploadScreen> {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.error_outline_rounded,
-                                      color: AppColors.error,
+                                      color: context.colors.error,
                                       size: 22,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         message!,
-                                        style: const TextStyle(
-                                          color: AppColors.error,
+                                        style: TextStyle(
+                                          color: context.colors.error,
                                           height: 1.5,
                                         ),
                                       ),
@@ -365,9 +365,9 @@ class _UploadScreenState extends State<UploadScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.check_circle_outline_rounded,
-                                      color: AppColors.success,
+                                      color: context.colors.success,
                                       size: 28,
                                     ),
                                     const SizedBox(height: 10),
@@ -377,15 +377,15 @@ class _UploadScreenState extends State<UploadScreen> {
                                           .textTheme
                                           .titleMedium
                                           ?.copyWith(
-                                            color: AppColors.success,
+                                            color: context.colors.success,
                                             fontWeight: FontWeight.w700,
                                           ),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       '${titleController.text.trim()} · ${artistController.text.trim()}',
-                                      style: const TextStyle(
-                                        color: AppColors.secondaryText,
+                                      style: TextStyle(
+                                        color: context.colors.secondaryText,
                                       ),
                                     ),
                                     const SizedBox(height: 10),
@@ -411,8 +411,8 @@ class _UploadScreenState extends State<UploadScreen> {
                                   children: [
                                     Text(
                                       t.previewReady,
-                                      style: const TextStyle(
-                                        color: AppColors.success,
+                                      style: TextStyle(
+                                        color: context.colors.success,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -423,15 +423,15 @@ class _UploadScreenState extends State<UploadScreen> {
                                     const SizedBox(height: 4),
                                     Text(
                                       genre == 'Other' ? t.otherGenre : genre,
-                                      style: const TextStyle(
-                                        color: AppColors.secondaryText,
+                                      style: TextStyle(
+                                        color: context.colors.secondaryText,
                                       ),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
                                       t.previewNotice,
-                                      style: const TextStyle(
-                                        color: AppColors.secondaryText,
+                                      style: TextStyle(
+                                        color: context.colors.secondaryText,
                                         height: 1.5,
                                       ),
                                     ),
@@ -481,9 +481,9 @@ class _UploadScreenState extends State<UploadScreen> {
         _Step(number: '01', title: t.uploadAudioStep),
         const SizedBox(height: 14),
         CustomPaint(
-          foregroundPainter: const _DashedBorder(),
+          foregroundPainter: _DashedBorder(context.colors.brandGradient),
           child: Material(
-            color: AppColors.surface.withValues(alpha: .7),
+            color: context.colors.surface.withValues(alpha: .7),
             borderRadius: BorderRadius.circular(24),
             child: InkWell(
               onTap: busy ? null : () => _chooseFile(),
@@ -502,16 +502,16 @@ class _UploadScreenState extends State<UploadScreen> {
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: AppGradients.soft,
+                          gradient: context.colors.featuredGradient,
                           border: Border.all(
-                            color: AppColors.mystic.withValues(alpha: .35),
+                            color: context.colors.mystic.withValues(alpha: .35),
                           ),
                         ),
                         child: Icon(
                           file == null
                               ? Icons.cloud_upload_outlined
                               : Icons.audio_file_rounded,
-                          color: AppColors.mystic,
+                          color: context.colors.mystic,
                           size: 36,
                         ),
                       ),
@@ -530,8 +530,8 @@ class _UploadScreenState extends State<UploadScreen> {
                             ? t.mp3Limit
                             : '${(file!.size / 1024 / 1024).toStringAsFixed(1)} MB · ${t.changeFile}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
+                        style: TextStyle(
+                          color: context.colors.secondaryText,
                           height: 1.5,
                         ),
                       ),
@@ -700,16 +700,16 @@ class _UploadScreenState extends State<UploadScreen> {
           const SizedBox(height: 12),
           Text(
             t.artworkHint,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
+            style: TextStyle(
+              color: context.colors.secondaryText,
               fontSize: 12,
               height: 1.6,
             ),
           ),
           Text(
             t.artworkOptional,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
+            style: TextStyle(
+              color: context.colors.secondaryText,
               fontSize: 12,
               height: 1.6,
             ),
@@ -724,7 +724,11 @@ class _UploadScreenState extends State<UploadScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.lock_outline_rounded, color: AppColors.cyan, size: 20),
+        Icon(
+          Icons.lock_outline_rounded,
+          color: context.colors.accentText,
+          size: 20,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -737,8 +741,8 @@ class _UploadScreenState extends State<UploadScreen> {
               const SizedBox(height: 6),
               Text(
                 isPublic ? t.v3PublicHint : t.uploadPrivateMessage,
-                style: const TextStyle(
-                  color: AppColors.secondaryText,
+                style: TextStyle(
+                  color: context.colors.secondaryText,
                   height: 1.5,
                   fontSize: 12,
                 ),
@@ -762,8 +766,8 @@ class _Step extends StatelessWidget {
     children: [
       Text(
         number,
-        style: const TextStyle(
-          color: AppColors.cyan,
+        style: TextStyle(
+          color: context.colors.accentText,
           fontSize: 12,
           fontWeight: FontWeight.w700,
           height: 1.8,
@@ -782,7 +786,8 @@ class _Step extends StatelessWidget {
 }
 
 class _DashedBorder extends CustomPainter {
-  const _DashedBorder();
+  const _DashedBorder(this.gradient);
+  final Gradient gradient;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -792,7 +797,7 @@ class _DashedBorder extends CustomPainter {
         RRect.fromRectAndRadius(rect.deflate(1), const Radius.circular(24)),
       );
     final paint = Paint()
-      ..shader = AppGradients.primary.createShader(rect)
+      ..shader = gradient.createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     for (final metric in path.computeMetrics()) {
@@ -806,5 +811,6 @@ class _DashedBorder extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DashedBorder oldDelegate) => false;
+  bool shouldRepaint(covariant _DashedBorder oldDelegate) =>
+      oldDelegate.gradient != gradient;
 }

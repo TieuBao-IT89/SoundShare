@@ -41,7 +41,7 @@ void main() {
         await container.read(playbackActionsProvider).playFrom([
           Song.fromJson(fixture.song),
         ], 0);
-        await tester.pumpAndSettle();
+        await pumpPlaybackUi(tester);
         expect(player.active, isTrue);
         expect(tester.takeException(), isNull);
       });
@@ -129,7 +129,7 @@ void main() {
       player: player,
     );
     await tester.tap(find.text(appCopy.v4ShufflePlay));
-    await tester.pumpAndSettle();
+    await pumpPlaybackUi(tester);
     expect(player.active, isTrue);
     expect(player.shuffleOn, isTrue);
     expect(container.read(playbackQueueProvider), hasLength(1));

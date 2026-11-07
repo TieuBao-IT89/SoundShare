@@ -1,6 +1,7 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,6 +32,9 @@ import '../features/community/presentation/queue_screen.dart';
 import '../l10n/l10n.dart';
 import '../core/widgets/aurora_widgets.dart';
 import 'theme/app_theme.dart';
+import 'theme/theme_controller.dart';
+import 'theme/theme_bridge_stub.dart'
+    if (dart.library.js_interop) 'theme/theme_bridge_web.dart';
 
 GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
   initialLocation: initialLocation,
@@ -207,45 +211,70 @@ class SoundShareApp extends ConsumerWidget {
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     debugShowCheckedModeBanner: false,
-    theme: AppTheme.dark,
+    theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
+    themeMode: ref.watch(themeModeProvider),
+    themeAnimationDuration: Duration.zero,
     routerConfig: router ?? _router,
     builder: (context, child) {
+      final mode = ref.watch(themeModeProvider);
+      syncBrowserTheme(mode.name);
+      final dark = Theme.of(context).brightness == Brightness.dark;
       final appContent = child ?? const SizedBox.shrink();
-      if (!authenticationRequired || ref.watch(demoModeProvider)) {
-        return appContent;
-      }
-      if (!ClerkConfig.isConfigured) {
-        return Scaffold(
-          body: AuroraBackground(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  context.l10n.signInNotConfigured,
-                  textAlign: TextAlign.center,
+      Widget gatedContent() {
+        if (!authenticationRequired || ref.watch(demoModeProvider)) {
+          return appContent;
+        }
+        if (!ClerkConfig.isConfigured) {
+          return Scaffold(
+            body: AuroraBackground(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    context.l10n.signInNotConfigured,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
+          );
+        }
+        if (kIsWeb) return WebAuthGate(child: appContent);
+
+        return ClerkAuthBuilder(
+          signedInBuilder: (context, authState) => SessionScope(
+            key: ValueKey(authState.user!.id),
+            session: AuthSession(
+              subject: authState.user!.id,
+              name: authState.user!.hasName
+                  ? authState.user!.name
+                  : authState.user!.username ?? context.l10n.accountName,
+            ),
+            token: ({bool refresh = false}) async =>
+                (await authState.sessionToken()).jwt,
+            signOut: authState.signOut,
+            child: appContent,
           ),
+          signedOutBuilder: (context, _) => const NativeAuthScreen(),
         );
       }
-      if (kIsWeb) return WebAuthGate(child: appContent);
 
-      return ClerkAuthBuilder(
-        signedInBuilder: (context, authState) => SessionScope(
-          key: ValueKey(authState.user!.id),
-          session: AuthSession(
-            subject: authState.user!.id,
-            name: authState.user!.hasName
-                ? authState.user!.name
-                : authState.user!.username ?? context.l10n.accountName,
+      return ThemePreferenceScope(
+        mode: mode,
+        select: ref.read(themeModeProvider.notifier).select,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+            statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor: context.colors.secondaryBackground,
+            systemNavigationBarIconBrightness: dark
+                ? Brightness.light
+                : Brightness.dark,
           ),
-          token: ({bool refresh = false}) async =>
-              (await authState.sessionToken()).jwt,
-          signOut: authState.signOut,
-          child: appContent,
+          child: gatedContent(),
         ),
-        signedOutBuilder: (context, _) => const NativeAuthScreen(),
       );
     },
   );

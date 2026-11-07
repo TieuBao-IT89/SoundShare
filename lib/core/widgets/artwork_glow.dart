@@ -9,9 +9,15 @@ import '../../app/theme/app_theme.dart';
 /// Samples the cached artwork once per image. Only the glow changes; the
 /// application's contrast, controls and playback state stay independent.
 class ArtworkGlow extends StatefulWidget {
-  const ArtworkGlow({super.key, required this.image, required this.child});
+  const ArtworkGlow({
+    super.key,
+    required this.image,
+    required this.child,
+    this.ambientBackground = false,
+  });
   final ImageProvider? image;
   final Widget child;
+  final bool ambientBackground;
 
   @override
   State<ArtworkGlow> createState() => _ArtworkGlowState();
@@ -22,8 +28,8 @@ class _ArtworkGlowState extends State<ArtworkGlow> {
   ImageStream? stream;
   ImageStreamListener? listener;
   Timer? timeout;
-  Color primary = AppColors.mystic;
-  Color secondary = AppColors.cyan;
+  Color? primary;
+  Color? secondary;
 
   @override
   void initState() {
@@ -40,10 +46,14 @@ class _ArtworkGlowState extends State<ArtworkGlow> {
   void _sample() {
     _detach();
     final ticket = ++generation;
-    primary = AppColors.mystic;
-    secondary = AppColors.cyan;
+    // Keep the previous atmosphere until the next cover has decoded. Otherwise
+    // switching tracks briefly flashes the brand fallback between two colors.
     final image = widget.image;
-    if (image == null) return;
+    if (image == null) {
+      primary = null;
+      secondary = null;
+      return;
+    }
     // Share Artwork's image cache, and release the listener on track changes,
     // disposal or timeout. No request is made for the audio or player state.
     stream = image.resolve(ImageConfiguration.empty);
@@ -52,11 +62,25 @@ class _ArtworkGlowState extends State<ArtworkGlow> {
         _detach();
         unawaited(_extract(info.image, ticket));
       },
-      onError: (Object error, StackTrace? trace) => _detach(),
+      onError: (Object error, StackTrace? trace) {
+        _detach();
+        _fallback(ticket);
+      },
       reportErrors: false,
     );
-    timeout = Timer(const Duration(seconds: 5), _detach);
+    timeout = Timer(const Duration(seconds: 5), () {
+      _detach();
+      _fallback(ticket);
+    });
     stream!.addListener(listener!);
+  }
+
+  void _fallback(int ticket) {
+    if (!mounted || ticket != generation) return;
+    setState(() {
+      primary = null;
+      secondary = null;
+    });
   }
 
   void _detach() {
@@ -85,7 +109,10 @@ class _ArtworkGlowState extends State<ArtworkGlow> {
       );
       if (!mounted || ticket != generation || pixels == null) return;
       final accent = _accentFromPixels(pixels);
-      if (accent == null) return;
+      if (accent == null) {
+        _fallback(ticket);
+        return;
+      }
       final hsl = HSLColor.fromColor(accent);
       setState(() {
         primary = accent;
@@ -109,30 +136,74 @@ class _ArtworkGlowState extends State<ArtworkGlow> {
   }
 
   @override
-  Widget build(BuildContext context) => RepaintBoundary(
-    child: AnimatedContainer(
-      duration: MediaQuery.disableAnimationsOf(context)
+  Widget build(BuildContext context) {
+    final p = context.colors;
+    final primary = this.primary ?? p.mystic;
+    final secondary = this.secondary ?? p.cyan;
+    if (widget.ambientBackground) {
+      Color ambient(Color color) {
+        final hsl = HSLColor.fromColor(color)
+            .withSaturation(.35)
+            .withLightness(p.isDark ? .3 : .8);
+        return Color.lerp(p.background, hsl.toColor(), p.isDark ? .35 : .38)!;
+      }
+
+      final duration = MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
-          : const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: primary.withValues(alpha: .28),
-            blurRadius: 72,
-            offset: const Offset(-20, 0),
+          : const Duration(milliseconds: 650);
+      return AnimatedContainer(
+        duration: duration,
+        curve: Curves.easeInOutCubic,
+        decoration: BoxDecoration(
+          color: p.background,
+          gradient: RadialGradient(
+            center: const Alignment(-.65, -.65),
+            radius: 1.1,
+            colors: [ambient(primary), p.background],
           ),
-          BoxShadow(
-            color: secondary.withValues(alpha: .14),
-            blurRadius: 64,
-            offset: const Offset(24, 20),
+        ),
+        child: AnimatedContainer(
+          duration: duration,
+          curve: Curves.easeInOutCubic,
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(.9, .4),
+              radius: 1,
+              colors: [
+                ambient(secondary).withValues(alpha: .65),
+                ambient(secondary).withValues(alpha: 0),
+              ],
+            ),
           ),
-        ],
+          child: widget.child,
+        ),
+      );
+    }
+    return RepaintBoundary(
+      child: AnimatedContainer(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: p.isDark ? .28 : .12),
+              blurRadius: 72,
+              offset: const Offset(-20, 0),
+            ),
+            BoxShadow(
+              color: secondary.withValues(alpha: p.isDark ? .14 : .06),
+              blurRadius: 64,
+              offset: const Offset(24, 20),
+            ),
+          ],
+        ),
+        child: widget.child,
       ),
-      child: widget.child,
-    ),
-  );
+    );
+  }
 }
 
 // Twelve hue groups over a 32×32 sample favor a repeated, colorful region over

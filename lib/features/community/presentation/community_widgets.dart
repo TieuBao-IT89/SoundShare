@@ -35,11 +35,11 @@ class CommunityEmpty extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 16, top: 4),
               child: Icon(
                 Icons.graphic_eq_rounded,
-                color: AppColors.cyan,
+                color: context.colors.accentText,
                 size: 28,
               ),
             ),
@@ -54,9 +54,9 @@ class CommunityEmpty extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     context.l10n.v3NoContentDescription,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.secondaryText,
+                      color: context.colors.secondaryText,
                     ),
                   ),
                 ],
@@ -149,6 +149,15 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
     if (widget.profile.isSelf) return const SizedBox.shrink();
     final enabled = following ?? widget.profile.following;
     return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        backgroundColor: enabled
+            ? context.colors.selected
+            : context.colors.action,
+        foregroundColor: enabled ? context.colors.mystic : Colors.white,
+        side: BorderSide(
+          color: enabled ? context.colors.fieldBorder : context.colors.action,
+        ),
+      ),
       onPressed: busy
           ? null
           : () async {
@@ -211,15 +220,15 @@ class CreatorRow extends StatelessWidget {
                     ),
                     Text(
                       '@${profile.username}',
-                      style: const TextStyle(color: AppColors.mystic),
+                      style: TextStyle(color: context.colors.mystic),
                     ),
                     if (profile.bio.isNotEmpty)
                       Text(
                         profile.bio,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
+                        style: TextStyle(
+                          color: context.colors.secondaryText,
                           fontSize: 12,
                         ),
                       ),
@@ -234,8 +243,8 @@ class CreatorRow extends StatelessWidget {
                             counter,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.secondaryText,
+                            style: TextStyle(
+                              color: context.colors.secondaryText,
                               fontSize: 12,
                             ),
                           ),
@@ -333,7 +342,7 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
       builder: (context, bounds) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Material(
-          color: active ? AppColors.surface : Colors.transparent,
+          color: active ? context.colors.selected : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
@@ -355,8 +364,8 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                         '${widget.rank}'.padLeft(2, '0'),
                         style: TextStyle(
                           color: widget.rank! <= 3
-                              ? AppColors.cyan
-                              : AppColors.secondaryText,
+                              ? context.colors.mystic
+                              : context.colors.secondaryText,
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -375,7 +384,9 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: active ? AppColors.cyan : AppColors.text,
+                            color: active
+                                ? context.colors.cyan
+                                : context.colors.text,
                           ),
                         ),
                         if (song.username == null)
@@ -383,9 +394,9 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                             song.artist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.secondaryText,
+                              color: context.colors.secondaryText,
                             ),
                           )
                         else
@@ -402,8 +413,8 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                               '${song.artist} \u00b7 @${song.username}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.secondaryText,
+                              style: TextStyle(
+                                color: context.colors.secondaryText,
                                 fontSize: 12,
                               ),
                             ),
@@ -413,9 +424,9 @@ class _CommunitySongRowState extends ConsumerState<CommunitySongRow> {
                             '${song.validPlays} ${t.v3Views} \u00b7 ${song.likeCount} ${t.v3Likes}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.secondaryText,
+                              color: context.colors.secondaryText,
                             ),
                           ),
                       ],
