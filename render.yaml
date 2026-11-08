@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     region: singapore
-    branch: feature/safari-web-deploy
+    branch: develop
     dockerfilePath: ./Dockerfile
     dockerContext: .
     autoDeployTrigger: 'off'
@@ -14,6 +14,8 @@ services:
         value: production
       - key: SERVE_FLUTTER_WEB
         value: 'true'
+      - key: KEEP_ALIVE_ENABLED
+        value: 'false'
       - key: TRUST_PROXY_HOPS
         value: '1'
       - key: CLERK_AUDIENCE

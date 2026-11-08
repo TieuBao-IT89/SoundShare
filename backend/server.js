@@ -18,6 +18,7 @@ import { createNotificationDelivery } from "./src/services/notification-delivery
 import { assertSchemaReady } from "./src/database/schema-readiness.js";
 import { createLyricsRepository } from './src/repositories/lyrics.repository.js';
 import { createLyricsService } from './src/services/lyrics.service.js';
+import { createKeepAliveJob } from './src/config/cron.js';
 
 try {
   await assertSchemaReady(pool);
@@ -89,7 +90,8 @@ const cleanupTimer = setInterval(() => {
 }, 60000);
 cleanupTimer.unref();
 
-app.listen(PORT, "0.0.0.0", () => {
+const keepAliveJob = createKeepAliveJob();
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`
 ====================================
        SoundShare Backend
@@ -99,4 +101,6 @@ Health: http://localhost:${PORT}/api/v1/health
 Environment: ${process.env.NODE_ENV || "development"}
 ====================================
   `);
+  keepAliveJob.start();
 });
+server.once("close", () => keepAliveJob.stop());

@@ -1,12 +1,14 @@
 # SoundShare
 
-Nhánh **V11 — Synced Lyrics** bổ sung LRC có timestamp khi upload hoặc sửa bài, lời theo tiến trình, chạm dòng để tua và xem toàn màn hình. Cần migration **007** trước khi deploy; chưa áp dụng lên database Render. Xem [luồng dữ liệu, API, định dạng và nghiệm thu](docs/soundshare-v11-lyrics.md).
+**V11 — Synced Lyrics** bổ sung LRC có timestamp khi upload hoặc sửa bài, lời theo tiến trình, chạm dòng để tua và xem toàn màn hình. Migration **007** đã áp dụng và schema check đạt trên database cấu hình trong `backend/.env` ngày 08/11/2026; môi trường triển khai khác cần kiểm tra riêng. Xem [luồng dữ liệu, API, định dạng và nghiệm thu](docs/soundshare-v11-lyrics.md).
 
-Triển khai Web/API cùng HTTPS trên Render để thử Safari iPhone: [Docker, Blueprint, cấu hình và checklist thiết bị](docs/render-safari-deploy.md). Nhánh thử `feature/safari-web-deploy` gồm V7/V9; không tự merge vào develop/main. File cấu hình triển khai không đồng nghĩa đã có service chạy thật.
+Triển khai Web/API cùng HTTPS trên Render để thử Safari iPhone: [Docker, Blueprint, cấu hình và checklist thiết bị](docs/render-safari-deploy.md). Blueprint theo nhánh `develop`, tắt auto-deploy; nhánh `feature/safari-web-deploy` là lịch sử chuẩn bị V7/V9. File cấu hình triển khai không đồng nghĩa bản code mới đã chạy trên service.
+
+Backend hỗ trợ [ping định kỳ mỗi 14 phút](docs/render-safari-deploy.md#ping-định-kỳ-tùy-chọn), mặc định tắt, chỉ bật trên production bằng `KEEP_ALIVE_ENABLED=true` và `API_URL` HTTPS. Self-ping không đánh thức process đã ngủ; tài liệu kèm cách đặt lịch ping ngoài service.
 
 **V9 — Social Music** thêm source Music Shorts, bình luận/reply và hộp thông báo bền vững, dùng chung player V7. Cần migration 006 và scheduler giao thông báo trước khi nghiệm thu môi trường thật. Xem [kiến trúc, API, setup và giới hạn V9](docs/soundshare-v9-social-music.md).
 
-Development hiện đã áp dụng migration 005–006. Khi khởi động, server và script Web chạy kiểm tra schema; có thể kiểm tra riêng bằng `npm run db:check` trong `backend/`. Nếu chưa sẵn sàng, áp dụng migration trong đúng môi trường rồi khởi động lại; startup không tự sửa database.
+Database cấu hình trong `backend/.env` hiện đã có migration 001–007. Khi khởi động, server và script Web chạy kiểm tra schema; có thể kiểm tra riêng bằng `npm run db:check` trong `backend/`. Nếu chưa sẵn sàng, áp dụng migration trong đúng môi trường rồi khởi động lại; startup không tự sửa database.
 
 **Chia sẻ âm nhạc của bạn. Tận hưởng từng khoảnh khắc.**
 
