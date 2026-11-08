@@ -1,6 +1,6 @@
 # SoundShare Web trên Render và Safari iPhone
 
-Nhánh thử: `feature/safari-web-deploy`, dựa trên `develop` và bao gồm source V7/V9 đang có. Docker build Flutter Web rồi Express phục vụ cả UI và `/api/v1` qua cùng HTTPS origin. Không cần Mac, Xcode hoặc Apple Developer Account để mở website trên iPhone. Đây là cấu hình bản thử; kiểm tra trên thiết bị thật vẫn cần thực hiện sau khi deploy.
+Nhánh triển khai hiện tại: `develop`, bao gồm V7/V9 và V11 đã merge; `feature/safari-web-deploy` là nhánh chuẩn bị ban đầu. Docker build Flutter Web rồi Express phục vụ cả UI và `/api/v1` qua cùng HTTPS origin. Không cần Mac, Xcode hoặc Apple Developer Account để mở website trên iPhone. Đây là cấu hình bản thử; kiểm tra trên thiết bị thật vẫn cần thực hiện sau khi deploy.
 
 ## Build và chạy
 
@@ -21,12 +21,12 @@ Nếu không đặt `WEB_API_BASE_URL`, Web gọi API theo `Uri.base.origin`, n�
 Không thêm CI Docker theo lựa chọn của người dùng. Máy chuẩn bị mã chưa có Docker; kết quả build Flutter Web không thay thế kiểm chứng toàn bộ image. Cần chạy lệnh Docker phía trên hoặc xem lần build Render đầu tiên trước khi coi container đã được nghiệm thu. Sau khi build, có thể kiểm tra cấu trúc image mà không cần credential:
 
 ```powershell
-docker run --rm --entrypoint node soundshare-web -e "const fs=require('node:fs'); for(const p of ['/app/build/web/index.html','/app/build/web/canvaskit/canvaskit.wasm','src/database/migrations/006_social_discovery.sql']) { if(!fs.existsSync(p)) process.exit(1); } if(process.getuid()===0 || fs.existsSync('.env')) process.exit(1); console.log('Runtime files and user verified');"
+docker run --rm --entrypoint node soundshare-web -e "const fs=require('node:fs'); for(const p of ['/app/build/web/index.html','/app/build/web/canvaskit/canvaskit.wasm','src/database/migrations/007_synced_lyrics.sql']) { if(!fs.existsSync(p)) process.exit(1); } if(process.getuid()===0 || fs.existsSync('.env')) process.exit(1); console.log('Runtime files and user verified');"
 ```
 
 ## Tạo service
 
-1. Kết nối GitHub repository `TieuBao-IT89/SoundShare` trong Render. Chọn **New → Blueprint**, branch `feature/safari-web-deploy`, file `render.yaml`; hoặc tạo Web Service Docker với context root và `./Dockerfile`.
+1. Kết nối GitHub repository `TieuBao-IT89/SoundShare` trong Render. Chọn **New → Blueprint**, branch `develop`, file `render.yaml`; hoặc tạo Web Service Docker theo `develop`, với context root và `./Dockerfile`.
 2. Blueprint dùng Free ở Singapore, tắt auto-deploy, health check `/api/v1/health`. Đây là bản thử, không tự merge `develop`/`main`. Nếu tạo thủ công, chọn đúng các thiết lập này.
 3. Điền các giá trị sau trực tiếp trong phần Environment của Render, không gửi secret qua chat hoặc commit vào Git.
 
@@ -85,7 +85,9 @@ Sau khi server mở cổng, job ping một lần rồi lặp lại mỗi **14 ph
 
 Để request vẫn đến khi process ngủ, thiết lập scheduler/HTTP monitor **bên ngoài service** với GET `https://soundshare-783s.onrender.com/api/v1/health`, lịch `*/10 * * * *` và timeout khoảng 90 giây cho cold start. Không cần Bearer token hay secret cho health. Khi dùng lịch ngoài, có thể giữ `KEEP_ALIVE_ENABLED=false` để tránh hai nguồn ping. Hướng dẫn này chưa tạo hoặc kích hoạt tài khoản scheduler nào. Nếu cần độ sẵn sàng cho production, cân nhắc compute plan luôn chạy; [Render Cron Jobs](https://render.com/docs/cronjobs#compute-plans-and-billing) có phí riêng, không được tạo tự động trong thay đổi này.
 
-Kiểm tra tự động: `node --test backend/test/cron.test.js` kiểm tra opt-in/môi trường, URL sai và log an toàn, lịch 14 phút/endpoint đúng, request chồng nhau, timeout/recovery và hủy khi đóng. Chưa bật biến môi trường hoặc xác minh ping định kỳ trên Render thật. Khi deploy nhánh hiện tại, vẫn phải chuẩn bị migration **007** của V11 trước; ping không xử lý lỗi schema/startup.
+Kiểm tra tự động: `node --test backend/test/cron.test.js` kiểm tra opt-in/môi trường, URL sai và log an toàn, lịch 14 phút/endpoint đúng, request chồng nhau, timeout/recovery và hủy khi đóng. Bộ cron/backend Web-auth/Web JavaScript có **34/34 test đạt**. Ping không xử lý lỗi schema/startup.
+
+Ghi nhận ngày **08/11/2026**: migration 007 đã áp dụng trên database cấu hình trong `backend/.env`, read-only schema check đạt; xem [chi tiết V11](soundshare-v11-lyrics.md#migration-và-triển-khai). Người vận hành cung cấp Environment Render với `NODE_ENV=production`, `KEEP_ALIVE_ENABLED=true` và đúng public `API_URL`. Kiểm tra HTTP tới service trả **200**, health báo healthy và bundle Web có phần V11. Đây chưa xác nhận log `KEEP_ALIVE_OK` của bản ping mới: cần deploy commit chứa `backend/src/config/cron.js`, rồi xem Logs. Không có kết nối Dashboard/API Render để tự bấm deploy hoặc đọc log; Blueprint tắt auto-deploy, còn service tạo thủ công giữ thiết lập riêng trên Dashboard. Không lưu hoặc công khai bản sao Environment thật.
 
 ## Nghiệm thu trên iPhone
 

@@ -45,7 +45,9 @@ Uploader có thể thêm/sửa từ viewer hoặc Quản lý bài hát. Editor c
 
 ## Migration và triển khai
 
-Kiểm thử chỉ dùng PGlite/PostgreSQL biệt lập và Clerk/storage giả lập. **Chưa chạy migration 007 trên Neon đang phục vụ Render.** Trước deploy source này, kiểm tra migration trên staging rồi áp dụng theo quy trình môi trường đích đã được cấp quyền:
+Kiểm thử chỉ dùng PGlite/PostgreSQL biệt lập và Clerk/storage giả lập. **Ngày 08/11/2026 đã áp dụng migration 007 lên database Neon cấu hình trong `backend/.env` theo yêu cầu hoàn tất triển khai.** Chỉ 007 còn pending; runner đã bỏ qua 001–006, tạo `track_lyrics` và ghi migration trong transaction. Kiểm tra read-only xác nhận đủ schema 001–007 cùng các cột `track_id`, `lrc`, `revision`, `updated_at`. Không thay đổi các bài hát đã có hoặc chạy fixture/test trên database này.
+
+`NODE_ENV` trong file local là `development`; service Render dùng biến môi trường riêng. Nếu Render trỏ tới database khác, cần xác minh readiness trên đúng database đó. Với một môi trường mới, kiểm tra migration trên staging rồi áp dụng theo quy trình môi trường đích đã được cấp quyền:
 
 ```text
 npm --prefix backend run migrate
