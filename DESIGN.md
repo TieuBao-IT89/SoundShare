@@ -1,5 +1,7 @@
 # SoundShare — AURORA PEARL V6 / OBSIDIAN PULSE
 
+Điện thoại dưới 768 px giữ năm tab chính và có nút **Menu** cố định ở đầu nội dung để mở drawer đầy đủ: Trang chủ, Khám phá, Tìm kiếm, Thư viện, Cá nhân, Shorts, Thông báo, Yêu thích, Playlist và Tải nhạc. Drawer dùng cùng nội dung với sidebar, có Safe Area, nút đóng và cuộn dọc để truy cập mọi mục ở màn hình thấp hoặc chữ lớn; chọn mục sẽ đóng drawer và giữ player hiện có. Desktop/tablet tiếp tục dùng sidebar/rail có cuộn. Nút Đăng nhập ở trang chào Web chỉ có chữ, bỏ mũi tên trang trí. [Ảnh kiểm tra và giới hạn nghiệm thu](docs/ui/mobile-navigation-review.md).
+
 V9 mở rộng cùng hệ giao diện: Shorts dọc đặt artwork/creator ở trung tâm, thao tác xã hội ở cạnh và nghe thử ở đáy; giữ Be Vietnam Pro, nền Pearl/Obsidian và ambient hiện có. Comments dùng sheet theo bàn phím; inbox dùng hàng actor/nội dung/unread. Không tự phát lần đầu, đóng sheet không resume; menu cho bật autoplay/auto-next, có nút chuyển trang cho a11y. Chi tiết trạng thái và giới hạn trong [báo cáo V9](docs/soundshare-v9-social-music.md).
 
 Lối vào Shorts là một chế độ nghe trong **Khám phá**, dùng hàng điều hướng có mô tả và mũi tên, cùng surface lavender của theme. Home giữ shortcut trong nhóm truy cập nhanh sau nội dung nổi bật; sidebar desktop có mục Shorts. Nút đứng riêng dưới lời chào đã bỏ. Comments/inbox có thông báo lỗi rõ và pull-to-refresh cả khi ít nội dung; inbox foreground cập nhật nền, giữ nguyên danh sách khi đang refresh.
