@@ -2,15 +2,15 @@
 
 ## Chạy development
 
-Đọc [kiểm kê và nguồn thiết kế](ui/nocturne-v3-audit.md). Dùng Node/Flutter và cấu hình Clerk/Cloudinary/Neon development hiện có; không sửa secret trong client. Chạy từ `backend/`:
+Đọc [kiểm kê và nguồn thiết kế](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/nocturne-v3-audit.md). Dùng Node/Flutter và cấu hình Clerk/Cloudinary/Neon development hiện có; không sửa secret trong client. Chạy từ `backend/`:
 
 ```powershell
-node scripts/v3-preflight.mjs
 npm test
 npm run migrate
+npm run db:check
 ```
 
-Preflight chỉ đọc: xác nhận môi trường development, số bản ghi và username cũ có tương thích hay không. Nếu migration lỗi, dừng để kiểm tra; không tự tạo bảng bằng SQL Editor. Migration 004 thêm cột/bảng/index và sao chép lượt thích hiện có sang quan hệ mới; không xóa dữ liệu hoặc công khai các bài cũ. Unique/check constraint cố ý từ chối dữ liệu username cũ không tương thích, không âm thầm đổi tên.
+Nếu migration lỗi, dừng để kiểm tra; không tự tạo bảng bằng SQL Editor. Migration 004 thêm cột/bảng/index và sao chép lượt thích hiện có sang quan hệ mới; không xóa dữ liệu hoặc công khai các bài cũ. Unique/check constraint cố ý từ chối dữ liệu username cũ không tương thích, không âm thầm đổi tên. Schema hiện tại bao gồm migration 001–007; `db:check` chỉ đọc và xác nhận readiness.
 
 Từ thư mục gốc, build bằng `scripts/run-web.ps1` hoặc lệnh build hiện có, rồi khởi động lại Express để nhận module community và worker cleanup. Phiên Clerk, audience, CSP, hash navigation được giữ.
 
@@ -56,6 +56,6 @@ Hide/restore tác động track hoặc profile đúng target, lưu resolution/re
 
 `test/community_test.dart` kiểm tra API DTO, responsive 320/390/1280 ở chữ 2×, debounce, follow thành công/thất bại, mở hồ sơ, chuyển tab và queue dùng chung player. Test upload transport kiểm tra byte progress, cancel và chờ response; không mô phỏng thành công trước server. Kết quả chạy cuối và những bước nghiệm thu thật còn thiếu ghi ở báo cáo UI V3.
 
-Chạy `node scripts/review-nocturne.mjs` tại backend sau khi build Web để rà soát Chrome. Cần Chrome (hoặc CHROME_PATH). Script tự tạo PostgreSQL PGlite trong bộ nhớ và Chrome profile riêng, sinh khóa JWT test, audio tổng hợp và artwork procedural; chuyển mọi request localhost của trình duyệt đó vào Express test. Không import `.env`, không ghi Neon/Cloudinary hoặc dùng phiên trình duyệt cá nhân. Các ảnh/JSON nằm trong `build/nocturne-review/`; đây là dữ liệu kiểm thử, không phải cộng đồng thật.
+Harness Chrome một lần của V3 đã chuyển vào [kho lịch sử](archive.md). Bộ test chính thức vẫn nằm trong `backend/test/`, `test/` và `test/web/`; chạy theo [hướng dẫn hiện tại](../README.md#testing), không dùng script QA lịch sử làm bước cài đặt.
 
 Adapter Storage yêu cầu `media_metadata:true` cho video/audio để lấy duration từ Admin API. Đã đối chiếu [tài liệu Cloudinary](https://cloudinary.com/documentation/admin_api) và xác minh đọc được duration của hai MP3 cũ trong development. Smoke chỉ đọc metadata; không lưu URL ký hoặc nội dung file vào Neon.

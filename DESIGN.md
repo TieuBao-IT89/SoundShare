@@ -2,13 +2,13 @@
 
 V11 đưa lời người sáng tạo vào trung tâm player: chữ lớn Be Vietnam Pro, cùng nền artwork ambient Pearl/Obsidian; dòng hiện tại dùng màu chữ chính, các dòng khác dùng màu phụ, không blur chữ. Sheet có nút mở `/lyrics` toàn màn hình, giữ cùng transport/audio; chạm dòng để tua, kéo đọc tạm dừng auto-scroll và có nút theo lại. Dòng dài/chữ lớn được đo chiều cao và cuộn trong vùng lyrics, controls nằm trong Safe Area; Reduce Motion bỏ animation. Uploader thêm LRC qua upload hoặc editor có lỗi/preview/sửa/xóa rõ. Đây là thay thế cho lyrics placeholder Vinyl 2.0 lịch sử bên dưới. [Contract và nghiệm thu V11](docs/soundshare-v11-lyrics.md).
 
-Điện thoại dưới 768 px giữ năm tab chính và có nút **Menu** cố định ở đầu nội dung để mở drawer đầy đủ: Trang chủ, Khám phá, Tìm kiếm, Thư viện, Cá nhân, Shorts, Thông báo, Yêu thích, Playlist và Tải nhạc. Drawer dùng cùng nội dung với sidebar, có Safe Area, nút đóng và cuộn dọc để truy cập mọi mục ở màn hình thấp hoặc chữ lớn; chọn mục sẽ đóng drawer và giữ player hiện có. Desktop/tablet tiếp tục dùng sidebar/rail có cuộn. Nút Đăng nhập ở trang chào Web chỉ có chữ, bỏ mũi tên trang trí. [Ảnh kiểm tra và giới hạn nghiệm thu](docs/ui/mobile-navigation-review.md).
+Điện thoại dưới 768 px giữ năm tab chính và có nút **Menu** cố định ở đầu nội dung để mở drawer đầy đủ: Trang chủ, Khám phá, Tìm kiếm, Thư viện, Cá nhân, Shorts, Thông báo, Yêu thích, Playlist và Tải nhạc. Drawer dùng cùng nội dung với sidebar, có Safe Area, nút đóng và cuộn dọc để truy cập mọi mục ở màn hình thấp hoặc chữ lớn; chọn mục sẽ đóng drawer và giữ player hiện có. Desktop/tablet tiếp tục dùng sidebar/rail có cuộn. Nút Đăng nhập ở trang chào Web chỉ có chữ, bỏ mũi tên trang trí. [Ảnh kiểm tra và giới hạn nghiệm thu](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/mobile-navigation-review.md).
 
 V9 mở rộng cùng hệ giao diện: Shorts dọc đặt artwork/creator ở trung tâm, thao tác xã hội ở cạnh và nghe thử ở đáy; giữ Be Vietnam Pro, nền Pearl/Obsidian và ambient hiện có. Comments dùng sheet theo bàn phím; inbox dùng hàng actor/nội dung/unread. Không tự phát lần đầu, đóng sheet không resume; menu cho bật autoplay/auto-next, có nút chuyển trang cho a11y. Chi tiết trạng thái và giới hạn trong [báo cáo V9](docs/soundshare-v9-social-music.md).
 
 Lối vào Shorts là một chế độ nghe trong **Khám phá**, dùng hàng điều hướng có mô tả và mũi tên, cùng surface lavender của theme. Home giữ shortcut trong nhóm truy cập nhanh sau nội dung nổi bật; sidebar desktop có mục Shorts. Nút đứng riêng dưới lời chào đã bỏ. Comments/inbox có thông báo lỗi rõ và pull-to-refresh cả khi ít nội dung; inbox foreground cập nhật nền, giữ nguyên danh sách khi đang refresh.
 
-V6 đặt artwork của người sáng tạo trên nền ngọc trai: typography slate rõ nét, thao tác violet đậm, cyan làm điểm nhấn và gradient pastel ở vùng khám phá. Giữ layout và hành vi V4/V5 bên dưới. Light có thiết kế riêng cho featured banner, player ambient, cover fallback, genre, surface/elevation và navigation; Dark tiếp tục dùng palette OBSIDIAN PULSE. [Audit](docs/ui/aurora-pearl-v6-audit.md) · [Kiểm tra và ảnh chạy thực tế](docs/ui/aurora-pearl-v6-review.md).
+V6 đặt artwork của người sáng tạo trên nền ngọc trai: typography slate rõ nét, thao tác violet đậm, cyan làm điểm nhấn và gradient pastel ở vùng khám phá. Giữ layout và hành vi V4/V5 bên dưới. Light có thiết kế riêng cho featured banner, player ambient, cover fallback, genre, surface/elevation và navigation; Dark tiếp tục dùng palette OBSIDIAN PULSE. [Audit](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/aurora-pearl-v6-audit.md) · [Kiểm tra và ảnh chạy thực tế](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/aurora-pearl-v6-review.md).
 
 | Token Light | Giá trị | Vai trò |
 |---|---|---|
@@ -30,11 +30,11 @@ Be Vietnam Pro, tiếng Việt, các breakpoint 768/1100/1360, cùng AudioPlayer
 
 ## Nền tảng bố cục V4
 
-V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#10121D, surface #171A29/#23283B, brand #8957F7/#6D4DD7, blue/cyan #3D8BEB/#57D6DE; chữ #F7F7FA/#AAB1C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
+V4 giữ nền tảng NOCTURNE và toàn bộ logic V3, nâng bố cục thay vì tạo lại chức năng. [Audit và Before/After dự kiến](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/obsidian-pulse-v4-audit.md). Nền #080A12/#10121D, surface #171A29/#23283B, brand #8957F7/#6D4DD7, blue/cyan #3D8BEB/#57D6DE; chữ #F7F7FA/#AAB1C4. Primary action giữ tím đậm để chữ trắng đủ tương phản. Be Vietnam Pro và ARB giữ nguyên.
 
 Mobile dưới 768 px dùng bottom navigation/mini player; tablet 768–1099 px dùng rail 80 px; desktop từ 1100 px dùng sidebar 224 px, topbar search/avatar/upload và playback dock. Queue mở drawer khi hẹp hoặc panel 310 px từ 1360 px. Dock/player/queue cùng AudioPlayer và progress, không tạo state phát riêng. Drawer chỉ phản ứng ở route/tab đang hiển thị và giữ trạng thái khi đổi breakpoint. Các quy tắc và chức năng V3 bên dưới tiếp tục được áp dụng trong V4.
 
-Một tạp chí âm nhạc về những người đang sáng tạo: artwork mở đầu câu chuyện, typography dẫn đường, danh sách và hồ sơ nối người nghe với người đăng. NOCTURNE mở rộng thư viện riêng thành cộng đồng có chủ đích chia sẻ. Giữ Flutter, Riverpod, GoRouter, Clerk → Express → Neon/Cloudinary và cùng AudioPlayer. [Kiểm kê và nguồn nghiên cứu V3](docs/ui/nocturne-v3-audit.md).
+Một tạp chí âm nhạc về những người đang sáng tạo: artwork mở đầu câu chuyện, typography dẫn đường, danh sách và hồ sơ nối người nghe với người đăng. NOCTURNE mở rộng thư viện riêng thành cộng đồng có chủ đích chia sẻ. Giữ Flutter, Riverpod, GoRouter, Clerk → Express → Neon/Cloudinary và cùng AudioPlayer. [Kiểm kê và nguồn nghiên cứu V3](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/nocturne-v3-audit.md).
 
 ## Nhận diện
 
@@ -87,7 +87,7 @@ Thanh tìm kiếm lấy cảm hứng từ [Material 3 Search](https://m3.materia
 
 Trang tìm cộng đồng dẫn người nghe từ bài hát đến @người sáng tạo: tiêu đề editorial, bộ lọc có icon và lịch sử thành chip có thể chọn lại/xóa toàn bộ. Lịch sử vẫn chỉ trong phiên, không dựng gợi ý hoặc thống kê giả. Debounce 300 ms giữ nguyên; Enter/nút gửi thực thi ngay truy vấn đang nhập và ghi đúng lịch sử, kể cả trước khi debounce kết thúc. API, auth và player giữ luồng hiện tại.
 
-Ảnh widget, nguồn tham khảo và giới hạn nghiệm thu: [search refresh review](docs/ui/search-refresh-review.md).
+Ảnh widget, nguồn tham khảo và giới hạn nghiệm thu: [search refresh review](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/search-refresh-review.md).
 
 ## Ngôn ngữ và authentication
 
@@ -107,7 +107,7 @@ V7 thêm điều khiển media Android ngoài giao diện, cùng player/actions/
 
 Artwork trong Đang phát dùng `VinylRecordArtwork`: thân đĩa charcoal, 40 rãnh đồng tâm, nhãn tròn từ ảnh bìa bài hiện tại (70% đường kính), lỗ tâm nhỏ, viền có độ dày và bóng đổ tròn. Hướng tham khảo [Vinyl Music Player của Tom.vsx](https://dribbble.com/shots/14611479-Vinyl-Music-Player-App-UI-Concept) và [Vinyl Player của Ana Carolina Magalhães](https://dribbble.com/shots/27364872-Vinyl-Player-Music-Player-UI); giữ palette và controls SoundShare. Không thêm ảnh thương mại hoặc package animation.
 
-[Ảnh và kiểm tra Vinyl 2.0](docs/ui/vinyl-player-v2-review.md) ghi rõ bìa mẫu và giới hạn nghiệm thu chuyển động. [Bản vinyl đầu tiên](docs/ui/vinyl-player-review.md) là lịch sử thiết kế trước nâng cấp.
+[Ảnh và kiểm tra Vinyl 2.0](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/vinyl-player-v2-review.md) ghi rõ bìa mẫu và giới hạn nghiệm thu chuyển động. [Bản vinyl đầu tiên](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/vinyl-player-review.md) là lịch sử thiết kế trước nâng cấp.
 
 Vinyl 2.0 đặt bản thu của người sáng tạo giữa một mâm đĩa kỹ thuật số: chất liệu đĩa là khung, ảnh bìa là điểm nhận diện. Nền dùng hai radial gradient tĩnh, lấy màu từ bitmap 32×32 cùng cache của artwork rồi chuyển màu trong 650 ms; giữ màu cũ trong lúc ảnh mới tải, dùng màu thương hiệu khi ảnh lỗi/thiếu/trung tính hoặc quá hạn 5 giây. Saturation giới hạn 0,35; Light hòa tối đa 0,38 vào nền sáng, Dark 0,35 vào nền tối. Không blur toàn màn hình hoặc lấy mẫu mỗi frame.
 
@@ -127,14 +127,14 @@ SongTile thu nhỏ 0,98 khi nhấn, nhả khi hủy hoặc bắt đầu cuộn, 
 
 Vùng chạm tối thiểu 48×48; icon có nhãn, tab có selected/tap semantics; text có thể xuống dòng, form cuộn khi có bàn phím, artwork lỗi có fallback. Kiểm thử bao phủ 320/390/430 px với chữ 2×, desktop 1280 px, loading/error/empty, tìm kiếm/bộ lọc, player/mini dùng chung tiến trình, upload lỗi/retry và session gate.
 
-Kết quả chạy và giới hạn thiết bị được ghi riêng trong [báo cáo Mystic Aurora](docs/ui/mystic-aurora-review.md). Các báo cáo [issue #5](docs/ui/issue-5-review.md), [issue #7](docs/ui/issue-7-review.md) là lịch sử giao diện trước redesign; ảnh và palette trong các báo cáo đó không mô tả giao diện hiện tại.
+Kết quả chạy và giới hạn thiết bị được ghi riêng trong [báo cáo Mystic Aurora](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/mystic-aurora-review.md). Các báo cáo [issue #5](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/issue-5-review.md), [issue #7](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/issue-7-review.md) là lịch sử giao diện trước redesign; ảnh và palette trong các báo cáo đó không mô tả giao diện hiện tại.
 
-## Authentication ? OBSIDIAN WAVE V5
+## Authentication — OBSIDIAN WAVE V5
 
-Welcome Web d?ng visual b?a ??a/s?ng ?m SVG t? thi?t k?; headline l?ch tr?i, typography Be Vietnam Pro v? ambient t?nh. Desktop t? 1000 px chia kho?ng 58/42%, form t?i ?a 420 px; tablet/mobile m?t c?t, v?ng form cu?n t? nhi?n. Header mobile c?a form r?t g?n; kh?ng gi? hero Welcome sau form. CTA ch?nh n?i b?t, CTA t?o t?i kho?n th? c?p; kh?ng th?m li?n k?t ph?p l? ch?a c? URL th?t.
+Welcome Web dùng visual bìa đĩa/sóng âm SVG tự thiết kế; headline lệch trái, typography Be Vietnam Pro và ambient tĩnh. Desktop từ 1000 px chia khoảng 58/42%, form tối đa 420 px; tablet/mobile một cột, vùng form cuộn tự nhiên. Header mobile của form rút gọn; không giữ hero Welcome sau form. CTA chính nổi bật, CTA tạo tài khoản thứ cấp; không thêm liên kết pháp lý chưa có URL thật.
 
-Trang static `auth.html` nh?ng Clerk b?ng mount/unmount ch?nh th?c. Mode ch?n b?ng query, hash d?nh ri?ng cho c?c b??c Clerk. M?i l?n mount c? container ri?ng ?? Clerk t? d?n DOM; kh?ng remount khi ch? ??i hash c?a OTP/recovery/MFA. Form ch? hi?n th? provider/tr??ng b?t bu?c trong Dashboard, ?n c?c tr??ng t?n/h? t?y ch?n. T?n c?ng khai SoundShare ti?p t?c ch?n sau ??ng nh?p.
+Trang static `auth.html` nhúng Clerk bằng mount/unmount chính thức. Mode chọn bằng query, hash dành riêng cho các bước Clerk. Mỗi lần mount có container riêng để Clerk tự dọn DOM; không remount khi chỉ đổi hash của OTP/recovery/MFA. Form chỉ hiển thị provider/trường bắt buộc trong Dashboard, ẩn các trường tên/họ tùy chọn. Tên công khai SoundShare tiếp tục chọn sau đăng nhập.
 
-Focus ring lavender, input n?n xanh ?en, l?i t?i tr??ng do Clerk qu?n l?; n?t v? input t?i thi?u 48 px. Motion 240?260 ms, action xu?t hi?n l?ch nh? theo th? t?; t?t delay/animation v?i prefers-reduced-motion. Skip control chuy?n focus b?ng JavaScript, kh?ng chi?m hash c?a Clerk. Flutter d?ng c?ng Header/BrandPanel/AuthenticationScaffold cho welcome native, loading v? l?i/session; GlobalKey gi? form khi ??i breakpoint, timeout/retry/sign-out hi?n c? gi? nguy?n.
+Focus ring lavender, input nền xanh đen, lỗi tại trường do Clerk quản lý; nút và input tối thiểu 48 px. Motion 240–260 ms, action xuất hiện lệch nhẹ theo thứ tự; tắt delay/animation với prefers-reduced-motion. Skip control chuyển focus bằng JavaScript, không chiếm hash của Clerk. Flutter dùng cùng Header/BrandPanel/AuthenticationScaffold cho welcome native, loading và lỗi/session; GlobalKey giữ form khi đổi breakpoint, timeout/retry/sign-out hiện có giữ nguyên.
 
-[B?o c?o V5 v? Before/After](docs/ui/obsidian-wave-v5-review.md). OTP/OAuth/MFA v? native thi?t b? th?t c?n c?n nghi?m thu b?ng t?i kho?n/thi?t b? do ng??i d?ng ch? ??ng d?ng; kh?ng coi vi?c form render l? b?ng ch?ng ??ng nh?p ho?n t?t.
+[Báo cáo V5 và Before/After](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/obsidian-wave-v5-review.md). OTP/OAuth/MFA và native trên thiết bị thật còn cần nghiệm thu bằng tài khoản/thiết bị do người dùng chủ động dùng; không coi việc form render là bằng chứng đăng nhập hoàn tất.

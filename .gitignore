@@ -33,6 +33,8 @@ migrate_working_dir/
 /build/
 /coverage/
 /.local/
+# Historical QA captures are archived in Git; keep new transient output local.
+/docs/ui/
 .env
 .env.*
 !.env.example

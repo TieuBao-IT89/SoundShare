@@ -66,4 +66,4 @@ Sau khi merge và build lại Render, nghiệm thu hai tài khoản: upload MP3 
 - Flutter Web release build đạt với cấu hình public cùng nguồn API; không dùng secret backend trong bundle.
 - Đã xem ảnh widget với font thật ở 390×844 sáng, 320×640 tối với chữ 200%, và 844×390 ngang với chữ 200%; editor được kiểm tra khi bàn phím chiếm 250 px. Đây là fixture kiểm thử, chưa phải ảnh từ Safari hoặc backend triển khai.
 
-Ảnh tham khảo: [điện thoại sáng](ui/v11-lyrics-light-390.png), [điện thoại nhỏ, chữ lớn](ui/v11-lyrics-dark-320.png), [màn hình ngang](ui/v11-lyrics-landscape.png).
+Ảnh tham khảo: [điện thoại sáng](images/lyrics-light.png), [điện thoại nhỏ, chữ lớn](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/v11-lyrics-dark-320.png), [màn hình ngang](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/v11-lyrics-landscape.png).
