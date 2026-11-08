@@ -19,6 +19,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get home => 'Trang chủ';
 
   @override
+  String get appMenu => 'Menu';
+
+  @override
   String get explore => 'Khám phá';
 
   @override
@@ -1690,6 +1693,77 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerLyrics => 'Lời bài hát';
 
   @override
+  String get v11AttachTitle => 'Lời bài hát LRC (không bắt buộc)';
+
+  @override
+  String get v11LrcHint =>
+      'Chọn file .lrc UTF-8 tối đa 64 KB hoặc dán lời có timestamp. Tối đa 1.000 mốc, 500 ký tự mỗi dòng; hãy chỉ đăng lời bạn có quyền sử dụng.';
+
+  @override
+  String get v11LrcExample =>
+      '[00:05.00] Dòng lời đầu tiên\n[00:12.50] Dòng lời tiếp theo';
+
+  @override
+  String get v11ChooseLrc => 'Chọn file LRC';
+
+  @override
+  String get v11PasteLrc => 'Dán hoặc sửa lời';
+
+  @override
+  String get v11ClearLrc => 'Bỏ đính kèm';
+
+  @override
+  String get v11InvalidLrc =>
+      'LRC chưa hợp lệ. Dùng UTF-8 tối đa 64 KB và timestamp [mm:ss.xx]; mỗi dòng tối đa 500 ký tự, tổng tối đa 1.000 mốc.';
+
+  @override
+  String v11LinesReady(int count) {
+    return 'Đã kiểm tra $count mốc lời';
+  }
+
+  @override
+  String get v11EditLyrics => 'Thêm hoặc sửa lời';
+
+  @override
+  String get v11RemoveLyrics => 'Xóa lời bài hát';
+
+  @override
+  String get v11RemoveConfirm => 'Xóa lời bài hát của bản thu này?';
+
+  @override
+  String get v11SaveLyrics => 'Lưu lời bài hát';
+
+  @override
+  String get v11Saving => 'Đang lưu…';
+
+  @override
+  String get v11SaveFailed =>
+      'Chưa lưu được lời bài hát. Nội dung đang sửa vẫn được giữ lại.';
+
+  @override
+  String get v11LoadFailed =>
+      'Chưa tải được lời bài hát. Kiểm tra kết nối rồi thử lại.';
+
+  @override
+  String get v11OwnerOnly => 'Chỉ người đăng bản thu có thể sửa lời bài hát.';
+
+  @override
+  String get v11LyricsChanged =>
+      'Lời bài hát đã được cập nhật ở nơi khác. Sao chép nội dung đang sửa nếu cần, rồi tải bản mới trước khi lưu.';
+
+  @override
+  String get v11ReloadLyrics => 'Tải bản lời mới';
+
+  @override
+  String get v11Fullscreen => 'Xem lời toàn màn hình';
+
+  @override
+  String get v11FollowLyrics => 'Theo lời đang phát';
+
+  @override
+  String get v11SeekLine => 'Tua đến dòng lời';
+
+  @override
   String get playerLyricsUnavailable => 'Chưa có lời bài hát cho bản thu này.';
 
   @override
@@ -1737,4 +1811,140 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get themeSaveFailed =>
       'Đã đổi giao diện nhưng chưa lưu được lựa chọn trên thiết bị. Hãy thử lại.';
+
+  @override
+  String get v9Shorts => 'Music Shorts';
+
+  @override
+  String get v9ForYou => 'Cho bạn';
+
+  @override
+  String get v9Following => 'Đang theo dõi';
+
+  @override
+  String get v9Trending => 'Thịnh hành';
+
+  @override
+  String get v9Autoplay => 'Tự phát khi vuốt';
+
+  @override
+  String get v9AutoNext => 'Tự chuyển đoạn tiếp theo';
+
+  @override
+  String get v9Preview => 'Nghe thử';
+
+  @override
+  String get v9FullTrack => 'Nghe toàn bộ';
+
+  @override
+  String get v9Comments => 'Bình luận';
+
+  @override
+  String get v9WriteComment => 'Viết bình luận...';
+
+  @override
+  String get v9Reply => 'Trả lời';
+
+  @override
+  String get v9Send => 'Gửi';
+
+  @override
+  String get v9DeletedComment => 'Bình luận đã được xóa';
+
+  @override
+  String get v9Replies => 'Xem trả lời';
+
+  @override
+  String get v9BackComments => 'Về bình luận';
+
+  @override
+  String get v9NoComments => 'Chưa có bình luận. Hãy mở đầu cuộc trò chuyện.';
+
+  @override
+  String get v9Notifications => 'Thông báo';
+
+  @override
+  String get v9Unread => 'Chưa đọc';
+
+  @override
+  String get v9All => 'Tất cả';
+
+  @override
+  String get v9ReadAll => 'Đánh dấu tất cả đã đọc';
+
+  @override
+  String get v9Preferences => 'Tùy chọn thông báo';
+
+  @override
+  String get v9NoNotifications => 'Bạn đã xem hết thông báo.';
+
+  @override
+  String get v9NewFollower => 'đã theo dõi bạn';
+
+  @override
+  String get v9NewComment => 'đã bình luận về bài hát của bạn';
+
+  @override
+  String get v9NewReply => 'đã trả lời bình luận của bạn';
+
+  @override
+  String get v9SongLike => 'đã thích bài hát của bạn';
+
+  @override
+  String get v9NewTrack => 'vừa chia sẻ một bản thu mới';
+
+  @override
+  String get v9CommentLike => 'đã thích bình luận của bạn';
+
+  @override
+  String get v9FollowersPreference => 'Người theo dõi mới';
+
+  @override
+  String get v9CommentsPreference => 'Bình luận trên bài hát';
+
+  @override
+  String get v9RepliesPreference => 'Trả lời bình luận';
+
+  @override
+  String get v9LikesPreference => 'Lượt thích bài hát và bình luận';
+
+  @override
+  String get v9TracksPreference => 'Bài mới từ creator đang theo dõi';
+
+  @override
+  String get v9EmptyFollowing =>
+      'Chưa có bản thu từ người bạn theo dõi. Khám phá creator hoặc chuyển sang Cho bạn.';
+
+  @override
+  String get v9FeedEnd =>
+      'Bạn đã nghe hết lượt khám phá này. Làm mới để khám phá tiếp.';
+
+  @override
+  String get v9RefreshFeed => 'Làm mới feed';
+
+  @override
+  String get v9PreviewHint =>
+      'Nhấn phát để bắt đầu nghe thử. Vuốt để khám phá bản thu tiếp theo.';
+
+  @override
+  String get v9DeleteComment => 'Xóa bình luận';
+
+  @override
+  String get v9ReportSent => 'Báo cáo đã được gửi để xem xét.';
+
+  @override
+  String get v9Share => 'Chia sẻ liên kết';
+
+  @override
+  String get v9RecentActivity => 'Bản phát hành gần đây';
+
+  @override
+  String get v9Unavailable => 'Nội dung này không còn khả dụng.';
+
+  @override
+  String get v9PreviewSeconds => 'Đoạn nghe thử tối đa 30 giây';
+
+  @override
+  String get v9ShortsEntryIntro =>
+      'Nghe thử bản thu mới. Vuốt để tìm âm thanh bạn thích.';
 }

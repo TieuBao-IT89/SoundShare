@@ -79,6 +79,13 @@ class TestPlayer extends Fake implements AudioPlayer {
   }
 
   @override
+  Future<void> stop() async {
+    active = false;
+    source = null;
+    states.add(playerState);
+  }
+
+  @override
   Future<void> seek(Duration? position, {int? index}) async {}
   @override
   Future<void> setLoopMode(LoopMode mode) async {
@@ -126,6 +133,7 @@ Future<ProviderContainer> showApp(
   double textScale = 1,
   ThemeMode initialThemeMode = ThemeMode.light,
   ThemePreferenceStore? themeStore,
+  List<Override> overrides = const [],
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
@@ -146,6 +154,7 @@ Future<ProviderContainer> showApp(
       audioPlayerProvider.overrideWithValue(audio),
       if (repository != null)
         songRepositoryProvider.overrideWithValue(repository),
+      ...overrides,
     ],
   );
   addTearDown(() async {

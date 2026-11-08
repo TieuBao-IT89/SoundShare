@@ -1,4 +1,5 @@
 import 'theme_mode_menu.dart';
+import '../../features/notifications/presentation/notification_center.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,7 @@ class AppScaffold extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).uri.path;
     final index = switch (location) {
+      '/shorts' || '/notifications' || '/notifications/preferences' => -1,
       '/explore' => 1,
       '/search' => 2,
       '/library' ||
@@ -58,6 +60,19 @@ class AppScaffold extends ConsumerWidget {
           ),
         );
         return Scaffold(
+          drawer: tablet
+              ? null
+              : Drawer(
+                  key: const ValueKey('mobile-navigation-drawer'),
+                  width: (bounds.maxWidth - 24).clamp(0, 320).toDouble(),
+                  child: SafeArea(
+                    child: _Navigation(
+                      selectedIndex: index,
+                      compact: false,
+                      dismissOnNavigate: true,
+                    ),
+                  ),
+                ),
           onEndDrawerChanged: (open) {
             if (!open && bounds.maxWidth < 1360) {
               ref.read(queuePanelVisibleProvider.notifier).state = false;
@@ -88,7 +103,7 @@ class AppScaffold extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       children: [
-                        if (tablet) const _Topbar(),
+                        if (tablet) const _Topbar() else const _MobileMenuBar(),
                         Expanded(child: content),
                       ],
                     ),
@@ -130,6 +145,25 @@ class AppScaffold extends ConsumerWidget {
       },
     );
   }
+}
+
+class _MobileMenuBar extends StatelessWidget {
+  const _MobileMenuBar();
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: TextButton.icon(
+        key: const ValueKey('mobile-navigation-menu'),
+        style: TextButton.styleFrom(minimumSize: const Size(96, 48)),
+        onPressed: () => Scaffold.of(context).openDrawer(),
+        icon: const Icon(Icons.menu_rounded),
+        label: Text(context.l10n.appMenu),
+      ),
+    ),
+  );
 }
 
 class _DockWithQueueDrawer extends ConsumerStatefulWidget {
@@ -278,25 +312,59 @@ class SoundShareBottomNavigation extends StatelessWidget {
 }
 
 class _Navigation extends StatelessWidget {
-  const _Navigation({required this.selectedIndex, required this.compact});
+  const _Navigation({
+    required this.selectedIndex,
+    required this.compact,
+    this.dismissOnNavigate = false,
+  });
   final int selectedIndex;
   final bool compact;
+  final bool dismissOnNavigate;
+
+  void navigate(BuildContext context, String route) {
+    final router = GoRouter.of(context);
+    if (dismissOnNavigate) Navigator.of(context).pop();
+    if (_routes.contains(route)) {
+      router.go(route);
+    } else {
+      router.push(route);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final labels = _labels(context), t = context.l10n;
+    final path = GoRouterState.of(context).uri.path;
     return SizedBox(
       width: compact ? 80 : 224,
       child: Material(
         color: context.colors.secondaryBackground,
         child: ListView(
+          key: const ValueKey('app-navigation-list'),
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 8 : 16,
             vertical: 24,
           ),
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: AuroraLogo(size: 30, wordmark: !compact),
+            Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: AuroraLogo(size: 30, wordmark: !compact),
+                    ),
+                  ),
+                ),
+                if (dismissOnNavigate)
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+              ],
             ),
             const SizedBox(height: 32),
             for (var i = 0; i < _routes.length; i++)
@@ -308,7 +376,7 @@ class _Navigation extends StatelessWidget {
                       ? IconButton(
                           tooltip: labels[i],
                           isSelected: selectedIndex == i,
-                          onPressed: () => context.go(_routes[i]),
+                          onPressed: () => navigate(context, _routes[i]),
                           icon: Icon(_icons[i]),
                           selectedIcon: Icon(_selectedIcons[i]),
                         )
@@ -327,7 +395,7 @@ class _Navigation extends StatelessWidget {
                             labels[i],
                             style: const TextStyle(fontSize: 14),
                           ),
-                          onTap: () => context.go(_routes[i]),
+                          onTap: () => navigate(context, _routes[i]),
                         ),
                 ),
               ),
@@ -335,34 +403,46 @@ class _Navigation extends StatelessWidget {
             const Divider(),
             const SizedBox(height: 16),
             for (final item in [
+              (Icons.graphic_eq_rounded, t.v9Shorts, '/shorts'),
+              (
+                Icons.notifications_none_rounded,
+                t.v9Notifications,
+                '/notifications',
+              ),
               (Icons.favorite_border_rounded, t.likedTracks, '/liked'),
               (Icons.queue_music_rounded, t.v3Playlists, '/playlists'),
             ])
               compact
                   ? IconButton(
                       tooltip: item.$2,
-                      onPressed: () => context.push(item.$3),
+                      isSelected:
+                          path == item.$3 || path.startsWith('${item.$3}/'),
+                      onPressed: () => navigate(context, item.$3),
                       icon: Icon(item.$1),
                     )
                   : ListTile(
+                      selected:
+                          path == item.$3 || path.startsWith('${item.$3}/'),
+                      selectedTileColor: context.colors.selected,
+                      selectedColor: context.colors.mystic,
                       dense: true,
                       leading: Icon(item.$1, size: 20),
                       title: Text(
                         item.$2,
                         style: const TextStyle(fontSize: 13),
                       ),
-                      onTap: () => context.push(item.$3),
+                      onTap: () => navigate(context, item.$3),
                     ),
             const SizedBox(height: 24),
             if (compact)
               IconButton(
                 tooltip: t.uploadMusic,
-                onPressed: () => context.push('/upload'),
+                onPressed: () => navigate(context, '/upload'),
                 icon: const Icon(Icons.add_rounded),
               )
             else
               FilledButton.icon(
-                onPressed: () => context.push('/upload'),
+                onPressed: () => navigate(context, '/upload'),
                 icon: const Icon(Icons.add_rounded),
                 label: Text(t.uploadMusic),
               ),
@@ -440,6 +520,7 @@ class _TopbarState extends ConsumerState<_Topbar> {
           ),
           const SizedBox(width: 16),
           const ThemeModeMenu(),
+          const NotificationBell(),
           IconButton(
             tooltip: context.l10n.uploadMusic,
             onPressed: () => context.push('/upload'),

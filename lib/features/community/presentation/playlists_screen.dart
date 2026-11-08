@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import '../../../core/services/share_link.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -234,6 +237,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(t.v4PlayAll),
                   ),
+                  if (data['visibility'] == 'public')
+                    IconButton(
+                      tooltip: t.v9Share,
+                      onPressed: () =>
+                          shareLink(context, '/playlists/${widget.id}'),
+                      icon: const Icon(Icons.ios_share),
+                    ),
                   OutlinedButton.icon(
                     onPressed: busy || page.items.isEmpty
                         ? null

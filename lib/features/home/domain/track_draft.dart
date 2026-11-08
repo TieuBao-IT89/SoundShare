@@ -15,6 +15,7 @@ class TrackDraft {
     this.visibility = 'private',
     this.rightsConfirmed = false,
     this.transfer,
+    this.lyricsLrc,
   });
   final String title, artist, genre, description, audioName;
   final Uint8List audioBytes;
@@ -23,4 +24,5 @@ class TrackDraft {
   final String visibility;
   final bool rightsConfirmed;
   final UploadControl? transfer;
+  final String? lyricsLrc;
 }

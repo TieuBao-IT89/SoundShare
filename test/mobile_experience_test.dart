@@ -167,6 +167,11 @@ void main() {
     expect(find.text('Alex Morgan'), findsNothing);
     expect(find.text('240'), findsNothing);
     await tapVisible(tester, find.text(appCopy.libraryTitle));
+    await tester.scrollUntilVisible(
+      find.text(appCopy.favoritesEmptyTitle),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text(appCopy.favoritesEmptyTitle), findsOneWidget);
   });
 

@@ -5,6 +5,11 @@ Push-Location $projectRoot
 try {
   node scripts/prepare-web-config.mjs
   if ($LASTEXITCODE -ne 0) { throw 'Client configuration failed.' }
+  Push-Location backend
+  try {
+    npm run db:check
+    if ($LASTEXITCODE -ne 0) { throw 'Backend schema is not ready. Apply the pending migrations in the intended environment before starting Web.' }
+  } finally { Pop-Location }
   & $FlutterExecutable build web --release --dart-define-from-file=.local/web-config.json --no-web-resources-cdn
   if ($LASTEXITCODE -ne 0) { throw 'Flutter web build failed.' }
   Push-Location backend

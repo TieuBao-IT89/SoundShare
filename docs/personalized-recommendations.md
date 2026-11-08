@@ -78,25 +78,20 @@ Kiểm thử liên quan: `backend/test/recommendations.test.js`, `backend/test/r
 - Web release build thành công trong `build/recommendation-web`; bản `build/web` của ứng dụng đang phục vụ được giữ nguyên.
 - **4/4 phiên Chrome mới đạt:** cá nhân hóa/tài khoản mới × 390/1280 px. Browser gửi offset 420, API thật trong server test trả đúng metadata, lý do tiếng Việt hiển thị được. Bấm artwork trong rail mở player hiện có; audio HTML tổng hợp tiến từ khoảng 2,9 lên 4,8 giây và dùng cùng audio element khi sang hồ sơ creator. Không có API thất bại, runtime exception hoặc console error. Đã xem bốn ảnh, không thấy nội dung chồng hoặc bị cắt trong vùng kiểm tra.
 
-Ảnh dùng dữ liệu kiểm thử được đánh dấu; đồng hồ gợi ý cố định tại 23:30 Việt Nam, đồng hồ tiến trình audio chạy thật. [Browser report đã lược bỏ payload dư thừa](ui/recommendations/browser-report.json) ghi SHA-256 bundle và kết quả từng phiên.
+Ảnh dùng dữ liệu kiểm thử được đánh dấu; đồng hồ gợi ý cố định tại 23:30 Việt Nam, đồng hồ tiến trình audio chạy thật. [Browser report đã lược bỏ payload dư thừa](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/recommendations/browser-report.json) ghi SHA-256 bundle và kết quả từng phiên.
 
 | Trạng thái | Mobile 390 px | Desktop 1280 px |
 | --- | --- | --- |
-| Cá nhân hóa | [Ảnh](ui/recommendations/for-you-personalized-390.png) | [Ảnh](ui/recommendations/for-you-personalized-1280.png) |
-| Tài khoản mới | [Ảnh](ui/recommendations/for-you-cold-390.png) | [Ảnh](ui/recommendations/for-you-cold-1280.png) |
+| Cá nhân hóa | [Ảnh](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/recommendations/for-you-personalized-390.png) | [Ảnh](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/recommendations/for-you-personalized-1280.png) |
+| Tài khoản mới | [Ảnh](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/recommendations/for-you-cold-390.png) | [Ảnh](https://github.com/TieuBao-IT89/SoundShare/blob/cadc3222f13d5d84bbec59c611bc6382ea8196e3/docs/ui/recommendations/for-you-cold-1280.png) |
 
-Tái lập bằng Chrome, Node.js 22+, Python 3 và dependencies hiện có. Từ root, build vào thư mục riêng bằng cấu hình client hiện có, sau đó chạy generator opt-in; không dùng backend hoặc phiên Chrome thật của người dùng:
+Generator Chrome và ảnh/báo cáo của lần kiểm tra trên đã chuyển vào [kho lịch sử](archive.md). Các test hồi quy hiện tại vẫn kiểm tra thuật toán, quyền truy cập, cold start, dữ liệu phân trang và UI; có thể chạy từ root:
 
 ```powershell
-flutter build web --release --no-web-resources-cdn --no-wasm-dry-run --dart-define-from-file=.local/web-config.json --dart-define=API_BASE_URL=http://localhost:3000 --output=build/recommendation-web
-python scripts/prepare-recommendation-review.py
-$env:QA_RECOMMENDATION_MODE='personalized' # hoặc cold
-$env:QA_WIDTH='390' # hoặc 1280
-node build/review-recommendations.mjs
-Remove-Item Env:QA_RECOMMENDATION_MODE
-Remove-Item Env:QA_WIDTH
+flutter test test/recommendations_test.dart
+node --test backend/test/recommendations.test.js backend/test/recommendation-ranking.test.js
 ```
 
-Generator tái sử dụng fixture và interception của harness V3, chỉ tạo MJS trong `build/`. Mỗi lần chạy mở profile Chrome riêng, đóng server/browser sau khi xong và ghi raw report/ảnh vào `build/recommendation-review/`. Không đọc dotenv hoặc kết nối Neon/Cloudinary thật.
+Các test dùng player/provider giả lập và database PGlite biệt lập; không đọc dotenv hoặc kết nối Neon/Cloudinary thật.
 
 Giới hạn: offset hiện tại được áp dụng cả cho lịch sử, nên lịch sử khi đi du lịch/đổi giờ mùa hè có thể được quy về khung giờ khác; chưa lưu timezone từng session. Lấy 1.000 sự kiện trước khi dedupe giúp truy vấn có giới hạn nhưng tài khoản nghe lặp nhiều có thể có cửa sổ hiệu dụng ngắn hơn 90 ngày. Chưa benchmark tải catalog lớn, nghiệm thu mobile thật hoặc chạy lại tài khoản Clerk/Neon/Cloudinary thật cho thay đổi này. Không tự chạy migration trên môi trường thật trong đợt triển khai mã này.

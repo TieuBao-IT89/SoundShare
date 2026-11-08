@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.0 - 2026-11-08
+
+### Added
+
+- Timestamped LRC uploads and owner editing, synchronized line highlighting, tap-to-seek, and fullscreen lyrics using the existing player.
+- Music Shorts, comments/replies, likes, and an in-app notification inbox with durable outbox delivery and preferences.
+- Android background audio and MediaSession integration in source, with a shared playback engine and lifecycle-aware UI updates.
+- Full mobile navigation drawer and a simpler text-only Web sign-in button.
+- Combined Flutter Web/Express Docker deployment for Render and an optional production-only 14-minute health ping with timeout, overlap protection, and safe logs.
+
+### Changed
+
+- Rewrite the README around features, selected screenshots, setup, architecture, testing, and contribution guidance.
+- Refresh architecture, contribution, and security documentation to match the current Clerk/Express/Neon/Cloudinary stack.
+- Keep four documentation screenshots and archive historical QA reports, screenshots, completed task notes, and one-off review scripts in Git history. Preserve the official automated test suites and operational tools.
+- Set the Flutter application version to `1.2.0+3` and align the Render Blueprint with `develop`.
+
+Upgrading from v1.1.0 requires migrations **006–007** before starting the new backend. Startup only checks the schema; releases do not migrate or deploy automatically. Self-ping cannot wake a suspended process. Native background playback and Safari iPhone behavior still need device acceptance checks; no signed native binaries are included in this release.
+
 ## 1.1.0 - 2026-11-08
 
 - Add Aurora Pearl light mode alongside Obsidian Pulse dark mode, with saved appearance preferences and system theme support across Flutter and Web authentication.

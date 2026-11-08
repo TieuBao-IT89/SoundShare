@@ -1,7 +1,17 @@
-# Chính sách bảo mật
+# Security policy
 
-## Báo cáo lỗ hổng bảo mật
+## Reporting a vulnerability
 
-Vui lòng không báo cáo lỗ hổng bảo mật trong issue công khai. Hãy liên hệ riêng với những người duy trì repository, kèm mô tả, mức độ ảnh hưởng và các bước tái hiện. Nhóm duy trì sẽ xác nhận đã nhận báo cáo và phối hợp xử lý trước khi công bố rộng rãi.
+Do not post vulnerabilities, credentials, connection strings, or private user data in public issues. Contact the [repository maintainer](https://github.com/TieuBao-IT89) privately using an available contact channel on their profile. If GitHub private vulnerability reporting is available on the repository's Security page, use that instead.
 
-SoundShare hiện là MVP giai đoạn đầu và chưa có backend dùng trong môi trường production. Không bao giờ thêm khóa Supabase, thông tin đăng nhập hoặc bí mật khác vào hệ thống quản lý mã nguồn.
+Include a description, affected version, impact, and minimal reproduction using synthetic data. Remove tokens and personal information from logs and screenshots. Allow time for review and a coordinated fix before publishing details.
+
+## Supported versions
+
+Security fixes target the latest published release. Older releases may require an upgrade. This is a community project; there is no guaranteed response time or security audit certification.
+
+## Configuration boundaries
+
+Database, Clerk secret, and Cloudinary credentials belong only in the backend environment. Never put them in Flutter configuration, build arguments, committed files, client responses, or public logs. Use separate development, test, and production resources with TLS and appropriate access controls.
+
+If a credential is exposed, revoke or rotate it with its provider and update the affected deployment. Deleting a file or commit does not revoke the credential.

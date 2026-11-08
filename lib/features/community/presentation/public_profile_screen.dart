@@ -78,6 +78,14 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
           ),
           const SizedBox(height: 24),
           if (tab == 0)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                t.v9RecentActivity,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          if (tab == 0)
             CommunityAsync(
               value: ref.watch(communitySongsProvider(query)),
               retry: () => ref.invalidate(communitySongsProvider(query)),

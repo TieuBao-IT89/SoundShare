@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/theme/app_theme.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/sleep_timer_service.dart';
 import '../../../core/widgets/player_sheet.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/song.dart';
+import '../../comments/presentation/comments_sheet.dart';
+import '../../../core/services/share_link.dart';
+import '../../lyrics/presentation/lyrics_screen.dart';
 
 class PlayerExtras extends ConsumerWidget {
   const PlayerExtras({super.key, required this.song});
@@ -16,45 +18,25 @@ class PlayerExtras extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final deadline = ref.watch(sleepTimerProvider);
     final t = context.l10n;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
       children: [
+        if (song.community && song.visibility == 'public') ...[
+          IconButton(
+            tooltip: t.v9Comments,
+            onPressed: () => showComments(context, ref, song.id!),
+            icon: const Icon(Icons.chat_bubble_outline),
+          ),
+          IconButton(
+            tooltip: t.v9Share,
+            onPressed: () => shareLink(context, '/shorts/${song.id}'),
+            icon: const Icon(Icons.ios_share),
+          ),
+        ],
         IconButton(
           tooltip: t.playerLyrics,
           icon: const Icon(Icons.lyrics_outlined),
-          onPressed: () => showPlayerSheet<void>(
-            context,
-            (sheetContext) => _SheetContent(
-              title: t.playerLyrics,
-              onClose: () => Navigator.pop(sheetContext),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lyrics_outlined,
-                        size: 40,
-                        color: context.colors.secondaryText,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        song.title,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        t.playerLyricsUnavailable,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: context.colors.secondaryText),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          onPressed: () => showLyrics(context),
         ),
         IconButton(
           tooltip: deadline == null
