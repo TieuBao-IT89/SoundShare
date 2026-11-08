@@ -3148,6 +3148,132 @@ abstract class AppLocalizations {
   /// **'Lời bài hát'**
   String get playerLyrics;
 
+  /// No description provided for @v11AttachTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời bài hát LRC (không bắt buộc)'**
+  String get v11AttachTitle;
+
+  /// No description provided for @v11LrcHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn file .lrc UTF-8 tối đa 64 KB hoặc dán lời có timestamp. Tối đa 1.000 mốc, 500 ký tự mỗi dòng; hãy chỉ đăng lời bạn có quyền sử dụng.'**
+  String get v11LrcHint;
+
+  /// No description provided for @v11LrcExample.
+  ///
+  /// In vi, this message translates to:
+  /// **'[00:05.00] Dòng lời đầu tiên\n[00:12.50] Dòng lời tiếp theo'**
+  String get v11LrcExample;
+
+  /// No description provided for @v11ChooseLrc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn file LRC'**
+  String get v11ChooseLrc;
+
+  /// No description provided for @v11PasteLrc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dán hoặc sửa lời'**
+  String get v11PasteLrc;
+
+  /// No description provided for @v11ClearLrc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ đính kèm'**
+  String get v11ClearLrc;
+
+  /// No description provided for @v11InvalidLrc.
+  ///
+  /// In vi, this message translates to:
+  /// **'LRC chưa hợp lệ. Dùng UTF-8 tối đa 64 KB và timestamp [mm:ss.xx]; mỗi dòng tối đa 500 ký tự, tổng tối đa 1.000 mốc.'**
+  String get v11InvalidLrc;
+
+  /// No description provided for @v11LinesReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã kiểm tra {count} mốc lời'**
+  String v11LinesReady(int count);
+
+  /// No description provided for @v11EditLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm hoặc sửa lời'**
+  String get v11EditLyrics;
+
+  /// No description provided for @v11RemoveLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa lời bài hát'**
+  String get v11RemoveLyrics;
+
+  /// No description provided for @v11RemoveConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa lời bài hát của bản thu này?'**
+  String get v11RemoveConfirm;
+
+  /// No description provided for @v11SaveLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu lời bài hát'**
+  String get v11SaveLyrics;
+
+  /// No description provided for @v11Saving.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu…'**
+  String get v11Saving;
+
+  /// No description provided for @v11SaveFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa lưu được lời bài hát. Nội dung đang sửa vẫn được giữ lại.'**
+  String get v11SaveFailed;
+
+  /// No description provided for @v11LoadFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa tải được lời bài hát. Kiểm tra kết nối rồi thử lại.'**
+  String get v11LoadFailed;
+
+  /// No description provided for @v11OwnerOnly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ người đăng bản thu có thể sửa lời bài hát.'**
+  String get v11OwnerOnly;
+
+  /// No description provided for @v11LyricsChanged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lời bài hát đã được cập nhật ở nơi khác. Sao chép nội dung đang sửa nếu cần, rồi tải bản mới trước khi lưu.'**
+  String get v11LyricsChanged;
+
+  /// No description provided for @v11ReloadLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải bản lời mới'**
+  String get v11ReloadLyrics;
+
+  /// No description provided for @v11Fullscreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lời toàn màn hình'**
+  String get v11Fullscreen;
+
+  /// No description provided for @v11FollowLyrics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo lời đang phát'**
+  String get v11FollowLyrics;
+
+  /// No description provided for @v11SeekLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tua đến dòng lời'**
+  String get v11SeekLine;
+
   /// No description provided for @playerLyricsUnavailable.
   ///
   /// In vi, this message translates to:

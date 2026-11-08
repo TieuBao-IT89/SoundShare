@@ -1,5 +1,6 @@
 import { HttpError } from "../utils/http-error.js";
 import { encodeCursor } from "../validation/track.schema.js";
+import { parseLrc } from '../validation/lyrics.schema.js';
 
 export const createTrackService = ({ repository, storage, uploadService }) => {
   const safely = async (action) => {
@@ -27,6 +28,7 @@ export const createTrackService = ({ repository, storage, uploadService }) => {
       })), nextCursor: hasMore ? encodeCursor(page.at(-1)) : null };
     }),
     create: (owner, input) => safely(async () => {
+      if (input.lyricsLrc !== undefined) input = { ...input, lyricsLrc: parseLrc(input.lyricsLrc).source };
       await repository.ensureUser(owner);
       const result = await repository.create(owner, input);
       return { created: result.created, id: result.row.id };

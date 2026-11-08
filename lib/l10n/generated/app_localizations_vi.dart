@@ -1693,6 +1693,77 @@ class AppLocalizationsVi extends AppLocalizations {
   String get playerLyrics => 'Lời bài hát';
 
   @override
+  String get v11AttachTitle => 'Lời bài hát LRC (không bắt buộc)';
+
+  @override
+  String get v11LrcHint =>
+      'Chọn file .lrc UTF-8 tối đa 64 KB hoặc dán lời có timestamp. Tối đa 1.000 mốc, 500 ký tự mỗi dòng; hãy chỉ đăng lời bạn có quyền sử dụng.';
+
+  @override
+  String get v11LrcExample =>
+      '[00:05.00] Dòng lời đầu tiên\n[00:12.50] Dòng lời tiếp theo';
+
+  @override
+  String get v11ChooseLrc => 'Chọn file LRC';
+
+  @override
+  String get v11PasteLrc => 'Dán hoặc sửa lời';
+
+  @override
+  String get v11ClearLrc => 'Bỏ đính kèm';
+
+  @override
+  String get v11InvalidLrc =>
+      'LRC chưa hợp lệ. Dùng UTF-8 tối đa 64 KB và timestamp [mm:ss.xx]; mỗi dòng tối đa 500 ký tự, tổng tối đa 1.000 mốc.';
+
+  @override
+  String v11LinesReady(int count) {
+    return 'Đã kiểm tra $count mốc lời';
+  }
+
+  @override
+  String get v11EditLyrics => 'Thêm hoặc sửa lời';
+
+  @override
+  String get v11RemoveLyrics => 'Xóa lời bài hát';
+
+  @override
+  String get v11RemoveConfirm => 'Xóa lời bài hát của bản thu này?';
+
+  @override
+  String get v11SaveLyrics => 'Lưu lời bài hát';
+
+  @override
+  String get v11Saving => 'Đang lưu…';
+
+  @override
+  String get v11SaveFailed =>
+      'Chưa lưu được lời bài hát. Nội dung đang sửa vẫn được giữ lại.';
+
+  @override
+  String get v11LoadFailed =>
+      'Chưa tải được lời bài hát. Kiểm tra kết nối rồi thử lại.';
+
+  @override
+  String get v11OwnerOnly => 'Chỉ người đăng bản thu có thể sửa lời bài hát.';
+
+  @override
+  String get v11LyricsChanged =>
+      'Lời bài hát đã được cập nhật ở nơi khác. Sao chép nội dung đang sửa nếu cần, rồi tải bản mới trước khi lưu.';
+
+  @override
+  String get v11ReloadLyrics => 'Tải bản lời mới';
+
+  @override
+  String get v11Fullscreen => 'Xem lời toàn màn hình';
+
+  @override
+  String get v11FollowLyrics => 'Theo lời đang phát';
+
+  @override
+  String get v11SeekLine => 'Tua đến dòng lời';
+
+  @override
   String get playerLyricsUnavailable => 'Chưa có lời bài hát cho bản thu này.';
 
   @override

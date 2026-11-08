@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/lyrics/presentation/lyrics_screen.dart';
+
 import '../core/config/clerk_config.dart';
 import '../core/config/app_mode.dart';
 import '../core/services/api_client.dart';
@@ -42,6 +44,7 @@ import 'theme/theme_bridge_stub.dart'
 GoRouter createAppRouter({String initialLocation = '/splash'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
+    GoRoute(path: '/lyrics', builder: (context, state) => const LyricsScreen()),
     GoRoute(path: '/shorts', builder: (context, state) => const ShortsScreen()),
     GoRoute(
       path: '/shorts/:id',

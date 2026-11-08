@@ -31,6 +31,9 @@ class ApiException implements Exception {
   final int status;
   final String code;
   String get message => switch (code) {
+    'INVALID_LRC' => appCopy.v11InvalidLrc,
+    'LYRICS_CHANGED' => appCopy.v11LyricsChanged,
+    'LYRICS_UNAVAILABLE' => appCopy.v11LoadFailed,
     'USERNAME_TAKEN' => appCopy.v3UsernameTaken,
     'PROFILE_REQUIRED' => appCopy.v3ProfileRequired,
     'RIGHTS_REQUIRED' => appCopy.v3RightsRequired,

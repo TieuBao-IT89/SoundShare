@@ -1,5 +1,7 @@
 # SoundShare
 
+Nhánh **V11 — Synced Lyrics** bổ sung LRC có timestamp khi upload hoặc sửa bài, lời theo tiến trình, chạm dòng để tua và xem toàn màn hình. Cần migration **007** trước khi deploy; chưa áp dụng lên database Render. Xem [luồng dữ liệu, API, định dạng và nghiệm thu](docs/soundshare-v11-lyrics.md).
+
 Triển khai Web/API cùng HTTPS trên Render để thử Safari iPhone: [Docker, Blueprint, cấu hình và checklist thiết bị](docs/render-safari-deploy.md). Nhánh thử `feature/safari-web-deploy` gồm V7/V9; không tự merge vào develop/main. File cấu hình triển khai không đồng nghĩa đã có service chạy thật.
 
 **V9 — Social Music** thêm source Music Shorts, bình luận/reply và hộp thông báo bền vững, dùng chung player V7. Cần migration 006 và scheduler giao thông báo trước khi nghiệm thu môi trường thật. Xem [kiến trúc, API, setup và giới hạn V9](docs/soundshare-v9-social-music.md).

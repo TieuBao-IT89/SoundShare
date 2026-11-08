@@ -54,6 +54,10 @@ export const createTrackRepository = (pool) => {
         }
         const existing = (await client.query("SELECT * FROM private_tracks WHERE audio_asset_id = $1 AND clerk_user_id = $2", [input.audioAssetId, owner])).rows[0];
         if (existing) {
+          if (input.lyricsLrc !== undefined) {
+            const lyrics = (await client.query('SELECT lrc FROM track_lyrics WHERE track_id=$1', [existing.id])).rows[0];
+            if (lyrics?.lrc !== input.lyricsLrc) throw new HttpError(409, 'TRACK_ALREADY_EXISTS', 'This MP3 is already saved with different details.');
+          }
           if (["title", "artist", "genre", "description"].some((field) => existing[field] !== input[field]) || existing.artwork_asset_id !== (input.artworkAssetId || null) || (existing.visibility||'private') !== (input.visibility||'private') || existing.status === 'deleted') {
             throw new HttpError(409, "TRACK_ALREADY_EXISTS", "This MP3 is already saved with different details.");
           }
@@ -61,6 +65,7 @@ export const createTrackRepository = (pool) => {
         }
         const row = (await client.query(`INSERT INTO private_tracks(clerk_user_id, audio_asset_id, artwork_asset_id, title, artist, genre, description, visibility, rights_confirmed_at)
           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CASE WHEN $9 THEN NOW() ELSE NULL END) RETURNING *`, [owner, input.audioAssetId, input.artworkAssetId || null, input.title, input.artist, input.genre, input.description,input.visibility||'private',input.rightsConfirmed===true])).rows[0];
+        if (input.lyricsLrc !== undefined) await client.query('INSERT INTO track_lyrics(track_id,lrc) VALUES($1,$2)', [row.id, input.lyricsLrc]);
         await client.query("COMMIT"); open = false;
         return { created: true, row };
       } finally {

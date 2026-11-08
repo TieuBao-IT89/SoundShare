@@ -13,6 +13,7 @@ import '../../../core/services/upload_control.dart';
 import '../../../core/widgets/aurora_widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../../home/domain/track_draft.dart';
+import '../../lyrics/presentation/lrc_attachment.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key, this.filePicker, this.onUpload});
@@ -38,6 +39,8 @@ class _UploadScreenState extends State<UploadScreen> {
   bool uploaded = false;
   bool isPublic = false;
   bool rights = false;
+  String? lyricsLrc;
+  bool lyricsValid = true;
   UploadControl? transfer;
   double? progress;
   bool disposing = false;
@@ -130,8 +133,12 @@ class _UploadScreenState extends State<UploadScreen> {
     FocusScope.of(context).unfocus();
     final detailsValid = formKey.currentState!.validate();
     setState(() {
-      message = file == null ? context.l10n.mp3Required : null;
-      previewReady = file != null && detailsValid;
+      message = file == null
+          ? context.l10n.mp3Required
+          : !lyricsValid
+          ? context.l10n.v11InvalidLrc
+          : null;
+      previewReady = file != null && detailsValid && lyricsValid;
     });
   }
 
@@ -178,6 +185,7 @@ class _UploadScreenState extends State<UploadScreen> {
           visibility: isPublic ? 'public' : 'private',
           rightsConfirmed: rights,
           transfer: transfer,
+          lyricsLrc: lyricsLrc,
         ),
       );
       transfer?.check();
@@ -282,6 +290,16 @@ class _UploadScreenState extends State<UploadScreen> {
                               _privacyNote(),
                             ],
                           ],
+                          const SizedBox(height: 24),
+                          LrcAttachment(
+                            enabled: !busy && !uploaded,
+                            filePicker: widget.filePicker,
+                            onChanged: (source, valid) => setState(() {
+                              lyricsLrc = source;
+                              lyricsValid = valid;
+                              previewReady = false;
+                            }),
+                          ),
                           const SizedBox(height: 24),
                           if (busy) ...[
                             Semantics(

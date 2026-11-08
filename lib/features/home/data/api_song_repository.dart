@@ -127,6 +127,7 @@ class ApiSongRepository extends SongRepository {
         'description': draft.description,
         'visibility': draft.visibility,
         'rightsConfirmed': draft.rightsConfirmed,
+        if (draft.lyricsLrc != null) 'lyricsLrc': draft.lyricsLrc,
       },
     );
     draft.transfer?.completed();
