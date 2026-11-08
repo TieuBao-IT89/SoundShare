@@ -59,13 +59,33 @@ Builder đặt `TAR_OPTIONS=--no-same-owner` trước các lệnh Flutter để 
 
 Service URL đã biết: `https://soundshare-783s.onrender.com`. Khi deploy, `CLERK_AUTHORIZED_PARTIES` phải chứa origin này; `WEB_API_BASE_URL` có thể bỏ trống để dùng cùng origin. Lỗi giải nén trên xảy ra trước startup, không chứng minh các cấu hình runtime hoặc schema đã hợp lệ.
 
-Server kiểm tra migration 001–006 trước khi mở cổng, không tự migrate khi startup. Chuẩn bị database staging trước lần deploy đầu: trong terminal riêng đã cấu hình biến môi trường của **staging**, chạy `npm --prefix backend run migrate`, sau đó `npm --prefix backend run db:check`. Không thay `.env` development đang dùng và không chạy lệnh này trên production. Có thể chạy cùng lệnh trong image với `docker run --rm --env-file C:\private\soundshare-staging.env soundshare-web npm run migrate` sau khi build. Chỉ đường dẫn file xuất hiện trong history, không có credential.
+Server hiện kiểm tra migration 001–007 trước khi mở cổng, không tự migrate khi startup. Chuẩn bị database staging trước lần deploy đầu: trong terminal riêng đã cấu hình biến môi trường của **staging**, chạy `npm --prefix backend run migrate`, sau đó `npm --prefix backend run db:check`. Không thay `.env` development đang dùng và không chạy lệnh này trên production. Có thể chạy cùng lệnh trong image với `docker run --rm --env-file C:\private\soundshare-staging.env soundshare-web npm run migrate` sau khi build. Chỉ đường dẫn file xuất hiện trong history, không có credential.
 
 Free không hỗ trợ pre-deploy command, shell hoặc one-off job; vì vậy phải chuẩn bị schema từ máy được cấp quyền trước khi khởi động service. Với môi trường trả phí, có thể cấu hình `preDeployCommand: npm run migrate` sau khi rà soát migration và xác nhận database đích. Không có migration tự động trong Blueprint hiện tại.
 
 Clerk Sessions → Customize session token cần claim `{"aud":"soundshare-api"}`. Cặp key phải cùng instance; issuer/audience/expiry/signature và authorized parties vẫn được server xác minh. Clerk Development chỉ dành cho thử nghiệm. Đưa lên production chính thức cần domain do bạn sở hữu, DNS và OAuth credentials riêng theo [hướng dẫn Clerk](https://clerk.com/docs/guides/development/deployment/production).
 
 V9 dùng notification outbox bền vững. Process hiện tại giao thông báo mỗi 15 giây khi đang chạy; `npm run notifications:deliver` là lệnh worker có thể chạy bằng scheduler riêng đã được cấp quyền. Free service ngủ sau 15 phút không có request: timer ngừng, thông báo chờ trong Neon rồi tiếp tục giao khi service thức. Không có push notification iOS. Muốn giao liên tục cần service luôn chạy và scheduler đáng tin cậy; Blueprint thử không tự tạo dịch vụ trả phí. [Giới hạn Free](https://render.com/docs/free).
+
+## Ping định kỳ tùy chọn
+
+`backend/src/config/cron.js` cung cấp job ping public origin của chính backend. Dùng timer có sẵn của Node, không thêm package `cron`. Trong **Render → Environment**, đặt:
+
+```dotenv
+NODE_ENV=production
+KEEP_ALIVE_ENABLED=true
+API_URL=https://soundshare-783s.onrender.com
+```
+
+`API_URL` là origin HTTPS, không có `/api`, query, fragment hoặc thông tin đăng nhập; khác với `WEB_API_BASE_URL` dành cho Flutter. Job tự gọi **GET `/api/v1/health`**, không phải `/api/health`. Chỉ bật khi đồng thời có `NODE_ENV=production` và `KEEP_ALIVE_ENABLED=true`; Blueprint và `.env.example` mặc định tắt. Không chỉnh `.env` thật trong repository để bật trên Render.
+
+Sau khi server mở cổng, job ping một lần rồi lặp lại mỗi **14 phút thực**, thay vì cron expression `*/14` vốn chạy ở phút 00, 14, 28, 42, 56 và có khoảng cách 4 phút qua giờ mới. Mỗi request có timeout 10 giây, chặn request chồng nhau, không đi theo redirect và giải phóng response body. Timer không giữ process sống khi server đã đóng; đóng server hủy request đang chờ. URL sai chỉ vô hiệu job và log `KEEP_ALIVE_CONFIG_INVALID`, không làm server dừng. Log chỉ gồm mã sự kiện và HTTP status; không in URL, nội dung response hoặc lỗi mạng gốc. `KEEP_ALIVE_OK` chỉ xác nhận lần ping trả 200.
+
+**Self-ping chỉ chạy khi process còn hoạt động.** Khi Render đã cho service ngủ hoặc restart, timer cũng dừng; job không tự gọi dậy được và không bảo đảm hoạt động liên tục. Theo [Render Free](https://render.com/docs/free#spinning-down-on-idle), service ngủ sau 15 phút không có inbound traffic, thức khi có request mới và có thể mất khoảng một phút. Giới hạn giờ chạy và khả năng restart/suspend của Free vẫn áp dụng.
+
+Để request vẫn đến khi process ngủ, thiết lập scheduler/HTTP monitor **bên ngoài service** với GET `https://soundshare-783s.onrender.com/api/v1/health`, lịch `*/10 * * * *` và timeout khoảng 90 giây cho cold start. Không cần Bearer token hay secret cho health. Khi dùng lịch ngoài, có thể giữ `KEEP_ALIVE_ENABLED=false` để tránh hai nguồn ping. Hướng dẫn này chưa tạo hoặc kích hoạt tài khoản scheduler nào. Nếu cần độ sẵn sàng cho production, cân nhắc compute plan luôn chạy; [Render Cron Jobs](https://render.com/docs/cronjobs#compute-plans-and-billing) có phí riêng, không được tạo tự động trong thay đổi này.
+
+Kiểm tra tự động: `node --test backend/test/cron.test.js` kiểm tra opt-in/môi trường, URL sai và log an toàn, lịch 14 phút/endpoint đúng, request chồng nhau, timeout/recovery và hủy khi đóng. Chưa bật biến môi trường hoặc xác minh ping định kỳ trên Render thật. Khi deploy nhánh hiện tại, vẫn phải chuẩn bị migration **007** của V11 trước; ping không xử lý lỗi schema/startup.
 
 ## Nghiệm thu trên iPhone
 
